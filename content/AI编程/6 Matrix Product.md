@@ -4,13 +4,9 @@
 ## gemm
 
 矩阵乘法定义如下
-
 $$C_{m\times n}=A_{m\times s}\cdot B_{s\times n}, \quad \text{where } c_{ij}=\sum_{k=1}^s a_{ik}b_{kj}$$
-
 更一般的，加上偏置项和系数，就称为 **general matrix multiplication (gemm)**
-
 $$C=\alpha A\cdot B+\beta C$$
-
 在 CPU 上，只需依次遍历计算 $C$ 的每个位置即可，在 GPU 上，一个简单的方式是每个线程负责计算一个位置
 
 如果矩阵的大小不是 32 的整数倍，就会有一部分地方占不满一个 block，那多余的线程就被浪费了，所以一般在设置神经网络中间层的特征维度时取 32 的整数倍
@@ -69,9 +65,7 @@ sgemm_naive<<<gridDim, blockDim>>>(M, N, K, alpha, A, B, beta, C);
 - 计算能力：单位时间能进行多少次浮点运算，代表计算速度，单位 FLOP/s
 
 算术强度 Arithmetic Intensity 的定义如下，其衡量每字节数据所执行的计算量
-
 $$\text{Arithmetic Intensity} = \frac{\text{计算量/FLOP}}{\text{内存访问量/Byte}}$$
-
 - 算术强度低，表示每个字节的内存访问对应很少的计算操作，计算单元闲着没事干，但内存访问很频繁，此时容易受到带宽的限制
 - 算术强度低，表示每个字节的内存访问对应大量的计算操作，计算单元很忙，此时容易受到计算能力的限制
 
@@ -178,19 +172,16 @@ tensor([[1., 2.],
 ## Sparse Matrix-Vector Product
 
 有了以上的简化表示，稀疏矩阵和向量的乘法可以用以下方法计算，比如对于下面这个矩阵，采用 CSR 存储方式
-
 $$\begin{bmatrix}
 1 & 0 & 3 \\
 2 & 1 & 0 \\
 0 & 4 & 3
 \end{bmatrix}$$
-
 - `value: [1, 3, 2, 1, 4, 3]`
 - `col:   [0, 2, 0, 1, 1, 2]`
 - `cRow:  [0, 2, 4, 6]`
 
 其与列向量 $[x,y,z]^T$ 的乘积如下
-
 $$\begin{bmatrix}
 1 & 0 & 3 \\
 2 & 1 & 0 \\
@@ -209,9 +200,7 @@ x + 3z \\
 \end{bmatrix}$$
 
 可以总结出以下计算方法，首先根据 `value` 和 `col` 可以得到结果中出现的所有项，以下标 1 元素为例， `value` 的下标 1 元素是 3 ，说明其系数为 3 ；`col` 的下标 1 元素是 2 ，取乘法中的列向量 `X=[x,y,z]` 的下标 2 元素 $z$ ，二者组合起来就是 $3z$ 
-
 $$[x, 3z, 2x, y, 4y, 3z]$$
-
 >这种运算称为 **map** ，即根据 `value` `col` `X` 计算 scale product
 
 而后根据 `cRow` 进行分组求和 / segmented scan 操作，即可得最终结果
@@ -412,21 +401,17 @@ cublasSgemm(
 ```
 
 它实现了这样一个运算
-
 $$C\leftarrow \alpha A_{m\times k}\cdot B_{k\times n}+\beta C_{m\times n}$$
-
 - $m,n,k$ 对应 `sgemm` 中的那三个参数
 - $lda=m,\quad ldb=n,\quad ldc=m$ ，这里的 $m,n$ 均为转置之前的
 
 值得注意的是，这里的矩阵都是列主序的，即对于一个存储序列 1,2,3...6 ，如果矩阵形状为 2×3，则 cublas 会将其视为
-
 $$
 \begin{bmatrix}
 1 & 3 & 5\\
 2 & 4 & 6
 \end{bmatrix}
 $$
-
 同样的，对于计算结果的矩阵，其会按列主序将这个矩阵转换为存储序列返回
 
 如果要计算行主序的矩阵乘法 $C=A\cdot B$ ，可以转换为列主序的矩阵乘法 $C^T=B^T\cdot A^T$ ， 这样 $C^T$ 按列主序转换为序列，返回主机按行主序理解时，就是正确的结果 $C$ 了

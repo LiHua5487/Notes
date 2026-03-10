@@ -166,38 +166,6 @@ highlight_links = soup.select(".external-link.highlight")
 
 ---
 
-这里放一道 gpt 出的题目（由于往年没有python部分所以只能让gpt出题了）
-
-一个html文档内容如下
-```html
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>示例网页</title>
-    </head>
-    <body>
-        <div class="content">
-            <h1>文章标题</h1>
-            <p id="intro">这是一段简介内容。</p>
-            <p id="main-content">这里是主体内容，包含<b>加粗文本</b>。</p>
-            <a href="https://example.com/page1" class="external-link">链接到页面1</a>
-            <a href="https://example.com/page2" class="external-link highlight">链接到页面2</a>
-        </div>
-        <div class="footer">
-            <p>版权所有 © 2023</p>
-        </div>
-    </body>
-</html>
-```
-
-任务要求
-- 使用 `find` 方法找到 h1 标题，并输出其内容
-- 使用 `find_all` 方法获取所有 p 标签的内容，并输出成一个列表
-- 使用 `select` 方法找到所有带有 `class="external-link"` 的超链接，提取它们的 href 属性，并输出网址列表
-- 对于使用 `select` 方法找到的超链接，进一步筛选出 `class="highlight"` 的链接，并输出该链接的文本
-
----
-
 那么怎么获取这个html呢？
 
 假设有一个html文件，名为 `example.html` ，可以这么读取

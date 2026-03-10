@@ -14,9 +14,9 @@ c = f"{x:.2f}" # 保留两位小数，位数不能是负数
 计算最大公因数
 ```python
 def gcd(m, n):
-    while n != 0:
-        m, n = n, m % n
-    return m
+    while n != 0:
+        m, n = n, m % n
+    return m
 ```
 
 ---
@@ -53,12 +53,12 @@ a = b
 b.append(7)
 print(a)
 ```
-输出的是 `[4,5,6,7]` ，因为 `a = b` 后二者指向的地方一样，改 b 也会 改 a <br>
+输出的是 `[4,5,6,7]` ，因为 `a = b` 后二者指向的地方一样，改 b 也会 改 a
 值得注意的是，列表的每个元素也可以视为一个“指针”
 
 ---
 
-字符串和字节流<br>
+字符串和字节流
 字节流：一系列字符实际存储时的编码
 
 字符串与字节流的转换
@@ -76,11 +76,11 @@ str = s.decode("utf8)
 要实现 cpp 中的 `while(cin>>n)` 这种的效果，可以这么写
 ```python
 while True:
-    try:
-        n = int(input())
-        print(n)
-    except EOFError:
-        pass
+	try:
+		n = int(input())
+		print(n)
+	except EOFError:
+		pass
 ```
 
 ---
@@ -97,7 +97,7 @@ data = [
 data.sort(key=lambda x: (-x[1], x[0]))
 ```
 
-对于列表，`+=` 是直接对列表操作，`l = l + [num]` 是新建个列表再赋给 `l`<br>
+对于列表，`+=` 是直接对列表操作，`l = l + [num]` 是新建个列表再赋给 `l`
 这就导致了如下情况
 ```python
 a = [1,2,3]
@@ -160,12 +160,12 @@ a = a + [4] # a变成一个新列表，b还是[1,2,3]
 
 ```python
 class  A:
-    def __init__(self,x):
-        self.x = x
-    def __hash__(self):
-        return 0 # 所有实例哈希值都为0，会导致哈希冲突
-    def __eq__(self,other): # 哈希冲突时使用eq判断是不是同一个key
-        return self.x == other.x
+    def __init__(self,x):
+        self.x = x
+    def __hash__(self):
+        return 0 # 所有实例哈希值都为0，会导致哈希冲突
+    def __eq__(self,other): # 哈希冲突时使用eq判断是不是同一个key
+        return self.x == other.x
 
 a = A(3)
 b = A(3)
@@ -187,7 +187,7 @@ print(d[b])
 - 进行哈希计算：`a.__hash__()` 返回 `0`，从字典中找到哈希为 `0` 的所有键
 - 遍历冲突的哈希桶，使用 `__eq__` 判断相等性
     - `a.__eq__(A(5))` 返回 `False`，跳过
-    - `a.__eq__(A(3))` 返回 `True`，因此找到对应的值 `20`<br>
+    - `a.__eq__(A(3))` 返回 `True`，因此找到对应的值 `20`
 而用b访问时，与之相同，所以也会输出 `20`
 
 
@@ -195,21 +195,21 @@ print(d[b])
 
 ```python
 class Employee:
-    company = "TechCorp"  # 静态成员变量/类属性，所有实例共享
-    def __init__(self, name):
-        self.name = name
+    company = "TechCorp"  # 静态成员变量/类属性，所有实例共享
+    def __init__(self, name):
+        self.name = name
 
-    @classmethod # 类方法
-    def change_company(cls, new_company):
-        cls.company = new_company  # 修改类属性
-        return f"Company changed to {new_company}"
+    @classmethod # 类方法
+    def change_company(cls, new_company):
+        cls.company = new_company  # 修改类属性
+        return f"Company changed to {new_company}"
 
-    @staticmethod # 静态方法，独立于类
-    def calculate_bonus(salary):
-        return salary * 0.1
+    @staticmethod # 静态方法，独立于类
+    def calculate_bonus(salary):
+        return salary * 0.1
 
-    def get_info(self):
-        return f"{self.name} works at {self.company}"
+    def get_info(self):
+        return f"{self.name} works at {self.company}"
 
 print(Employee.company) # 获取类属性
 emp = Employee("Alice") # 声明
@@ -237,26 +237,26 @@ emp.bonus = bonus # 可随时添加成员变量
 
 ```python
 class Person:
-    def __init__(self, name):
-        self._name = name
+    def __init__(self, name):
+        self._name = name
 
-    # 定义 getter 方法，将函数封装为属性
-    @property
-    def name(self):
-        return self._name
+    # 定义 getter 方法，将函数封装为属性
+    @property
+    def name(self):
+        return self._name
 
-    # 定义 setter 方法，允许修改属性
-    @name.setter
-    def name(self, value):
-        if not isinstance(value, str): # 检查赋值是否合法
-            raise ValueError("name must be string.")
-    self._name = value
+    # 定义 setter 方法，允许修改属性
+    @name.setter
+    def name(self, value):
+        if not isinstance(value, str):  # 检查赋值是否合法
+            raise ValueError("name must be string.")
+        self._name = value
 
-    # 定义 deleter 方法，删除属性
-    @name.deleter
-    def name(self):
-        print("name attr deleted.")
-        del self._name
+    # 定义 deleter 方法，删除属性
+    @name.deleter
+    def name(self):
+        print("name attr deleted.")
+        del self._name
 ```
 
 泛型：由于Python函数不会显式地声明类型，所以任何函数都是相当于模板
@@ -265,12 +265,12 @@ class Person:
 
 ```python
 class A:
-    def __init__(self, x):
-        self.x = x
+    def __init__(self, x):
+        self.x = x
 class B(A):
-    def __init__(self, x, y):
-        A.__init__(self, x) # 调用基类构造函数
-        self.b = b
+    def __init__(self, x, y):
+        A.__init__(self, x) # 调用基类构造函数
+        self.b = b
 
 a, b = A(), B()
 print(isinstance(a, A)) # >>> True
@@ -291,17 +291,17 @@ print(isinstance(b, B)) # >>> True
 在类内实现一个简单的迭代器
 ```python
 class MyRange:
-    def __init__(self, n):
-        self.idx = 0 # 当前下标
-        self.n = n # 总长度
-    def __iter__(self):
-        return self
-    def __next__(self):
-        if self.idx < self.n: # 保证不越界
-            val = self.idx
-            self.idx += 1
-            return val
-        raise StopIteration() # 越界则raise错误
+    def __init__(self, n):
+        self.idx = 0 # 当前下标
+        self.n = n # 总长度
+    def __iter__(self):
+        return self
+    def __next__(self):
+        if self.idx < self.n: # 保证不越界
+            val = self.idx
+            self.idx += 1
+            return val
+        raise StopIteration() # 越界则raise错误
 ```
 
 其中 `raise` 千万不要写成 `return` ，不然就一直给你输出错误停不下来
@@ -309,23 +309,23 @@ class MyRange:
 迭代器还可以作为单独一个类去实现
 ```python
 class MyRange:
-    def __init__(self, n):
-        self.n = n
-    def __iter__(self):
-        return MyRangeIteration(self.n)
+    def __init__(self, n):
+        self.n = n
+    def __iter__(self):
+        return MyRangeIteration(self.n)
 
 class MyRangeIteration:
-    def __init__(self, n):
-        self.i = 0
-        self.n = n
-    def __iter__(self):
-        return self
-    def __next__(self):
-        if self.i < self.n:
-            i = self.i
-            self.i += 1
-            return i
-        raise StopIteration
+    def __init__(self, n):
+        self.i = 0
+        self.n = n
+    def __iter__(self):
+        return self
+    def __next__(self):
+        if self.i < self.n:
+            i = self.i
+            self.i += 1
+            return i
+        raise StopIteration
 ```
 
 **生成器**：一种延时求值的特殊迭代器，内部包含计算过程，真正需要时才去计算
@@ -336,11 +336,11 @@ a = (i * i for i in range(5))
 print(a)
 # >>> <generator object <genexpr> at ...>
 for x in a:
-    print(x, end=" ")
+    print(x, end=" ")
 # >>> 0 1 4 9 16
 ```
 
-与列表推导式不同，这是用 `()` 扩起的<br>
+与列表推导式不同，这是用 `()` 扩起的
 也可以用 `next(generator)` 显式的逐步进行
 
 `yield`：将所在函数变成一个生成器，调用时不会立刻执行，而是以yield作为“断点”，遇到yield就暂停，并且返回 yield 的值，相当于有暂停功能的 `return`
@@ -348,30 +348,30 @@ for x in a:
 ```python
 # 实现斐波那契数列
 def fibonacci(n):  # 求斐波那契数列前 n 项
-    a, b, counter = 0, 1, 0
-    while counter <= n:
-        yield a
-        a, b = b, a + b
-        counter += 1
+    a, b, counter = 0, 1, 0
+    while counter <= n:
+        yield a
+        a, b = b, a + b
+        counter += 1
 
 f = fibonacci(10)
 while True:
-    try:
-        print(next(f), end=" ")
-    except StopIteration:
-        break
+    try:
+        print(next(f), end=" ")
+    except StopIteration:
+        break
 ```
 
 但是，如果异想天开写一个 `x = yield 4` 这种的东西，yield 暂停了，再次执行时，剩下的 `x = ` 卡一半了，这时候就需要在 `next` 前使用 `send(num)` 来给一个初始值
 ```python
 def counter(start=0):
-    current = start # <-- 初次调用从这里执行
-    while True:
-        received = yield current  # 暂停并返回当前值，等待外部发送值
-        if received is not None:  # 如果接收到新的值，将其作为新的起点
-            current = received
-        else:
-            current += 1
+    current = start # <-- 初次调用从这里执行
+    while True:
+        received = yield current  # 暂停并返回当前值，等待外部发送值
+        if received is not None:  # 如果接收到新的值，将其作为新的起点
+            current = received
+        else:
+            current += 1
 
 gen = counter(10)
 print(next(gen))  # >>> 10 初次调用
@@ -395,9 +395,9 @@ print(next(gen))  # >>> 21
 一个最基本的闭包长这样
 ```python
 def outer_function(x):  # 外部函数
-    def inner_function(y):  # 内部函数
-        return x + y
-    return inner_function  # 返回内部函数
+    def inner_function(y):  # 内部函数
+        return x + y
+    return inner_function  # 返回内部函数
 
 closure = outer_function(10)  # x = 10
 print(closure(5)) # >>> 15
@@ -407,12 +407,12 @@ print(closure(20)) # >>> 30
 闭包还能修改外部变量，需要加上 `nonlocal`
 ```python
 def make_counter():
-    count = 0
-    def counter():
-        nonlocal count  # 允许修改外部变量
-        count += 1
-        return count
-    return counter
+    count = 0
+    def counter():
+        nonlocal count  # 允许修改外部变量
+        count += 1
+        return count
+    return counter
 
 # 创建两个独立的计数器
 counter1 = make_counter()
@@ -423,46 +423,46 @@ print(counter2())  # >> 1
 print(counter2())  # >> 2
 ```
 
-这里举一个作业中的例子，假设我们提前定义了 `f1(x)` ... `f5(x)` <br>
-现在我们想实现函数组合功能，例如输入 `f1 f2 f3` ，再输入 `4` ，就可以输出 `f3(f2(f1(4)))` <br>
+这里举一个作业中的例子，假设我们提前定义了 `f1(x)` ... `f5(x)` 
+现在我们想实现函数组合功能，例如输入 `f1 f2 f3` ，再输入 `4` ，就可以输出 `f3(f2(f1(4)))`
 已知的代码如下，需补全 `accfunc`
 ```python
 def accfunc(f):
-    # === TO DO ===
+    # === TO DO ===
 
 while True:
-    try:
-        s = input()
-        n = int(input())
-        s = s.split()
-        k = accfunc
-        for x in s:
-            k = k(eval(x))
-        print(k()(n))
-    except:  #读到 EOF 产生异常
-        break
+    try:
+        s = input()
+        n = int(input())
+        s = s.split()
+        k = accfunc
+        for x in s:
+            k = k(eval(x))
+        print(k()(n))
+    except:  #读到 EOF 产生异常
+        break
 ```
 
 一种解决方案如下
 ```python
 def accfunc(f):
-    def inner(g=None):
-        if g is None:
-            return f
-        else:
-            new_func = accfunc(lambda x: g(f(x)))
-            return new_func
-    return inner
+    def inner(g=None):
+        if g is None:
+            return f
+        else:
+            new_func = accfunc(lambda x: g(f(x)))
+            return new_func
+    return inner
 ```
 
 当我们按照例子输入后，首先，对于循环执行 `k = k(eval(x))` 的部分
 
-一开始 `k = accfunc, x = f1` ，执行 `k(eval(x))` 即 `accfunc(f1)` <br>
-这会返回一个 `inner` ，其记住了外层变量 `f1` <br>
+一开始 `k = accfunc, x = f1` ，执行 `k(eval(x))` 即 `accfunc(f1)` 
+这会返回一个 `inner` ，其记住了外层变量 `f1` 
 我们不妨将其记为 `inner with f1`
 
-第二步时 `k = inner with f1, x = f2` ，执行 `inner(f2)` <br>
-这会进入执行 `accfunc(lambda x: f2(f1(x)))` 的分支<br>
+第二步时 `k = inner with f1, x = f2` ，执行 `inner(f2)` 
+这会进入执行 `accfunc(lambda x: f2(f1(x)))` 的分支
 执行后 `new_func` 就是一个 `inner` 函数，携带外部变量 `f2(f1)`
 
 第三步与第二步同理，最后 `k = inner with f3(f2(f1))`
@@ -471,66 +471,66 @@ def accfunc(f):
 
 ---
 
-现在讲装饰器，假设要写很多函数，但这些函数有一部分都是差不多的，如果每次写一个新的函数都要再写这么一段，太烦人了
+现在讲**装饰器**，假设要写很多函数，但这些函数有一部分都是差不多的，如果每次写一个新的函数都要再写这么一段，太烦人了
 
 于是装饰器应运而生，把这个公共部分提取出来
 ```python
 def log_wrapper(func):
-    def wrapper(*args, **kwargs): # 接收具体函数的参数
-        print(f"executing function {func.__name__}.")
-        result = func(*args, **kwargs)  # 调用被装饰的函数
-        print(f"function {func.__name__} done.")
-        return result  # 调用具体函数时的实际返回值
-    return wrapper
+    def wrapper(*args, **kwargs): # 接收具体函数的参数
+        print(f"executing function {func.__name__}.")
+        result = func(*args, **kwargs)  # 调用被装饰的函数
+        print(f"function {func.__name__} done.")
+        return result  # 调用具体函数时的实际返回值
+    return wrapper
 
 @log_wrapper
 def add(a, b):
-    return a + b
+    return a + b
 
 @log_wrapper
 def multiply(a, b):
-    return a * b
+    return a * b
 ```
 
-这个例子中，我们希望每次执行add和multiply都能打印日志信息，于是将其提取出来放到装饰器<br>
+这个例子中，我们希望每次执行add和multiply都能打印日志信息，于是将其提取出来放到装饰器
 当使用 `@log_wrapper` 装饰函数时，函数就会自动被装饰器包装
 
 现在，对于每个函数，其日志信息想要分成不同的类别，比如 `WARN` `DEBUG` `INFO` 等，那就需要含参的装饰器
 ```python
 # 定义带参数的装饰器
 def log_with_prefix(prefix):
-    # 这个是装饰器的真正实现
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            print(f"[{prefix}] executing {func.__name__}")
-            return func(*args, **kwargs)
-        return wrapper
-    return decorator
+    # 这个是装饰器的真正实现
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            print(f"[{prefix}] executing {func.__name__}")
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 @log_with_prefix("DEBUG")
 def add(a, b):
-    return a + b
+    return a + b
 
 @log_with_prefix("INFO")
 def multiply(a, b):
-    return a * b
+    return a * b
 ```
 
 除了函数，还可以用类当作装饰器
 ```python
 class CallCounter:
-    def __init__(self, func):
-        self.func = func
-        self.call_count = 0
+    def __init__(self, func):
+        self.func = func
+        self.call_count = 0
 
-    def __call__(self, *args, **kwargs): # 当作装饰器被调用时
-        self.call_count += 1
-        print(f"{self.func.__name__} has been called {self.call_count} times.")
-        return self.func(*args, **kwargs)  # 真正调用目标函数
+    def __call__(self, *args, **kwargs): # 当作装饰器被调用时
+        self.call_count += 1
+        print(f"{self.func.__name__} has been called {self.call_count} times.")
+        return self.func(*args, **kwargs)  # 真正调用目标函数
 
 @CallCounter
 def greet(name):
-    print(f"Hello, {name}!")
+    print(f"Hello, {name}!")
 ```
 
 在用 `@CallCounter` 装饰时，会创建一个类实例，并传入被装饰的函数名进行初始化

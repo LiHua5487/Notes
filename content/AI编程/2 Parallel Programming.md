@@ -1,6 +1,8 @@
 
 # CUDA
 
+## CUDA 简介
+
 为了加速计算，有两种思路：加快 CPU 的时钟频率，让 CPU 算的更快；将计算分成若干个小单元，并行计算
 
 对于第一种方法， CPU 的频率存在物理学方面的上限，而且增大频率会增大功耗，更难去散热，所以引入并行计算是必要的
@@ -147,7 +149,7 @@ __global__ void relu_gpu(float* in, float* out, int n) {
 relu_gpu <<<blocksPerGrid, threadsPerBlock>>> (d_in, d_out, N);
 ```
 
-## 显存结构与管理
+## Tensor
 
 上面的代码中需要手动分配与释放内存，这太烦人了，而使用 `Tensor` 类封装数据就可以自动分配释放内存
 
@@ -187,11 +189,13 @@ tensor_out.copy_to(h_out);
 
 `reshape` 就更容易了，反正实际存储结构没有变，就改一下 size 的数就行，然后重新计算 stride
 
+## 显存结构与访问
+
 整体来看，内存结构如下
 
 ![[AI编程/imgs/img2/image-3.png]]
 
-每个线程有一个自己的内存 local memory ；一个线程块的内存是 shared memory ，其内部的线程的内存是共享的，可以相互访问；所有线程还共享一个全局的内存 global memory 
+每个线程有一个自己的内存 local memory ；一个线程块的内存是 shared memory ，其内部的线程的内存是共享的，可以相互访问；所有线程还共享一个全局的内存 global memory （CPU 与 GPU 的数据传输是通过全局内存的）
 
 访问速度：local memory > shared memory >> global memory >> CPU memory
 
@@ -212,7 +216,7 @@ t = *x;   // 读取全局写入局部
 }
 ```
 
-全局内存访问太慢了，但可以用 **合并内存访问 Coalesced Memory Access** 进行优化，核心思想是当一组线程（通常是 32 个，即一个 Warp）在同一个指令周期内访问全局内存时，如果它们访问的内存地址是连续的且对齐的，GPU 可以将这些多个内存访问请求合并为一次或少数几次大的内存事务 Transaction
+全局内存访问太慢了，但可以用 **合并内存访问 Coalesced Memory Access** 进行优化，核心思想是当一组线程在同一个指令周期内访问全局内存时，如果它们访问的内存地址是连续的且对齐的，GPU 可以将这些多个内存访问请求合并为一次或少数几次大的内存事务 Transaction
 
 ![[AI编程/imgs/img2/image-4.png]]
 

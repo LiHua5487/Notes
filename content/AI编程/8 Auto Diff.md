@@ -5,6 +5,8 @@ AI框架是为开发、训练和部署模型提供支持的工具和库，为研
 
 ![[AI编程/imgs/img8/image.png]]
 
+后面的课程是按照下图中展示的框架来分块讲解的
+
 ![[AI编程/imgs/img8/image-1.png]]
 
 # Automatic Differentiation
@@ -32,7 +34,6 @@ AI框架是为开发、训练和部署模型提供支持的工具和库，为研
 ![[AI编程/imgs/img8/image-4.png]]
 
 在这个过程中，如果一个节点是多个节点的输入，那计算其梯度时就要把每个分支的梯度累加起来，比如上面的 $v_1$ 
-
 $$\overline{v_1} = \frac{\partial y}{\partial v_1} = \frac{\partial y}{\partial v_2} \frac{\partial v_2}{\partial v_1} + \frac{\partial y}{\partial v_3} \frac{\partial v_3}{\partial v_1} = \overline{v_2} \frac{\partial v_2}{\partial v_1} + \overline{v_3} \frac{\partial v_3}{\partial v_1}$$
 
 ## Extending Computational Graph
@@ -44,19 +45,14 @@ $$\overline{v_1} = \frac{\partial y}{\partial v_1} = \frac{\partial y}{\partial 
 ![[AI编程/imgs/img8/image-5.png]]
 
 而后看关于 $v_3$ 的导数，由于 $v_4=v_2\cdot v_3$ ，可得
-
 $$\bar v_3=\bar v_4\cdot \frac{\partial v_4}{\partial v_3}=\bar v_4\cdot v_2$$
-
 于是把计算图扩展成这样
 
 ![[AI编程/imgs/img8/image-6.png]]
 
 再看 $v_2$ ，其有两个上游节点，先看 $v_2\rightarrow v_4$ 这个分支，记这一部分提供的伴随值为 $\bar v_{2\rightarrow 4}$ ，则
-
 $$\bar v_{2\rightarrow 4}=\bar v_4\cdot \frac{\partial v_4}{\partial v_2}=\bar v_4\cdot v_3$$
-
 再看 $v_2\rightarrow v_3$ 这个分支，由于 $v_3=v_2+1$ ，可得
-
 $$\bar v_{2\rightarrow 3}=\bar v_3\cdot \frac{\partial v_3}{\partial v_2}=\bar v_3\cdot 1=\bar v_3$$
 
 而 $\bar v_2=\bar v_{2\rightarrow 4} + \bar v_{2\rightarrow 3}$ ，于是计算图变成这样
@@ -64,9 +60,7 @@ $$\bar v_{2\rightarrow 3}=\bar v_3\cdot \frac{\partial v_3}{\partial v_2}=\bar v
 ![[AI编程/imgs/img8/image-7.png]]
 
 最后看 $v_1$ ，由于 $v_2=e^{v_1}$ ，可得
-
 $$\bar v_1=\bar v_2\cdot \frac{\partial v_2}{\partial v_1}=\bar v_2\cdot e^{v_1}=\bar v_2 \cdot v_2$$
-
 最终计算图长这样
 
 ![[AI编程/imgs/img8/image-8.png]]
@@ -80,19 +74,12 @@ $$\bar v_1=\bar v_2\cdot \frac{\partial v_2}{\partial v_1}=\bar v_2\cdot e^{v_1}
 ![[AI编程/imgs/img8/image-9.png]]
 
 对于矩阵，其伴随值的定义如下
-
 $$\bar Z = \begin{bmatrix} \frac{\partial y}{\partial Z_{1,1}} & \cdots & \frac{\partial y}{\partial Z_{1,n}} \\ \vdots & \ddots & \vdots \\ \frac{\partial y}{\partial Z_{m,1}} & \cdots & \frac{\partial y}{\partial Z_{m,n}} \end{bmatrix}$$
-
 在计算 $X$ 的伴随值时，由于需要计算矩阵关于矩阵的导数，我们拎出来 $X$ 中的一个元素来看，由于 $Z_{ij}=\sum_k X_{ik}\cdot W_{kj}$ ，则 $X_{ik}$ 的伴随值为
-
 $$\overline{X_{i,k}} = \sum_j \frac{\partial Z_{i,j}}{\partial X_{i,k}}\cdot \overline{Z_{i,j}} = \sum_j W_{k,j} \cdot \overline{Z_{i,j}}$$
-
 综合成矩阵形式，就是
-
 $$\overline{X} = \overline{Z} W^T$$
-
 而对于 $W$ ，就是
-
 $$\overline W=X^T\overline Z$$
 
 ## Reverse mode AD for Structures
@@ -106,17 +93,11 @@ $$\overline W=X^T\overline Z$$
 ## Jacobian Matrix and Comparison
 
 注意到，在定义矩阵的伴随值时，用的正好是**雅可比矩阵 Jacobian Matrix**，对于一个函数 $f:R^n\rightarrow R^m$，其可以写成
-
 $$f(x) = \begin{pmatrix} f_1(x_1, x_2, \ldots, x_n) \\ f_2(x_1, x_2, \ldots, x_n) \\ \vdots \\ f_m(x_1, x_2, \ldots, x_n) \end{pmatrix}$$
-
 其雅可比矩阵定义如下
-
 $$J(x) = \frac{\partial (f_1\cdots f_m)}{\partial (x_1 \cdots x_n)} = \begin{pmatrix} \frac{\partial f_1}{\partial x_1} & \frac{\partial f_1}{\partial x_2} & \cdots & \frac{\partial f_1}{\partial x_n} \\ \frac{\partial f_2}{\partial x_1} & \frac{\partial f_2}{\partial x_2} & \cdots & \frac{\partial f_2}{\partial x_n} \\ \vdots & \vdots & \ddots & \vdots \\ \frac{\partial f_m}{\partial x_1} & \frac{\partial f_m}{\partial x_2} & \cdots & \frac{\partial f_m}{\partial x_n} \end{pmatrix}_{m\times n}$$
-
 而对于标量关于矩阵的导数，长这样
-
 $$\frac{\partial f}{\partial A} = \begin{pmatrix} \frac{\partial f}{\partial A_{11}} & \frac{\partial f}{\partial A_{12}} & \cdots & \frac{\partial f}{\partial A_{1n}} \\ \frac{\partial f}{\partial A_{21}} & \frac{\partial f}{\partial A_{22}} & \cdots & \frac{\partial f}{\partial A_{2n}} \\ \vdots & \vdots & \ddots & \vdots \\ \frac{\partial f}{\partial A_{m1}} & \frac{\partial f}{\partial A_{m2}} & \cdots & \frac{\partial f}{\partial A_{mn}} \end{pmatrix}$$
-
 矩阵关于矩阵的导数，就是矩阵中每个元素关于矩阵的导数排列到一起，是一个高维张量
 
 从上面的微分计算中可知，反向微分中一般用的是雅可比矩阵的转置 $J^T\cdot \bar v$ ；而前向微分一般是 $J\cdot \dot v$ ，所以如果输入变量更多，适合用前向微分；输出变量更多，适合用反向微分

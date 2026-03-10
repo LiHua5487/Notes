@@ -1,7 +1,7 @@
 
 用 pytorch 实现一个简单的 LeNet
 
-![[AI编程/imgs/img1/image.png]]
+![[AI编程/imgs/img1/image-2.png]]
 
 pytorch 中的 Tensor 指的是一个多维的 array 
 

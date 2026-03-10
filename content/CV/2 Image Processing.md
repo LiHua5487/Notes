@@ -6,9 +6,7 @@
 ![[CV/img/img2/image.png]]
 
 假设现有随机变量 $X$ ，其 **累积分布函数 cumulative distribution function (CDF)** 定义如下
-
 $$F(x)=P(X\leq x)$$
-
 设 $y=F(x)$  ，则我们取 $y$ 上的一个均匀分布，可以通过 $F^{-1}$ 的作用得到 $x$ 服从的分布（这也是如何得到一个服从特定分布的随机数的方法），那么反过来，对于 $x$ ，我们可以根据其分布计算出 $F$ ，那么 $y=F(x)$ 就服从均匀分布了
 
 ![[CV/img/img2/image-1.png]]
@@ -62,15 +60,10 @@ $$F(x)=P(X\leq x)$$
 
 双边滤波在此基础上引入了另一个权重，两个权重综合作用进行滤波
 - Domain Kernel ：衡量与中心像素的距离，这是一个高斯核，越靠近中心权重越大
-
 $$W_d(i, j) = \exp\left(-\frac{(x_i - x)^2 + (y_i - y)^2}{2\sigma_d^2}\right)$$
-
 - Range Kernel ：衡量与中心像素的灰度/颜色相似程度，越相似权重越大
-
 $$W_r(i, j) = \exp\left(-\frac{(I(x_i, y_i) - I(x, y))^2}{2\sigma_r^2}\right)$$
-
 最终的结果由这两个卷积核共同作用得到
-
 $$
 I_{\text{filtered}}(x, y) = \frac{1}{W_{\text{total}}} \sum_{x_i, y_i \in \Omega} I(x_i, y_i) \cdot \underbrace{W_d(i, j)}_{\text{空间权重}} \cdot \underbrace{W_r(i, j)}_{\text{值域权重}}
 $$
@@ -148,7 +141,7 @@ $$
 
 通过高斯金字塔得到了一系列缩小后的图片，现在要从缩小的图片逐渐恢复到原来的分辨率
 
-以第 4 层为例，先对于 G4 的图片进行上采样（一般先插零，再利用一个放大的高斯核卷积），而后将 G3 的图片与 G4 上采样的图片做差，得到一个特征图 L3 ，在恢复时，只需将 G4 的图片与 L3 相加
+以第 4 层为例，先对于 G4 的图片进行上采样（一般先插零，再利用一个放大的高斯核卷积），而后将 G3 的图片与 G4 上采样的图片做差，得到一个特征图 L3 ，在恢复时，只需将 G4 上采样后的图片与 L3 相加
 
 ![[CV/img/img2/image-20.png]]
 
@@ -159,17 +152,11 @@ $$
 那这跟拉普拉斯有啥关系？拉普拉斯每一层的计算相当于计算两层高斯金字塔的差距，这个过程是在用 高斯函数的差 Difference of Gaussian (DoG) 去近似 高斯函数的拉普拉斯 Laplacian of Gaussian (Log) 
 
 拉普拉斯算子 $\nabla$ 定义为
-
 $$\nabla^2 f = \frac{\partial^2 f}{\partial x^2} + \frac{\partial^2 f}{\partial y^2}$$
-
 而高斯函数定义为
-
 $$G(x, y; \sigma) = \frac{1}{2\pi\sigma^2} e^{-\frac{x^2 + y^2}{2\sigma^2}}$$
-
 可以通过推导得到
-
 $$G(x, y, k\sigma) - G(x, y, \sigma) \approx (k - 1) \sigma^2 \nabla^2 G$$
-
 由于高斯滤波是低通滤波，两个高斯滤波的差距就是保留中间一段频率的滤波，这称为 带通滤波 band-pass filter
 
 ---
@@ -193,7 +180,7 @@ $$G(x, y, k\sigma) - G(x, y, \sigma) \approx (k - 1) \sigma^2 \nabla^2 G$$
 
 最后得到的结果如下
 
-![[image-23.png]]
+![[CV/img/img2/image-23.png]]
 
 # Image Transformation
 
@@ -201,7 +188,7 @@ $$G(x, y, k\sigma) - G(x, y, \sigma) \approx (k - 1) \sigma^2 \nabla^2 G$$
 
 对于一个图片，还能对其进行形状上的变换
 
-![[image-24.png]]
+![[CV/img/img2/image-24.png]]
 
 要得到变换后的图片，一个简单的想法是把原图中的每个像素直接复制到变换后的位置，这称为 **Forward Warping** ，但缺点很明显，如果某处存在压缩，就会产生重叠，即原图多个像素都变换到一个地方；如果某处存在拉伸，就会产生空洞，即原图像素变换后无法完全覆盖，只能等都变换完之后通过插值弥补空洞的地方
 
@@ -211,11 +198,11 @@ $$G(x, y, k\sigma) - G(x, y, \sigma) \approx (k - 1) \sigma^2 \nabla^2 G$$
 
 我们想把两个图片融合到一块，比如两个人脸捏成一个，但两个人脸形状不一样，不能直接叠加，不然会产生重影
 
-![[image-25.png]]
+![[CV/img/img2/image-25.png]]
 
 为此，需要先标注出两个图片对应的特征点（比如都标注出眼角、嘴角、面部轮廓的点位），而后根据这些点将图片分为若干三角形区域（图像三角化），对于两个对应区域的三角形，把其顶点坐标和内部的像素值进行加权平均，就得到了结果图像上的一个三角区域的样子
 
-![[image-26.png]]
+![[CV/img/img2/image-26.png]]
 
 
 

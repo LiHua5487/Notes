@@ -39,32 +39,24 @@
 假设相机内参 $K$ 已知，又知道两个相机位置与朝向之间的变换关系 $R$ 和 $t$ ，把 $x$ 所处图像对应的相机外参设为 $[I\ 0]$ ，则另一个相机的外参就是 $[R\ t]$  
 
 记 $x$ 代表的是 $X$ 在相机坐标系下的坐标，$x_{\text{pixel}}$ 代表在图像中的坐标，另一个图像上的点记为 $x'$ ，则
-
 $$
 \begin{align}
 &x=K^{-1}x_{\text{pixel}}=[I\ 0]X\\
 &x'=K'^{-1}x'_{\text{pixel}}=[R\ t]X
 \end{align}
 $$
-
 此外还可以得到以下关系
 
 ![[CV/img/img6/image-6.png]]
 
 可见 $x$ 与 $x'$ 满足关系 $x'=Rx+t$ ，二者是线性相关的，这可以使用混合积 triple product 来表示
-
 $$x'\cdot [t\times (RX)]=0$$
-
 >向量 $a\ b\ c$ 的混合积 $a\cdot (b\times c)$ 的几何含义是以它们为边的平行六面体的体积，所以可推出以下性质： $a\cdot (b\times c)=c\cdot (a\times b)=b\cdot (c\times a)$
 
 把点乘和叉乘都用矩阵乘表示，可得
-
 $$x'^T[t_\times]Rx=0$$
-
 把 $[t_\times]R$ 定义为一个矩阵 $E_{3\times 3}$ ，这就是 **本质矩阵 essential matrix** 
-
 $$x'^TEx=0$$
-
 - 可计算得 $E$ 秩为 2 
 - $R$ 和 $t$ 各 3 个自由度，而 $E$ 在齐次坐标下放缩等价，共 5 个自由度
 
@@ -73,27 +65,18 @@ $$x'^TEx=0$$
 ![[CV/img/img6/image-7.png]]
 
 此外，还可以得到极点，以 $x$ 所处图片的极点 $e$ 为例，由于极点处在所有极线上，可得
-
 $$\forall l,\ l^Te=0$$
-
 即
-
 $$\forall x',\ x'^TEe=0$$
-
 取 $x'$ 为 $(0\ ...\ 1\ ...\ 0)$ ，可得 $Ee$ 的每一个元素都是 0 ，即
-
 $$Ee=0$$
 
 ## Fundamental Matrix
 
 对于不知道相机内参的情况，方程变为
-
 $$x'^TEx=x'^T_{\text{pixel}}K'^{-T}EK^{-1}x_{\text{pixel}}=0$$
-
 把 $K'^{-T}EK^{-1}$ 定义为矩阵 $F$ ，这就是 **基本矩阵 fundamental matrix** 
-
 $$x'^T_{\text{pixel}}Fx_{\text{pixel}}=0$$
-
 - 可计算得 $F$ 秩为 2 
 - 一个 3×3 矩阵自由度为 9 ，而 $E$ 在齐次坐标下放缩等价，又由于其不满秩，$Det(F)=0$ ，共 7 个自由度
 
@@ -106,7 +89,6 @@ $$x'^T_{\text{pixel}}Fx_{\text{pixel}}=0$$
 ## Eight-Point Algorithm
 
 在求解 $F$ 时，先不考虑秩为 2 这一约束，此时有 8 个自由度，需要 8 组对应点进行计算
-
 $$
 \text{Given correspondences } x = 
 \begin{pmatrix}
@@ -122,9 +104,7 @@ y' \\
 \end{pmatrix}^T
 \text{Constraint: } x'^T F x = 0
 $$
-
 对于一组对应点，可得方程
-
 $$
 \begin{pmatrix}
 x' & y' & 1
@@ -141,9 +121,7 @@ y \\
 \end{pmatrix}
 = 0
 $$
-
 用矩阵表示为
-
 $$
 (x'x, x'y, x', y'x, y'y, y', x, y, 1)
 \begin{pmatrix}
@@ -159,7 +137,6 @@ f_{33}
 \end{pmatrix}
 = 0
 $$
-
 可以使用最小二乘法进行求解
 
 初步求解出的 $F$ ，其秩不一定是 2 ，需要通过调整使其满足这一约束，可以对其进行 SVD 分解，把 $\Sigma$ 中奇异值最小的一列去掉（一般是最后一列）
@@ -179,39 +156,29 @@ $$
 但是上面的算法有个问题，对于分辨率很大的图，$x$ 和 $y$ 也可能很大，此时乘积项将会非常大，导致数值不稳定，结果误差大
 
 为此，可以对关键点坐标进行归一化，对于一个图片中的一堆关键点，先进行中心化，即取其平均坐标作为中心点，把中心点平移到坐标原点，即每个点 $(x_i, y_i)$ 更新为 $(x_i - x_{\text{mean}}, y_i - y_{\text{mean}})$ 
-
 $$
 x_{\text{mean}} = \frac{1}{N} \sum_{i=1}^N x_i, \quad 
 y_{\text{mean}} = \frac{1}{N} \sum_{i=1}^N y_i
 $$
-
 而后进行放缩，调整点的分布范围，使所有点到原点的平均距离为某个标准值（一般设为 $\sqrt{2}$ 像素）
-
 $$
 d_{\text{mean}} = \frac{1}{N} \sum_{i=1}^N \sqrt{x_i^2 + y_i^2}
 $$
-
 设放缩倍数为 $s$ ，则放缩后平均距离 $sd_{\text{mean}}=\sqrt2$ ，则
-
 $$
 s = \frac{\sqrt{2}}{d_{\text{mean}}}
 $$
-
 进一步更新坐标为 $(sx_i,sy_i)$
 
 如果采用齐次坐标，则上述归一化可以用矩阵表示
-
 $$T = 
 \begin{bmatrix}
 s & 0 & -s \cdot x_{\text{mean}} \\
 0 & s & -s \cdot y_{\text{mean}} \\
 0 & 0 & 1
 \end{bmatrix}$$
-
 假设两个图的归一化矩阵分别为 $T$ 和 $T'$ ，在使用归一化后的坐标计算 $F$ 后，需要再变回来
-
 $$F'=T'^TFT$$
-
 ---
 
 此外，还可以用非线性的方式计算 $F$ 
