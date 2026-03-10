@@ -100,30 +100,41 @@ BabelNet 把不同语言中的同义词联系在一起
 >其中特征 $v$ 是从上下文 $C$ 中提取出来的、用于帮助判断目标词意思的其它相关联的词（比如周围的词、修饰词等），也可能是其它一些东西（比如一个长度为 n 的词组，称为 **n-gram**）；一种简单的做法是，一句话由很多单词组成，把每个单词视为一个特征
 
 目标可以表示为在给定上下文 $C$ 的条件下，目标词是哪个意思的概率最高，即
+
 $$
 s^* = \arg\max_{s_k} P(s_k\mid C)
 $$
+
 由贝叶斯公式
+
 $$
 P(s_k\mid C)=\frac{P(C\mid s_k)P(s_k)}{P(C)}
 $$
+
 因为 $P(C)$ 对所有候选义项相同，所以不用管分母
+
 $$
 s^* = \arg\max_{s_k} P(C\mid s_k)P(s_k)
 $$
+
 其中 $P(s_k)$ 可以根据频率进行估计（虽然并不一定准确），那 $P(C\mid s_k)$ （已知目标词的意思，能看到这句话的概率）咋整呢？我们认为一句话 $C$ 可以由若干特征 $v$ 去描述，可以假设**各特征的出现与否相互独立**（这也不一定准确），这就好办了
+
 $$
 P(C\mid s_k)=P(\{v_x \mid v_x \in C\}\mid s_k)=\prod_{v_x\in C} P(v_x\mid s_k)
 $$
+
 于是目标就变为
+
 $$
 s^* = \arg\max_{s_k} \left(\prod_{v_x\in C} P(v_x\mid s_k)\right) P(s_k)
 $$
+
 ---
 
 $$
 P(s_k)=\frac{\text{Count}(s_k)}{\text{Count}(w)}
 $$
+
 - 含义：目标词 $w$ 取 $s_k$ 义项的概率
 - $\text{Count}(w)$ ：训练集中 $w$ 总共出现次数
 - $\text{Count}(s_k)$ ：$w$ 取 $s_k$ 义项的次数
@@ -131,6 +142,7 @@ $$
 $$
 P(v_x\mid s_k)=\frac{\text{Count}(v_x,s_k)}{\sum_{v\in V}\text{Count}(v,s_k)}
 $$
+
 - 含义：在目标词义项为 $s_k$ 的情况下，在上下文看到特征 $v_x$ 的概率
 - $\text{Count}(v_x,s_k)$ ：在所有义项为 $s_k$ 的句子里，特征 $v_x$ 的出现次数
 - $\sum_{v\in V}\text{Count}(v,s_k)$ ：在所有义项为 $s_k$ 的句子里，所有特征总共出现次数
@@ -165,10 +177,14 @@ $$
 ![[NLP基础/img/img1/image-3.png]]
 
 此外还有 F-measure 指标，是精确率和召回率的加权调和平均
+
 $$F_{\beta} = \frac{1 + \beta^2}{\frac{1}{Pre} + \frac{\beta^2}{Rec}} = \frac{(\beta^2 + 1) Pre \times Rec}{\beta^2 \times Pre + Rec}
 $$
+
 常常使用 F1，即取 $\beta=1$ 
+
 $$F_{1} = \frac{2}{\frac{1}{Pre} + \frac{1}{Rec}} = \frac{2 \times Pre \times Rec}{Pre + Rec}$$
+
 - 宏平均 Marco F1：对每个义项算 F1 ，再取平均
 - 微平均 Micro F1：把所有义项的 TP/FP/FN 各自加起来，算总体的 precision 和 recall ，再拿这俩算 F1 
 

@@ -113,18 +113,19 @@ Example N-皇后
 摩根定律
 
 $$
-\begin{align}
+\begin{aligned}
 \neg(P \lor Q) \iff (\neg P) \land (\neg Q) \\
 \neg(P \land Q) \iff (\neg P) \lor (\neg Q)
-\end{align}
+\end{aligned}
 $$
 
 分配律
+
 $$
-\begin{align}
+\begin{aligned}
 (P \land (Q \lor R)) \iff ((P \land Q) \lor (P \land R)) \\
 (P \lor (Q \land R)) \iff ((P \lor Q) \land (P \lor R))
-\end{align}
+\end{aligned}
 $$
 
 利用这两个定律，可以将任意逻辑表达式转化为以下两种标准形式
@@ -141,32 +142,51 @@ Example
 
 满足以下约束
 1. 每个单元格必须至少填入一个数字 (1-9)：  
+
    $$
+
    OR(X(i, j, 1), X(i, j, 2), ..., X(i, j, 9))
+
    $$
 
 2. 每个单元格最多只能填入一个数字：  
+
    $$
+
    NOT(X(i, j, k)) \lor NOT(X(i, j, k'))
+
    $$
+
    （对于每个单元格 $(i, j)$ 和每一对不同的数 $k$ 和 $k'$）
 
 3. 每一行中每个数字最多只能出现一次：  
+
    $$
+
    NOT(X(i, j, k)) \lor NOT(X(i', j, k))
+
    $$
+
    （对于每一对不同的列 $j$ 和 $j'$，和每个固定的数字 $k$）
 
 4. 每一列中每个数字最多只能出现一次：  
+
    $$
+
    NOT(X(i, j, k)) \lor NOT(X(i, j', k))
+
    $$
+
    （对于每一对不同的行 $i$ 和 $i'$，和每个固定的数字 $k$）
 
 5. 每一个 $3 \times 3$ 的大格每个数字最多只能出现一次：  
+
    $$
+
    NOT(X(i, j, k)) \lor NOT(X(i', j', k))
+
    $$
+
    （其中 $(i, j)$ 和 $(i', j')$ 在同一个 $3 \times 3$ 子格中）
 
 对于SAT，可以采取更高效的算法
@@ -174,6 +194,7 @@ Example
 ## DPLL 算法
 
 取以下CNF表达式为例 
+
 $$
 (p_1 \lor \neg p_3 \lor p_4) \land (\neg p_1 \lor p_2 \lor \neg p_3) \land \dots
 $$
@@ -207,12 +228,14 @@ $$
 我们手动赋值了 $x_1$ 和 $x_2$ 为 T，此时可以根据BCP推导
 
 $$
-\begin{align}
+\begin{aligned}
 with (x_1,x_2) = (T, T)\ \ C_5 \implies x_5 = True \\
 with (x_1,x_5) = (T, T)\ \ C_2 \implies x_6 = True \\
 with (x_5) = (T)\ \ C_3 \implies x_7 = True 
-\end{align}
+\end{aligned}
 $$
+
+
 $$
 (x_1,x_6,x_7) = (T, T, T) \implies C_4 = False \implies f = False
 $$
@@ -224,9 +247,11 @@ $$
 采取一种分割方式，分割线以下是矛盾区域，分割线以上是非矛盾区域
 考察穿过分界线的边对应的变量，这是直接导致矛盾的原因
 如下的分割方式中， $(x_1 = T,x_5 = T,x_6 = T)$ 导致矛盾，所以得出以下约束
+
 $$
 L_1 = (\neg x_1,\neg x_5,\neg x_6)
 $$
+
 需要满足 $L_1 = True$
 此时，回溯至上一层，考虑 $(x_1,x_5,x_6)$ 但是不能触发BCP
 

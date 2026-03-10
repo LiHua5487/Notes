@@ -15,7 +15,9 @@ Stereo Sensors 双目传感器
 ![[CV导论/imgs/img9/image-1.png|506x330]]
 
 记这两个点位置为 u 和 u' ，定义**视差 disparity** 
+
 $$disparity=u-u'=\frac{Bf}{z}$$
+
 - B 是双目距离，f 是焦距
 - $u - u'$ 不是世界空间中的距离，而是投到一个图里，在图像坐标系的距离
 
@@ -150,10 +152,12 @@ mesh 经常用于可视化，以及生成 ground-truth
 **Uniform Sampling 均匀采样**
 1. 计算每个三角面片的面积 
 	设三角面片的三个顶点分别为 $\mathbf{v}_1, \mathbf{v}_2, \mathbf{v}_3$，则该三角面片的面积为
+
 $$A_i = \frac{1}{2} \| (\mathbf{v}_2 - \mathbf{v}_1) \times (\mathbf{v}_3 - \mathbf{v}_1) \|$$
 
 2. 计算每个面片的采样权重
 	根据每个三角面片的面积，将其面积占比作为权重
+
 $$P_i = \frac{A_i}{\sum_{j=1}^N A_j}$$
 
 3. 采样三角面片 
@@ -165,7 +169,9 @@ $$P_i = \frac{A_i}{\sum_{j=1}^N A_j}$$
 	对于所选择的三角面片 $\mathbf{f}_i$，假设其顶点为 $\mathbf{v}_1, \mathbf{v}_2, \mathbf{v}_3$
 	可以补一个对称的三角形变成平行四边形
 	在这个平行四边形均匀采样，如果落在补充区域，就对称回原来的三角形
+
 $$\mathbf{p} = (1 - \sqrt{r_1}) \mathbf{v}_1 + \sqrt{r_1}(1 - r_2) \mathbf{v}_2 + \sqrt{r_1} r_2 \mathbf{v}_3$$
+
 - $\mathbf{p}$ 是采样得到的点
 - $r_1, r_2 \in [0, 1]$ 是两个独立的随机数，用于均匀采样三角面片
 
@@ -193,16 +199,20 @@ $$\mathbf{p} = (1 - \sqrt{r_1}) \mathbf{v}_1 + \sqrt{r_1}(1 - r_2) \mathbf{v}_2 
 
 **Chamfer distance**
 对于点云 A 上的一个点，在另一个点云 B 里找到距离最近的点，如果反过来，两种找法得到的距离不相等，Chamfer Distance 综合考虑两种方法
+
 $$
 d_{CD}(S_1, S_2) = \frac{1}{|S_1|}\sum_{x \in S_1} \min_{y \in S_2} \|x - y\|_2 + \frac{1}{|S_2|}\sum_{y \in S_2} \min_{x \in S_1} \|x - y\|_2
 $$
+
 这种方法有些点可能会漏掉，并不是两两匹配的
 
 **Earth Mover's distance**
 对于点云 A 里的一个点，指定点云 B 里的一个点，形成一堆双射的点对，把这些点对的两点距离和加起来，求最小值
+
 $$
 d_{EMD}(S_1,S_2)= \min _ {\phi:S_1\rightarrow S_2} \sum _ {x\in S_1} \left \| x- \phi (x) \right \| _2
 $$
+
 对于两个点云疏密程度互补的情况，CD 比较小，但 EMD 就比较大
 可见 EMD 很依赖点云的取样，CD 则不敏感；EMD 目标是全局最优，而 CD 只是贪心的局部最优
 
@@ -302,13 +312,17 @@ PointNet 擅长提取全局特征，但局部特征表现不如 3D CNN
 
 其中反距离加权平均指的是
 给定一个需要插值的点 $P$，和一群已知点（有坐标和特征值的点）集合 $\{P_1, P_2, \dots, P_k\}$，用这些点对 $P$ 进行插值，计算 $P$ 的预测特征 $F(P)$
+
 $$
 F(P) = \frac{\sum_{i=1}^k w_i F(P_i)}{\sum_{i=1}^k w_i}
 $$
+
 - $F(P_i)$ 表示已知点 $P_i$ 的特征值（例如点云中的特征向量）。
 - $w_i$ 表示权重，基于距离的倒数计算的权重
+
 $$
 w_i = \frac{1}{d(P, P_i)^\alpha}
 $$
+
 - $d(P, P_i)$: 插值点 $P$ 和已知点 $P_i$ 之间的距离（通常用欧氏距离）
 - $\alpha$: 控制距离对权重影响的参数，通常是正数（$\alpha = 2$ 是常见的设置）

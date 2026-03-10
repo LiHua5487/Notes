@@ -53,17 +53,23 @@ find $(a, b, d)$ to minimize E, which is to minimize ||Ah||
 
 如果A是方阵，设A特征值，特征向量，有 $Ax = \lambda x$ ，则 $h = \sum\alpha_ix_i$
 将A对角化，代入下式有
+
 $$
 ||Ah||^2 = (A(\sum \alpha_i x_i))^2 = \sum(\alpha_i \lambda_i)^2
 $$
+
+
 $$
 \because||h|| = 1\ \ \therefore\sum \alpha_i ^2 = 1
 $$
+
 取绝对值最小的特征的的系数为1，其余为0
 h即为最小的特征值对应的特征向量
 
 但是一般的，对于 $AX=0$ 这种方程，会使用**SVD 奇异值分解** 的方法求解
+
 $$A_{n×3} = U_{n×n}\Sigma_{n×3}V_{3×3}^T$$
+
 找到 $\Sigma$ 中最小的奇异值所在的列，取 $V$ 中的这一列即为 $X$ ，而一般奇异值会按从大到小排，所以取 $X$ 为 $V$ 中最后一列
 
 ```python
@@ -73,7 +79,9 @@ h = h / np.linalg.norm(h)
 ```
 
 而对于 $AX=B$ 的情况，$X$ 为
+
 $$X = V \Sigma^+ U^T B$$
+
 其中 $\Sigma^+$ 是 $\Sigma$ 的伪逆矩阵，即将 $\Sigma$ 中的非零奇异值取倒数，然后转置，不过一般不会直接用这个式子，而是使用现成的库求解
 
 ```python
@@ -121,9 +129,11 @@ L1  is robust, but big mistake and small mistake are reflected as the same.
 	所以取n最小（即为2），k尽可能大
 
 由上可得，最少需要的假设数 K 为
+
 $$
 K = \left\lceil \frac{\log(1 - p)}{\log\left(1 - w^n\right)} \right\rceil
 $$
+
 - p 为至少有一个取样是成功的概率
 - w 为 inlier 比例
 - n 为每次取点的个数
@@ -208,11 +218,12 @@ and define the square of intensity change as $D(x,y)$
 ![](CV导论/imgs/img2/image-11.png)
 
 More specifically
+
 $$
-\begin{align}
+\begin{aligned}
 w'(x,y) = w(x-x_0,y-y_0) = w(x_0-x,y_0-y) \\
 \sum w'(x,y)D(x,y) = \sum w(x_0-x,y_0-y)D(x,y) = w*D\ 卷积
-\end{align}
+\end{aligned}
 $$
 
 use First-order Taylor expansion
@@ -293,6 +304,7 @@ u \\
 v
 \end{bmatrix}
 $$
+
  $\lambda_1$ , $\lambda_2$ reflect the change along two directions
 The energy landscape is a paraboloid like this
 

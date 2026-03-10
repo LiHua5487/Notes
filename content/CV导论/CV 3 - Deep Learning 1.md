@@ -65,7 +65,9 @@ use MNIST data base, with 28×28 resolution for each image
 flatten the image to a one-dimensional vector $x \in R^{784}$ as input
 Let’s assume a linear function $$h(x)=g(\theta^Tx)$$
 $g(z)$ is a **Sigmoid Function**, which converts $z=\theta^Tx$ from $(-\infty,\infty)$ to $(0,1)$
+
 $$g(z) = \frac{1}{1 + e^{-z}}$$
+
 then we need to decide the fitting/training objective by using **Loss Function**
 
 ## Max Likelihood Estimation (MLE)
@@ -78,29 +80,35 @@ then we need to decide the fitting/training objective by using **Loss Function**
 最大似然估计 MLE 寻找参数 $\theta$ 的值，使得观测到的数据 $\{y1​,y2​,…,yn​\}$ 的联合概率 $p(y1​,y2​,…,yn​|x;\theta)$ 最大，即什么情况下，最终结果长成这样的概率最大
 
 对于每个数据组，可以得到
+
 $$
-\begin{align}
+\begin{aligned}
 p(y = 1 \mid x; \theta) = h_\theta(x) \\
 p(y = 0 \mid x; \theta) = 1 - h_\theta(x)
-\end{align}$$
+\end{aligned}$$
 将 $y =0$ 和 $y=1$ 的情况写在一起，就变成
 $$p(y \mid x; \theta) = \big(h_\theta(x)\big)^y \big(1 - h_\theta(x)\big)^{1-y}$$
+
 假设不同数据组之间相互独立，那整体概率就变成
+
 $$
-\begin{align}
+\begin{aligned}
 p(Y \mid X; \theta) &= \prod_{i=1}^n p\left(y^{(i)} \mid x^{(i)}; \theta\right) = \prod_{i=1}^n \left(h_\theta(x^{(i)})\right)^{y^{(i)}} \left(1 - h_\theta(x^{(i)})\right)^{1 - y^{(i)}} \\
 \log p(Y \mid X; \theta) &= \sum_{i=1}^n y^{(i)} \log\left(h_\theta(x^{(i)})\right) + \left(1 - y^{(i)}\right) \log\left(1 - h_\theta(x^{(i)})\right)
-\end{align}
+\end{aligned}
 $$
+
 由此得到 **Negative Likelihood Loss (NLL)**
+
 $$
-\begin{align}
+\begin{aligned}
 \mathcal{L}(\theta) 
 &= - \log p(Y \mid X; \theta) \\
 &= - \sum_{i=1}^n \left[ y^{(i)} \log\left(h_\theta(x^{(i)})\right) 
 + \left(1 - y^{(i)}\right) \log\left(1 - h_\theta(x^{(i)})\right) \right]
-\end{align}
+\end{aligned}
 $$
+
 而后最小化这个损失
 
 ## Gradient Decent
@@ -113,28 +121,33 @@ there are many **Local Minima**, but we wanna find the **Global Minima**
 notice that the gradient of Loss implies the fastest direction to raise Loss
 then we just need to move along the direction opposite to the gradient
 so we can update the params like this
+
 $$\theta := \theta - \alpha \nabla_\theta \mathcal{L}(\theta)$$where $\alpha$ is a hyper parameter, which means **Learning Rate**
 - If $\alpha$ is small enough, then GD will definitely lead to a smaller loss after the update. However, a too small needs too many iterations to get the bottom.
 - If is too big,  overshoot! Loss not necessary to decrease.
 
 In the example above, for sigmoid function, we have
 $$
-\begin{align*}
+
+\begin{aligned*}
 g'(z) &= \frac{d}{dz} \frac{1}{1 + e^{-z}} \\
 &= \frac{1}{(1 + e^{-z})^2} \cdot e^{-z} \\
 &= \frac{1}{(1 + e^{-z})} \cdot \left(1 - \frac{1}{(1 + e^{-z})}\right) \\
 &= g(z)(1 - g(z)).
-\end{align*}
+\end{aligned*}
+
 $$
 for NLL, we have
 $$
-\begin{align*}
+
+\begin{aligned*}
 \mathcal{L} &= -\sum_{i=1}^{n} \left[ y^{(i)} \log(h_\theta(x^{(i)})) + (1 - y^{(i)}) \log(1 - h_\theta(x^{(i)})) \right] \\
 \frac{\partial \mathcal{L}}{\partial \theta_j} &= -\sum \left( \frac{y}{g(\theta^T x)} - \frac{(1-y)}{1 - g(\theta^T x)} \right) \frac{\partial}{\partial \theta_j} g(\theta^T x) \\
 &= -\sum \left( \frac{y}{g(\theta^T x)} - \frac{(1-y)}{1 - g(\theta^T x)} \right) g(\theta^T x) (1 - g(\theta^T x)) \frac{\partial}{\partial \theta_j} \theta^T x \\
 &= -\sum \left( y(1 - g(\theta^T x)) - (1 - y)g(\theta^T x) \right) x_j \\
 &= -\sum \left( y - h_\theta(x) \right) x_j.
-\end{align*}
+\end{aligned*}
+
 $$
 
 If we take all data and label pairs in the training set to calculate the gradient, which is called **Batch Gradient Descent**, we may easily get trapped at local minima, and it's very slow.
@@ -142,7 +155,9 @@ Instead, we randomly sample N pairs as a batch from the training data and then c
 
 for SGD, the formula looks like this
 $$
+
 \nabla_W L(W) = \frac{1}{N} \sum_{i=1}^{N} \nabla_W L_i(x_i, y_i, W)
+
 $$
 
 For convex function, the local minima and its global minima are the same. 

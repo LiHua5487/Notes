@@ -37,8 +37,9 @@
 ![[CV/img/img7/image-4.png]]
 
 可以先用 SVD 或解方程 $Fe_1=0$ 的方式计算出 $e_1$ （齐次坐标表示），而后按照以下方法构造 $R_{\text{rect}}$
+
 $$
-\begin{align}
+\begin{aligned}
 &\text{let } &&R_{\text{rect}} = 
 \begin{pmatrix}
 r_1, r_2, r_3
@@ -46,8 +47,9 @@ r_1, r_2, r_3
 &\text{where } \ &&r_1 = \frac{e_1}{\|e_1\|}\\
 &&& \ r_2 = \frac{[(0, 0, 1)^T]_{\times} r_1}{\|[(0, 0, 1)^T]_{\times} r_1\|}\\
 &&& \ r_3 = r_1 \times r_2
-\end{align}
+\end{aligned}
 $$
+
 由于 $R_{\text{rect}}e_1=(||e_1||,0,0)^T$ ，这就代表着一个沿基线方向（前两个元素代表的向量与 $x$ 轴，即基线方向平行）的无穷远点（齐次坐标第三个元素为 0 ）
 
 在立体矫正后，可以发现两个图上的极线都变为平行线，且处在同一 $y$ 坐标上了，这就变成了上面的简单情况，按照上面的方法进行匹配计算即可
@@ -63,13 +65,17 @@ $$
 ![[CV/img/img7/image-7.png]]
 
 可得深度计算公式为
+
 $$z=\frac{fB}{x-x'}$$
+
 - $f$ 为焦距 
 - $B$ 为两个相机的基线距离
 - $x$ 和 $x'$ 为图像平面内的水平坐标（单位 m ）
 
 这里的 $x-x'$ 就对应着视差 disparity
+
 $$disparity=u-u'=\frac{Bf}{z}$$
+
 - 视差是针对于像素坐标而言的，如果最后想要求以 m 为单位的深度，要么把视差转换单位，要么使用以像素为单位的焦距 $f_X$ 
 - 可见深度与视差成倒数关系，一般我们会先求出视差图，再转换为深度图，视差图可以看作一个中间载体
 
@@ -85,8 +91,11 @@ $$disparity=u-u'=\frac{Bf}{z}$$
 
 那具体咋在 scanline 上找一个点的最佳匹配位置呢？我们用一个滑窗去检测 scanline 上每一点的局部特征，并与该点比较，选出最值点，可以定义如下的公式去计算匹配度
 - Sum of squared differences (SSD)  
+
 $$SSD(x, y, d) = \| w_L(x, y) - w_R(x - d, y) \|_2^2$$
+
 - Zero Normalized Cross-Correlation (ZNCC), $\bar{w}$ is the mean of vector $w$ 
+
 $$ZNCC(x, y, d) = \frac{(w_L(x, y) - \bar{w}_L(x, y))^T (w_R(x - d, y) - \bar{w}_R(x - d, y))}{\| w_L(x, y) - \bar{w}_L(x, y) \|_2 \| w_R(x - d, y) - \bar{w}_R(x - d, y) \|_2}$$
 
 检测时，我们不用考虑整个 scanline ，由于 $z=\frac{fB}{x-x'}>0$ ，所以 $x>x'$ ，即由于视差存在，对于左图中的一个点，在右图中的对应点会偏左一些，只需要检测这个点的左边部分即可

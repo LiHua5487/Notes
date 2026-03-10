@@ -35,6 +35,7 @@ tags:
 - 对于极短的 $\Delta t$，$a_t = (v_t, \omega_t)$ 为动作，包括平移速度 $v_t$，旋转速度 $\omega_t$
 
 对于新状态 $x_{t+1}$，该机器人的一个期望的确定性运动模型为
+
 $$
 \hat{x}_{t+1} = f(X_t, v_t, \omega_t) = X_t + \begin{pmatrix}
 v_t \Delta t \cos \theta_t \\
@@ -42,7 +43,9 @@ v_t \Delta t \sin \theta_t \\
 \omega_t \Delta t
 \end{pmatrix}
 $$
+
 但是因为存在噪音，机器人的真实状态是无法准确预测的，不过可以用高斯分布$\mathcal{N}$ 来表示
+
 $$
 P(X_{t+1} | X_t, v_t, \omega_t) = \mathcal{N}(\hat{X}_{t+1}, \Sigma_X)
 $$
@@ -52,6 +55,7 @@ $$
 - 在状态 $x_t = (x_t, y_t, \theta_t)^T$，传感器观测到地标 $(x_i, y_i)^T$
 
 如果没有噪声，相对这个地标，距离和方位的准确预测应该为
+
 $$
 \hat{z}_t = h(X_t) = 
 \begin{pmatrix}
@@ -59,7 +63,9 @@ $$
 \arctan \frac{y_i - y_t}{x_i - x_t} - \theta_t
 \end{pmatrix}
 $$
+
 但是噪声会使得测量失真，所以在存在噪音的情况下，$\hat{z}_t$ 并不是真实的测量值 $z_t$。$z_t$ 的真实值也可以表示为概率模型
+
 $$
 P(z_t | x_t) = \mathcal{N}(\hat{z}_t, \Sigma_Z)
 $$
@@ -88,10 +94,13 @@ $$
 - 观测得到的小飞机离地面/海平面的高度 h （有不确定性）
 
 假设每个位置观测得到 $h_i$ ，其权重定义为
+
 $$
 W_i = \frac{1}{(h_i-h)^2+\epsilon}
 $$
+
 归一化得到这个位置的概率
+
 $$
 P_i=\frac{W_i}{\sum W_j}
 $$
@@ -194,7 +203,9 @@ $$
 ## PID控制器
 
 考虑基本的**比例控制器（P控制器）**：施加正比于观测误差的扭矩
+
 $$\quad u(t) = K_P (\xi(t) - q_t)$$
+
 - $u(t)$ 为施加的扭矩
 - $K_P$ 为增益因子（超参数）
 - $\xi(t)$ 为预期位置
@@ -208,7 +219,9 @@ $K_P$ 越大，就会以更快的速度到达目标
 
 可以引入积分控制，即对过去所有的误差求和，以抵消外部干扰
 得到 **PI 控制器**
+
 $$\quad u(t) = K_P (\xi(t) - q_t) + K_I \int_{0}^{t} (\xi(s) - q_s) ds$$
+
 - $K_I \int_{0}^{t} (\xi(s) - q_s) ds$ 计算误差在时间上的积分
 - 在离散情况下将误差直接累加并乘以 $K_I$
 
@@ -216,7 +229,9 @@ $$\quad u(t) = K_P (\xi(t) - q_t) + K_I \int_{0}^{t} (\xi(s) - q_s) ds$$
 
 但这会导致过冲和回调，震荡严重，还要引入微分控制器
 得到 **PID 控制器**
+
 $$\quad u(t) = K_P (\xi(t) - q_t) + K_I \int_{0}^{t} (\xi(s) - q_s) ds + K_D (\dot{\xi}(t) - \dot{q}_t)$$
+
 - $K_D (\dot{\xi}(t) - \dot{q}_t)$ 计算误差的导数，离散化为误差在最近时刻的变化量
 
 对误差的导数会反作用于比例项， 减少对扰动的总体影响
@@ -229,10 +244,11 @@ $$\quad u(t) = K_P (\xi(t) - q_t) + K_I \int_{0}^{t} (\xi(s) - q_s) ds + K_D (\d
 将逆动力学与 PID 得到力学信息整合，得到最后的扭矩控制
 
 $$
-\begin{align}
+\begin{aligned}
 u(t) &=\ f^{-1} (\xi(t), \dot{\xi}(t), \ddot{\xi}(t)) \\
 &+\ m(\xi(t)) \left( K_P (\xi(t) - q_t) + K_I \int_{0}^{t} (\xi(s) - q_s) ds + K_D (\dot{\xi}(t) - \dot{q}_t) \right)
-\end{align}
+\end{aligned}
 $$
+
 - 前馈分量：逆动力学，预测机器人所需处于的位置并计算可能需要的扭矩
 - 反馈分量：PID 得到，将动态的现有误差反馈给控制律

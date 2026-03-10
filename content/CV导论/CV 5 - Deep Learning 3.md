@@ -79,13 +79,15 @@ Xavier 初始化的目的是
 Let: $y = x_1 w_1 + x_2 w_2 + ... + x_{Din} w_{Din}$
 Assume: $\text{Var}(x_1) = \text{Var}(x_2) = \dots = \text{Var}(x_{Din})$
 We want: $\text{Var}(y) = \text{Var}(x_i)$
+
 $$
-\begin{align}
+\begin{aligned}
 \text{Var}(y) &= \text{Var}(x_1 w_1 + x_2 w_2 + \dots + x_{Din} w_{Din}) \\
  &= Din \ \text{Var}(x_i w_i) \\
  &= Din \ \text{Var}(x_i) \ \text{Var}(w_i)
-\end{align}
+\end{aligned}
 $$
+
 当 y 与 x 方差相同时，可得到 $Var(w_i)$ ，即 $std^2 = 1/Din$
 
 ``` python
@@ -115,9 +117,11 @@ W = np.random.randn(Din, Dout) * np.sqrt(2/Din)
 ### optimizer
 
 对于 SGD，有一些问题
+
 $$
 x_{t+1} = x_t - \alpha \nabla f(x_t)
 $$
+
 当 loss 在一个方向变化剧烈，而在另一个方向变化较小，可能需要来回折返才最终达到最低点
 
 ![[CV导论/imgs/img5/image-7.png]]
@@ -131,11 +135,12 @@ $$
 为了避免上述问题，考虑引入“动量”来模拟惯性，即梯度下降时还会沿之前的方向移动一段
 
 $$
-\begin{align}
+\begin{aligned}
 v_{t+1} &= \rho v_t + \nabla f(x_t) \\
 x_{t+1} &= x_t - \alpha v_{t+1}
-\end{align}
+\end{aligned}
 $$
+
 #### Adam
 
 Adam is a good default choices working okay with constant learning rate
@@ -276,28 +281,36 @@ Underfitting on the train set
 - 输入：$x$，形状为 N×D（N 是批次大小，D 是特征维度）
 
 1. 计算均值 $μ_j$
+
 $$
 \mu_j = \frac{1}{N} \sum_{i=1}^{N} x_{i,j}
 $$
+
 	对批量中的每个通道（特征维度）逐列计算均值，结果形状为 D
 
 2. 计算方差 $σ_j^2$
+
 $$
 \sigma_j^2 = \frac{1}{N} \sum_{i=1}^{N} (x_{i,j} - \mu_j)^2
 $$
+
 	逐通道计算批量中特征的方差，结果形状为 D
  
  3. 归一化数据，得到 x̂
+
 $$
 \hat{x}_{i,j} = \frac{x_{i,j} - \mu_j}{\sqrt{\sigma_j^2 + \epsilon}}
 $$
+
 	通过均值和标准差将数据标准化，结果形状为 N×D
 	$\epsilon$ 为一个小量，防止分母为 0 
 
 4. 引入可学习参数 γ 和 β
+
 $$
 y_{i,j} = \gamma_j \hat{x}_{i,j} + \beta_j
 $$
+
 	γ 和 β 是可学习参数，用于调整归一化数据的分布，形状为 D
 	标准化消除了原输入的缩放和偏移信息， γ β 用于恢复模型的表达能力
 	一般被初始化为 $\gamma = 1$ 和 $\beta = 0$ 
@@ -307,25 +320,28 @@ $$
 - 测试过程中，往往无法使用 batch 均值和方差，因为推理过程通常是逐个输入进行的，使用整个训练数据的全局均值和全局方差来进行归一化
 
 - 这个全局均值和方差在每一次训练后更新，这个过程称为 **moving average** 
+
 $$
-\begin{align}
+\begin{aligned}
 \mu_{\text{rms},j} \leftarrow \rho \mu_{\text{rms},j} + (1 - \rho) \mu_{j} \\
 \sigma_{\text{rms},j}^2 \leftarrow \rho \sigma_{\text{rms},j}^2 + (1 - \rho) \sigma_{j}^2
-\end{align}
+\end{aligned}
 $$
 
 - 测试时的归一化公式：
+
 $$
 y_{i,j} = \gamma_j \frac{x_{i,j} - \mu_{\text{rms},j}}{\sqrt{\sigma_{\text{rms},j}^2 + \epsilon}} + \beta_j
 $$
 
 对于 CNN ，将每一个通道视为一个特征维度
 计算每个通道的所有样本与像素上的均值
+
 $$
-\begin{align}
+\begin{aligned}
 \mu_c = \frac{1}{N \cdot H \cdot W} \sum_{n=1}^{N} \sum_{h=1}^{H} \sum_{w=1}^{W} x_{n,c,h,w} \\
 \sigma_c^2 = \frac{1}{N \cdot H \cdot W} \sum_{n=1}^{N} \sum_{h=1}^{H} \sum_{w=1}^{W} \left(x_{n,c,h,w} - \mu_c\right)^2
-\end{align}
+\end{aligned}
 $$
 
 优点

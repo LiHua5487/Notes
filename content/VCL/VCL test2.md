@@ -52,7 +52,9 @@ struct Face {
 1. 增设面点：计算一个面片的所有顶点坐标的平均值，作为这个面的面点
 2. 增设边点：计算一个边的两个端点和邻接的两个面的面点坐标的平均值，作为这个边的边点（边点不一定在边上）
 3. 更新原有顶点：对于原有的顶点 $v$ ，更新其坐标为
+
 $$\frac{F + 2R + (n - 3)v}{n}$$
+
 	- $R$ ：$v$ 的邻接边的中点（不是边点）的平均值
 	- $F$ ：$v$ 的邻接面的面点的平均值
 	- $n$ ：$v$ 的邻接面的数量
@@ -64,10 +66,14 @@ $$\frac{F + 2R + (n - 3)v}{n}$$
 
 1. 计算新顶点：在每个边上生成一个新顶点
 	- 如果这条边被两个三角形面所包含，则由这条边的两个端点 $v_0, v_2$ 和两个邻接三角形中不在这个边上的顶点 $v_1, v_3$ 加权平均计算出新顶点
+
 $$ep = \frac{3}{8}(v_0 + v_2) + \frac{1}{8}(v_1 + v_3)$$
+
 	- 如果这条边只被一个三角形面所包含（即为边界上的边），则直接取这条边的中点作为新顶点
 2. 更新原有顶点：对于每个原有顶点 $v$，根据以下公式更新后的位置 $v'$ 
+
 $$v' = (1 - nu)v + \sum_{i=1}^n u v_i$$
+
 	- $n$ ：$v$ 的度数
 	- $v_i$ ：$v$ 的邻接顶点 
 	- $u$ ：当 $n = 3$ 时 $u = \frac{3}{16}$，否则 $u = \frac{3}{8n}$ 
@@ -87,10 +93,13 @@ $$v' = (1 - nu)v + \sum_{i=1}^n u v_i$$
 $$
 E = \sum_{i=1}^n \sum_{j \in \Omega(i)} \frac{1}{2} k_{ij} \|t_i - t_j\|^2
 $$
+
 可整理为
+
 $$
 t_i - \sum_{j \in \Omega(i)} \lambda_{ij} t_j = 0
 $$
+
 1. 平均系数：$\lambda_{ij} = \frac{1}{n_i}$，即设置为相邻顶点个数的倒数
 2. 均值坐标系数：$\lambda_{ij} = (\tan \frac{\beta_{ji}}{2} + \tan \frac{\alpha_{ij}}{2}) / r_{ij}$ 
 3. 调和坐标系数：$\lambda_{ij} = (\cot \gamma_{ij} + \cot \gamma_{ji}) / 2$，只和角度有关，近似于保角映射
@@ -119,15 +128,21 @@ $$
 ### 三角形内一点的梯度
 
 采用重心坐标插值表示三角形内部的一点 $P$ 的坐标
+
 $$\mathbf{x}=\alpha \mathbf{x}_A+\beta \mathbf{x}_B+\gamma \mathbf{x}_C$$
+
 - $\alpha,\beta,\gamma$ 为三个参数，即 $P$ 的重心坐标，满足 $\alpha=\frac{S(\triangle PBC)}{S(\triangle ABC)}$ （另外两个参数同理），且 $\alpha+\beta+\gamma=1$ 
 
 三角形内，函数 $f(\mathbf{x})$ 在 $P$ 处的导数即为
+
 $$\nabla_{\mathbf{x}} f(\mathbf{x}) = f_A \nabla_{\mathbf{x}} \alpha + f_B \nabla_{\mathbf{x}} \beta + f_C \nabla_{\mathbf{x}} \gamma$$
+
 代入重心坐标插值的表达式可得
+
 $$
 \nabla_{\mathbf{x}} f(\mathbf{x}) = f_A \frac{(\mathbf{x}_C - \mathbf{x}_B)^\perp}{2A_T} + f_B \frac{(\mathbf{x}_A - \mathbf{x}_C)^\perp}{2A_T} + f_C \frac{(\mathbf{x}_B - \mathbf{x}_A)^\perp}{2A_T}
 $$
+
 - $(\mathbf{x}_C - \mathbf{x}_B)^\perp$ 表示 $\mathbf{x}_C - \mathbf{x}_B=\overrightarrow{BC}$ 逆时针旋转 90° 得到的向量
 - $A_T$ 为 $\triangle ABC$ 的面积
 - 这个值与 $P$ 坐标无关，可见三角形内部任一点的导数为一个定值
@@ -135,13 +150,16 @@ $$
 ### 离散拉普拉斯算子
 
 由于邻接三角形梯度为 0 ，其拉普拉斯算子也为 0 ，则函数 $f(\mathbf{x}_i)$ 在顶点 $\mathbf{x}_i$ 处的拉普拉斯算子可以定义为邻接点与自身函数值之差的加权平均
+
 $$\Delta f_i = \sum_{j \in \Omega(i)} \omega_{ij} (f_j - f_i) $$
+
 - $\omega_{ij}$ ：每个邻接点的权重
 - $\Omega(i)$ ：顶点 $\mathbf{x}_i$ 的邻接点的集合
 
 均匀拉普拉斯：将权重值设为常数，便于高效计算，并且被用于滤波等几何处理；但实际上并不是一种恰当的定义方式，例如对于平面而言，它的拉普拉斯的值应该为 0 ，但均匀权重显然不满足这一点
 
 **余切拉普拉斯**：应用最广的一种形式；但是存在钝角的情况下 $(\cot \alpha_{ij}+\cot \beta_{ij})$ 可能会变为负数，这会导致一些三角形发生旋转
+
 $$(\Delta f)_i = \frac{1}{2A_i} \sum_{j \in \Omega(i)} (\cot \alpha_{ij} + \cot \beta_{ij})(f_j - f_i)$$
 
 ![[VCL/img/imgt2/image-4.png]]
@@ -149,17 +167,23 @@ $$(\Delta f)_i = \frac{1}{2A_i} \sum_{j \in \Omega(i)} (\cot \alpha_{ij} + \cot 
 ## 网格平滑
 
 将物体表面看作一个扩散流，随着时间推移，其分布会趋于均匀，公式如下
+
 $$
 \frac{\partial f(x, t)}{\partial t} = \lambda \Delta f(x, t)
 $$
+
 对左侧利用差分近似，设当前时刻为 $t$ ，时间步长为 $h$ ，则
+
 $$
 f(t + h) = f(t) + h \frac{\partial f(t)}{\partial t} = f(t) + h \lambda L f(t)
 $$
+
 可得如下的顶点坐标迭代公式
+
 $$
 \mathbf{x}_i^{(k+1)} \leftarrow \mathbf{x}_i^{(k)} + h \lambda \Delta \mathbf{x}_i^{(k)}
 $$
+
 在两种不同的拉普拉斯算子下，可以得到不同的平滑效果
 - 余切算子
 	- 所有顶点将沿着平均曲率定义的方向移动，因此也称为平均曲率流
@@ -179,6 +203,7 @@ $$
 ## 网格编辑
 
 网格编辑的目标是，希望在手动操纵和修改网格表面的几何形状时，能够保留原始网格的几何细节，其优化目标如下
+
 $$
 \arg \min_{\mathbf{v}_1', \dots, \mathbf{v}_n'} 
 \left( 
@@ -186,6 +211,7 @@ $$
 + \sum_{j \in \mathcal{C}} \|\mathbf{v}_j' - \mathbf{u}_j\|^2 
 \right)
 $$
+
 - $\|\mathcal{L}(\mathbf{v}_i') - \Delta_i\|^2$ 是形状保持项，其中 $\mathcal{L}(\mathbf{v}_i')$ 和 $\Delta_i$ 是网格顶点变化后和变化前的拉普拉斯坐标，定义为 $\mathcal{L}(\mathbf{v}_i) = \mathbf{v}_i - \frac{1}{N_i} \sum_{j \in \Omega(i)} \mathbf{v}_j$ 
 - $\|\mathbf{v}_j' - \mathbf{u}_j\|^2$ 是约束项，$u_j$ 是用户指定的目标位置，$\mathcal{C}$ 是用户指定的约束点的集合
 
@@ -196,35 +222,46 @@ $$
 ### ICP
 
 ICP (Iterative Closest Point) 的目标是通过逐步的调整一个点云 $P$ ，使其与另一个点云 $Q$ 尽可能对齐
+
 $$
-\begin{align}
+\begin{aligned}
 \hat{\mathbf{R}}, \hat{\mathbf{T}} = \arg\min_{\mathbf{R} \in SO(3), \mathbf{T} \in \mathbb{R}^{1 \times 3}} \| \mathbf{Q} - (\mathbf{R}\mathbf{P} + \mathbf{T}) \|_F^2 \\
 where\ \mathbf{R} \in SO(3), \mathbf{T} \in \mathbb{R}^3, \mathbf{Q} \in \mathbb{R}^{3 \times n}, \mathbf{P} \in \mathbb{R}^{3 \times n}
-\end{align}
+\end{aligned}
 $$
+
 1. 求解时，先让两个点云变到中心
+
 $$
-\begin{align}
+\begin{aligned}
 \tilde{\mathbf{P}} = \mathbf{P} - \bar{\mathbf{P}}\\
 \tilde{\mathbf{Q}} = \mathbf{Q} - \bar{\mathbf{Q}}
-\end{align}
+\end{aligned}
 $$
+
 2. 这两个点云目前还没有对应关系，可以利用 Chamfer Distance 的想法，即对于每个 $P$ 中的点，找到 $Q$ 中最近的点，得到一系列对应点
+
 $$
 \tilde{\mathbf{p}}_{i,\text{corr}} = \arg\min_{\tilde{\mathbf{q}}_j \in \tilde{\mathbf{Q}}} \| \tilde{\mathbf{q}}_j - \tilde{\mathbf{p}}_i \|_2^2
 $$
+
 3. 根据目标函数，利用 SVD ，可求解出 $R$ ，中间乘以 $\operatorname{diag}\{1, 1, \det(\mathbf{U}\mathbf{V}^T)\}$ 是为了保证 $R$ 的行列式为 1 
+
 $$
-\begin{align}
+\begin{aligned}
 &\text{Question:}\quad \hat{\mathbf{R}} = \arg\min_{\mathbf{R} \in SO(3)} \| \tilde{\mathbf{P}}_{\text{corr}} - \hat{\mathbf{R}} \tilde{\mathbf{P}} \|_F^2 \\
 &\text{Sol:}\quad \mathbf{U}, \mathbf{D}, \mathbf{V}^T = \text{SVD}(\tilde{\mathbf{P}}_{\text{corr}} \tilde{\mathbf{P}}^T) \quad \hat{\mathbf{R}} = \mathbf{U} \operatorname{diag}\{1, 1, \det(\mathbf{U}\mathbf{V}^T)\} \mathbf{V}^T \\
-\end{align}
+\end{aligned}
 $$
+
 4. 通过做差得到 $T$ 
+
 $$
 \hat{\mathbf{T}} = \bar{\mathbf{Q}} - \hat{\mathbf{R}} \bar{\mathbf{P}}
 $$
+
 5. 随后，更新 $P$ ，并重复上述过程，直到误差小于阈值时停止
+
 $$
 \mathbf{P}_{\text{new}} = \hat{\mathbf{R}} \mathbf{P} + \hat{\mathbf{T}}
 $$
@@ -241,9 +278,11 @@ PCA (Principal Component Analysis) 主成分分析，可用来求解数据的“
 由于这些轴都是正交的，因此我们可以通过分别对两组点云进行主成分分析，而后求解出一个旋转变换 $R$ 来对齐它们的轴
 
 对于两组点云 $S, T$，设其中心分别是 $c_S, c_T$ ，对于 $S$ 中的每个点 $p_i$，先进行中心化，再绕中心进行旋转对齐，最后平移到 $T$ 的中心位置
+
 $$
 p_i' = c_T + R \times (p_i - c_S) = R \times p_i + (c_T - R \times c_S) = R \times p_i + t
 $$
+
 可得变换为 $R$ 和 $t = c_T - R \times c_S$ 
 
 利用 PCA ，可以对 ICP 中的 $R$ 和 $T$ 进行初始化
@@ -283,13 +322,17 @@ $$
 定义一个指示函数 $\chi_M$ ，物体 $M$ 内部的点都具有 $1$ 的函数值，外部的点都具有 $0$ 的函数值，则其梯度场 $\nabla \chi_M$ 就只在表面 $\partial M$ 上具有非零梯度，且表面一点的梯度的方向与该点的法向量恰好反向
 
 根据点云法向量，可以搞一个梯度场 $\vec{V}$ ，需要据此估计出 $\chi_M$ 
+
 $$
 \nabla \chi_M = \vec{V}
 $$
+
 然而等式右端的向量场不一定可积（例如有可能并不是无旋的），因此无法找到一个精确解，而需要将上述式通过泊松方程转化为可以估计最小二乘解的形式
+
 $$
 \nabla \chi_M = \vec{V} \iff \Delta \chi_M = \nabla \cdot \vec{V}
 $$
+
 利用一些巧妙的算法可以进行求解，得到 $\chi_M$ 
 
 ### Marching Cubes
@@ -338,10 +381,10 @@ $$
 在模型渲染到屏幕上时，经过了如下的坐标变换
 
 $$
-\begin{align}
+\begin{aligned}
 &\text{模型坐标系} \xrightarrow{\text{Model Matrix}} \text{世界坐标系} \xrightarrow{\text{View Matrix}} \text{相机/视图坐标系} \\
 &\xrightarrow{\text{投影矩阵 MVP}} \text{裁剪空间} \xrightarrow{\text{透视除法}} \text{归一化设备空间 NDC} \rightarrow \text{屏幕空间}
-\end{align}
+\end{aligned}
 $$
 
 ![[VCL/作业/img/img3/image-4.png]]
@@ -367,25 +410,32 @@ $$
 
 由三部分组成：环境光、漫反射光、镜面反射光，总的光照效果是它们加起来
 1. 环境光
+
 $$
 I_{\text{ambient}} = k_a \times I_a
 $$
+
 	- $k_a$ 是环境光系数， $I_a$​ 是环境光强度
 2. 漫反射光
+
 $$
 I_{\text{diffuse}} = k_d \times I_l \times (N \cdot L)
 $$
+
 	- $k_d$ 是漫反射系数，$I_l$ 是光源强度，$N$ 是表面法向量，$L$ 是光源方向
 3. 镜面反射光
+
 $$
 I_{\text{specular}} = k_s \times I_l \times (R \cdot V)^n
 $$
+
 	- $k_s$ 是镜面反射系数，$I_l$ 是光源强度，$R$ 是光线反射方向量（光线从表面反射出去的方向），$V$ 是视线方向量（从表面到眼睛的方向）
 	- $n$ 是光泽度（越大越光滑）
 
 ### Blinn-Phong 模型
 
 对镜面反射的部分进行了优化，用半角向量 $H$ 代替反射向量 $R$ 
+
 $$
 I_{specular} = k_s \times I_l \times (N \cdot H)^n
 $$
@@ -393,6 +443,7 @@ $$
 ![[VCL/img/imgt2/image-9.png]]
 
 其中 $H$ 是半角向量，它是 $L$ 和 $V$ 的对角线方向，并进行归一化
+
 $$
 H = \frac{L + V}{\| L + V \|}
 $$
@@ -408,13 +459,16 @@ $$
 比如对上图 $Q$ 点进行插值，发现其处在两点之间，直接插值得到的深度值是二者的平均值，但真正的深度值是 $P$ 处的，这显然不是两点均值
 
 需要使用经过矫正的插值方法，称为**透视矫正插值**，假设 $f$ 是要插值的变量，已知屏幕上 $A,B,C$ 三点的变量值，可得
+
 $$
 f = \frac{\frac{\alpha}{w_a} f_a + \frac{\beta}{w_b} f_b + \frac{\gamma}{w_c} f_c}{\frac{\alpha}{w_a} + \frac{\beta}{w_b} + \frac{\gamma}{w_c}}
 $$
+
 - $\omega$ 是 $A,B,C$ 齐次坐标的 $w$ 分量，一般是它们的深度值
 - $(\alpha,\beta,\gamma)$ 是插值点的重心坐标
 
 可得深度值的插值公式如下
+
 $$
 \frac{1}{z} = \frac{\alpha}{z_a} + \frac{\beta}{z_b} + \frac{\gamma}{z_c}
 $$
@@ -434,12 +488,17 @@ $$
 为了得到轮廓线，可以先渲染物体的背面，并稍微扩大一点，后续只需要再渲染出模型的正面，就能实现轮廓线的效果
 
 对于着色，可以采用 Gooch 着色，即冷色暖色着色，为了计算每一块的颜色，首先需要计算一个在传统 Lambert 光照模型中也使用的系数：表面法向量 $n$ 与光源方向 $l$ 的点积，这代表光线强度
+
 $$
 dot = n \cdot l
 $$
+
 但是 $dot$ 的取值范围是 $[-1, 1]$ ，需要变换到 $[0,1]$ 作为混合系数
+
 $$t= \frac{1}{2}(dot+1)$$
+
 最后通过插值计算颜色，其中 $k_{cool}$ 和 $k_{warm}$ 是事先设定的冷色和暖色
+
 $$color = t \cdot k_{cool} + (1-t) \cdot k_{warm} = \left( \frac{1 + l \cdot n}{2} \right) k_{\text{cool}} + \left( \frac{1 - l \cdot n}{2} \right) k_{\text{warm}}$$
 
 # 渲染管线
@@ -566,28 +625,36 @@ $$c = (1 - t)(1 - s)c_0 + (1 - t)sc_1 + (1 - s)tc_3 + stc_2$$
 ### 球面
 
 设球心的位置为 $c$，球面的半径为 $R$，那么球面上任意一点 $\mathbf{p}$ 的位置满足方程
+
 $$
 \|\mathbf{p} - c\|^2 - R^2 = 0
 $$
+
 与光线方程联立，可以得到交点满足
+
 $$
 \|o + td - c\|^2 - R^2 = 0
 $$
+
 将这个式子展开得到一个一元二次方程组：$at^2 + bt + c = 0$，其中 $a = \|d\|^2$，$b = 2(o - c) \cdot d$，$c = \|o - c\|^2 - R^2$，而最后解出交点
+
 $$
 t = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
 $$
+
 这里 $b^2 - 4ac < 0$ 、$b^2 - 4ac = 0$ 、 $b^2 - 4ac > 0$ 分别对应光线与球面相离、相切和相割的三种情况
 
 ### 长方体
 
 考虑光线与 $x=x_{min},y=y_{min},z=z_{min}$ 和 $x=x_{max},y=y_{max},z=z_{max}$ 的相交时间 $t_{1x},t_{1y},t_{1z}$ 和 $t_{2x},t_{2y},t_{2z}$ ，则光线射入和射出长方体的时间为
+
 $$
-\begin{align}
+\begin{aligned}
 t_{\text{enter}}&=\text{max}(t_{1x},t_{1y},t_{1z})\\
 t_{\text{exit}}&=\text{min}(t_{2x},t_{2y},t_{2z})
-\end{align}
+\end{aligned}
 $$
+
 如果光线与长方体相交，应满足
 - $t_{\text{exit}}\geq t_{\text{enter}}$ ：确保先射入，再离开
 - $t_{\text{exit}}\geq 0$ ：确保光线从正面击中（这里不要求 $t_{\text{enter}}\geq 0$ ，是因为光线从包围盒内部发出，也认为是相交）
@@ -595,14 +662,21 @@ $$
 ### 三角形
 
 对于射线，可以用起点 $O$ 和方向 $D$ 来表示
+
 $$R(t) = O + tD$$
+
 而三角形可以用重心坐标来表示，设三个顶点为 $V_0$ $V_1$ $V_2$ ，则
+
 $$T(u,v) = (1 - u - v)V_0 + uV_1 + vV_2$$
+
 要求 $u \geq 0, v \geq 0$ ，且 $u + v \leq 1$ ，以保证点在三角形内部
 
 如果射线与三角形相交，则射线上某点 $R(t)$ 应该等于三角形上某点 $T(u,v)$ 
+
 $$O + tD = (1 - u - v)V_0 + uV_1 + vV_2$$
+
 把未知数 $t, u, v$ 放到一边，变形为
+
 $$
 \begin{bmatrix}
 -D, & V_1 - V_0, & V_2 - V_0
@@ -614,7 +688,9 @@ v
 \end{bmatrix}
 = O - V_0
 $$
+
 定义 $E_1 = V_1 - V_0,\ E_2 = V_2 - V_0,\ T = O - V_0$，则方程变为
+
 $$
 \begin{bmatrix}
 -D, & E_1, & E_2
@@ -626,7 +702,9 @@ v
 \end{bmatrix}
 = T
 $$
+
 这可以用克拉默法则来求解，结果为
+
 $$
 \begin{bmatrix}
 t \\
@@ -641,7 +719,9 @@ v
 (T \times E_1) \cdot D
 \end{bmatrix}
 $$
+
 在实际计算中，常常先计算一些中量来加速，比如定义 $P = D \times E_2$ 和 $Q = T \times E_1$，则结果为
+
 $$
 \begin{bmatrix}
 t \\
@@ -656,6 +736,7 @@ P \cdot T \\
 Q \cdot D
 \end{bmatrix}
 $$
+
 计算出 $t, u, v$ 后，需要检查它们是否有效
 - $t\geq 0$ ：交点在射线的正方向上
 - $u \geq 0,\ v \geq 0,\ u + v \leq 1$ ：交点在三角形内部
@@ -697,14 +778,16 @@ KD 树遍历时，可以根据 $t_{split}$ 与 $t_{min}$ 和 $t_{max}$ 的大小
 传统的光线追踪（如 Whitted-style 光线追踪），光线打到表面一点时，要么只考虑一根出射光线（镜面/透明物体），要么就停止并根据 Blinn-Phone 等模型计算颜色（漫反射表面），但实际上，表面一点入射的光线，可能从很多方向出射，路径追踪
 
 比如对于漫反射表面，入射光分布在以入射点为中心的一个半球面上，可以根据 BRDF 得到出射光的分布 $p(x)$ ，可以利用重要性采样，用一个均匀分布 $u(x)$ 在上面采样
+
 $$
-\begin{align}
+\begin{aligned}
 \mathbb{E}_{x \sim p(x)}[f(x)] &= \int p(x) f(x) dx \\
 &= \int \frac{u(x)}{u(x)} p(x) f(x) dx \\
 &= \int u(x) \frac{p(x)}{u(x)} f(x) dx \\
 &= \mathbb{E}_{x \sim u(x)} \left[ \frac{p(x)}{u(x)} f(x) \right]
-\end{align}
+\end{aligned}
 $$
+
 此外，还采用俄罗斯轮盘赌的放式，指定一个概率序列 $q$ ，从人眼发出的光打到路径上的第 $i$ 个点时，有 $q_i$ 的概率继续，有 $1-q_i$ 的概率终止，那么在求出这个点的结果后，需要用 $\frac{1}{q_i}$ 对其加权
 
 ![[VCL/img/imgt2/image-23.png]]

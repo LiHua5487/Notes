@@ -82,19 +82,22 @@ Mixed IR ：一种结合了图和控制流信息的 IR ，内部常使用 SSA (S
 Conv-BN Fold ：Batch Norm 层在训练结束后，其参数 $(\gamma, \beta)$ 和统计量 $(\mu, \sigma)$ 是固定的，而前面的卷积层和 BN 都是线性变换，因此可以将两个线性操作合并为一个卷积操作
 
 已知卷积层和 BN 层的计算公式
+
 $$
-\begin{align}
+\begin{aligned}
 z &= W * x + b \\
 out &= \gamma \cdot \frac{z - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta
-\end{align}
+\end{aligned}
 $$
+
 代入即可得折叠后的公式
+
 $$
-\begin{align}
+\begin{aligned}
 out &= W_{fold} * x + b_{fold} \\
 W_{fold} &= \gamma \cdot \frac{W}{\sqrt{\sigma^2 + \epsilon}} \\
 b_{fold} &= \gamma \cdot \frac{b - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta
-\end{align}
+\end{aligned}
 $$
 
 ## 算子融合 Operator Fusion

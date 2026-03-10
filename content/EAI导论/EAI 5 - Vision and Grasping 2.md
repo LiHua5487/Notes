@@ -21,36 +21,46 @@
 
 ICP 旨在通过逐步的调整一个点云 P ，使得两个点云 Q 与 P 尽可能对齐
 其中 Q 是通过传感器得到的物体现实状态的点云（一般需要多机位）；P 是将 CAD 模型根据预测的 pose 进行调整而得到的点云
+
 $$
-\begin{align}
+\begin{aligned}
 \hat{\mathbf{R}}, \hat{\mathbf{T}} = \arg\min_{\mathbf{R} \in SO(3), \mathbf{T} \in \mathbb{R}^{1 \times 3}} \| \mathbf{Q} - (\mathbf{R}\mathbf{P} + \mathbf{T}) \|_F^2 \\
 where\ \mathbf{R} \in SO(3), \mathbf{T} \in \mathbb{R}^3, \mathbf{Q} \in \mathbb{R}^{3 \times n}, \mathbf{P} \in \mathbb{R}^{3 \times n}
-\end{align}
+\end{aligned}
 $$
 
 1. 求解时，先让两个点云变到中心
+
 $$
-\begin{align}
+\begin{aligned}
 \tilde{\mathbf{P}} = \mathbf{P} - \bar{\mathbf{P}}\\
 \tilde{\mathbf{Q}} = \mathbf{Q} - \bar{\mathbf{Q}}
-\end{align}
+\end{aligned}
 $$
+
 2. 这两个点云目前还没有对应关系，可以利用 Chamfer Distance 的想法，即对于每个 P 中的点，找到 Q 中最近的点，得到一系列对应点
+
 $$
 \tilde{\mathbf{p}}_{i,\text{corr}} = \arg\min_{\tilde{\mathbf{q}}_j \in \tilde{\mathbf{Q}}} \| \tilde{\mathbf{q}}_j - \tilde{\mathbf{p}}_i \|_2^2
 $$
+
 3. 问题就变成了 constrained OPP 的形式，可求解出 R 
+
 $$
-\begin{align}
+\begin{aligned}
 &\text{Question:}\quad \hat{\mathbf{R}} = \arg\min_{\mathbf{R} \in SO(3)} \| \tilde{\mathbf{P}}_{\text{corr}} - \hat{\mathbf{R}} \tilde{\mathbf{P}} \|_F^2 \\
 &\text{Sol:}\quad \mathbf{U}, \mathbf{D}, \mathbf{V}^T = \text{SVD}(\tilde{\mathbf{P}}_{\text{corr}} \tilde{\mathbf{P}}^T) \quad \hat{\mathbf{R}} = \mathbf{U} \operatorname{diag}\{1, 1, \det(\mathbf{U}\mathbf{V}^T)\} \mathbf{V}^T \\
-\end{align}
+\end{aligned}
 $$
+
 4. 通过做差得到 T 
+
 $$
 \hat{\mathbf{T}} = \bar{\mathbf{Q}} - \hat{\mathbf{R}} \bar{\mathbf{P}}
 $$
+
 5. 随后，更新 P ，并重复上述过程
+
 $$
 \mathbf{P}_{\text{new}} = \hat{\mathbf{R}} \mathbf{P} + \hat{\mathbf{T}}
 $$
@@ -88,9 +98,11 @@ $$
 ![[EAI导论/imgs/img5/image-3.png]]
 
 两个点云应近似满足以下关系
+
 $$
 P_{\text{Cam}} = s \cdot R \cdot P_{\text{NOCS}} + T
 $$
+
 这个式子可以用 Umeyama 算法进行求解，得到 s R T ，其中 s 代表对角线长度，所以结果总共只是 7D 的，还要利用 NOCS 中各方向的比例进一步分解成 3 个维度上的放缩比例，进而又能得到物体在世界场景下的 bounding box
 
 ---

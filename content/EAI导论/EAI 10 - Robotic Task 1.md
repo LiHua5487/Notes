@@ -22,20 +22,29 @@ Off-Policy 中去掉这个假设，让训练数据不只来自于当前策略，
 在 Critic 的更新中，假设采样到了一个旧的数据 $(s_i,a_i,r_i,s_i')$ ，但是对于当前的策略来说，在 $s_i$ 不一定会采取 $a_i$ ，而且就连智能体所达状态的分布都会变化，如果用来自旧策略的数据更新 Critic，就是在训练它去估计旧策略的价值，这显然是不合理的，类似的问题还出现在梯度计算时
 
 对于值函数来说，实际上是
+
 $$
 V^\pi(s_t) = \mathbb{E}_{a_t \sim \pi(a_t \mid s_t)} \left[ Q^\pi(s_t, a_t) \right]
 $$
+
 也就是说这和你在当前状态 $s_t$ 要怎么采取动作 $a_t \sim \pi(a_t \mid s_t)$ 有关，如果采样到了旧的数据，那这个分布就是旧的分布，这不是我们期望的
 
 不妨直接以 Q 值作为训练对象
+
 $$Q^\pi(s, a) = \mathbb{E}_{s' \sim P} \left[ r(s, a) + \gamma \mathbb{E}_{a' \sim \pi} \left[ Q^\pi(s', a') \right] \right]$$
+
 尽管可能采样到旧的数据 $(s_i,a_i,r_i,s_i')$ ，但 $a'$ 可以根据当前策略得到，这就解决了上述问题，目标变成了
+
 $$y_i = r_i + \gamma \hat{Q}^\pi_\phi(s'_i, a'_i)$$
 
 而对于梯度问题，需要保证其中的 $a_i$ （ log 中的和 A 中的）是根据当前的策略得出的，记为 $a_i^\pi$，即需要用当前策略进行采样 $a_i^\pi \sim \pi_\theta(a | s_i)$ 
+
 $$\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_i \nabla_\theta \log \pi_\theta(a_i^\pi | s_i) \hat{A}^\pi(s_i, a_i^\pi)$$
+
 实际上为了简化计算，直接把 A 换成 Q ，这虽然会让方差增大，但是可接受的
+
 $$\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_i \nabla_\theta \log \pi_\theta(a_i^\pi | s_i) \hat{Q}^\pi(s_i, a_i^\pi)$$
+
 >这种基于 Q 函数的方式可以独立地评估和选择动作，拥有极高的样本效率Sample Efficiency ，即对数据的利用率，和卓越的探索能力（产生动作时，可以使用行为策略，侧重于探索）
 
 对于 $s$ ，这就没办法保证其按当前策略分布了，因为都已经存下来了，但也不是不能接受，因为我们存的 $s$ 往往比预期的最优策略涵盖到的范围（只走最优的）要广（好的坏的历史中都走过了），尽管不一定最优，但能够增强鲁棒性，减少 OOD 的问题产生
@@ -59,30 +68,46 @@ $$\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_i \nabla_\theta \log \pi_\the
 >另外，假设在历史数据中，更多的尝试了动作 A ，而策略更新后更倾向于奖励更高的动作 B ，但如果直接用旧数据来训练，可能会高估 A 的价值，因为 A 的奖励虽然低但频繁，B 的奖励高但罕见，如果旧数据中 B 的样本很少，可能无法正确学习 B 的价值，导致训练不稳定（用不用 B 反复横跳）
 
 假设我们要估计 x 在分布 p(x) 下的期望，但是现在 x 服从的分布是 q(x) ，可采用以下公式解决
+
 $$
-\begin{align}
+\begin{aligned}
 \mathbb{E}_{x \sim p(x)}[f(x)] &= \int p(x) f(x) dx \\
 &= \int \frac{q(x)}{q(x)} p(x) f(x) dx \\
 &= \int q(x) \frac{p(x)}{q(x)} f(x) dx \\
 &= \mathbb{E}_{x \sim q(x)} \left[ \frac{p(x)}{q(x)} f(x) \right]
-\end{align}
+\end{aligned}
 $$
+
 这就是重要性采样的核心，对于 $J(\theta)$ 来说就是这样的
+
 $$J(\theta) = \mathbb{E}_{\tau \sim \bar{p}(\tau)} \left[ \frac{p_\theta(\tau)}{\bar{p}(\tau)} r(\tau) \right]$$
+
 对于 $p_\theta(\tau)$ ，其展开后得
+
 $$p_\theta(\tau) = p(\mathbf{s}_1) \prod_{t=1}^T \pi_\theta(\mathbf{a}_t | \mathbf{s}_t) p(\mathbf{s}_{t+1} | \mathbf{s}_t, \mathbf{a}_t)$$
+
 这对于 $\bar{p}(\tau)$ 来说也是同理的，二者相比得
+
 $$\frac{p_\theta(\tau)}{\bar{p}(\tau)} = \frac{p(\mathbf{s}_1) \prod_{t=1}^T \pi_\theta(\mathbf{a}_t | \mathbf{s}_t) p(\mathbf{s}_{t+1} | \mathbf{s}_t, \mathbf{a}_t)}{p(\mathbf{s}_1) \prod_{t=1}^T \bar{\pi}(\mathbf{a}_t | \mathbf{s}_t) p(\mathbf{s}_{t+1} | \mathbf{s}_t, \mathbf{a}_t)} = \frac{\prod_{t=1}^T \pi_\theta(\mathbf{a}_t | \mathbf{s}_t)}{\prod_{t=1}^T \pi_\text{old}(\mathbf{a}_t | \mathbf{s}_t)}$$
+
 这样以来，梯度公式就变成了
+
 $$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \bar{p}(\tau)} \left[ \left( \prod_{t=1}^T \frac{\pi_\theta(\mathbf{a}_t | \mathbf{s}_t)}{\pi_\text{old}(\mathbf{a}_t | \mathbf{s}_t)} \right) \left( \sum_{t=1}^T \nabla_\theta \log \pi_\theta(\mathbf{a}_t | \mathbf{s}_t) \right) \left( \sum_{t=1}^T r(s_t, \mathbf{a}_t) \right) \right]$$
+
 还需考虑因果性，对于奖励来说，当前影响不了过去，对于动作，未来影响不了现在，变成这样
+
 $$
 \nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \bar{p}(\tau)} \left[ \sum_{t=1}^T \left( \underbrace{\prod_{t'=1}^t \frac{\pi_\theta(\mathbf{a}_{t'}|s_{t'})}{\pi_\text{old}(\mathbf{a}_{t'}|s_{t'})}}_{\text{用于看到状态 } s_t} \cdot \underbrace{\nabla_\theta \log \pi_\theta(\mathbf{a}_t|s_t)}_{\text{当前动作的得分}} \cdot \underbrace{\left( \sum_{t'=t}^T r(s_{t'}, \mathbf{a}_{t'}) \right)}_{\text{reward to go}} \right) \right]
 $$
+
 但是这个连乘很难受，直接用 t 时刻的替代
+
 $$\nabla_\theta J(\theta) \approx \mathbb{E}_{\tau \sim \bar{p}(\tau)} \left[ \sum_{t=1}^T \left( \frac{\pi_\theta(\mathbf{a}_t | \mathbf{s}_t)}{\pi_\text{old}(\mathbf{a}_t | \mathbf{s}_t)} \cdot \nabla_\theta \log \pi_\theta(\mathbf{a}_t | \mathbf{s}_t) \cdot G_t \right) \right]$$
+
 把其中 $\frac{\pi_\theta(\mathbf{a}_t | \mathbf{s}_t)}{\pi_\text{old}(\mathbf{a}_t | \mathbf{s}_t)}$ 这个比值项定义为置信度权重 $r_t(\theta)$ ，代表新策略对于在 $s_t$ 下采取动作 $a_t$ 的倾向性（>1为偏好，<1为排斥）
+
 $$r_t(\theta) = \frac{\pi_\theta(\mathbf{a}_t | \mathbf{s}_t)}{\pi_\text{old}(\mathbf{a}_t | \mathbf{s}_t)}$$
+
 但是这里有一个问题，如果 $\pi_\theta$ 和 $\pi_\text{old}$ 差距太大，那这个比值项可能变得非常小或者非常大，导致梯度方差变大，训练不稳定
 
 # PPO 
@@ -90,9 +115,13 @@ $$r_t(\theta) = \frac{\pi_\theta(\mathbf{a}_t | \mathbf{s}_t)}{\pi_\text{old}(\m
 PPO 是在 TRPO 的基础上改进的，下面先简单介绍 TRPO
 
 为了解决上面 $r_t(\theta)$ 这个比值过于极端的问题， **TRPO (Trust Region Policy Optimization)** 的想法是使用 KL-Divergence 去约束新旧策略的差距（设置信任区域 Trust Region），以防变化太大
+
 $$\theta_{k+1} = \operatorname{argmax}_\theta \mathcal{L}(\theta_k, \theta)\quad \text{s.t. } \bar{D}_{KL}(\theta || \theta_k) \leq \delta$$
+
 并设置了以下的优化目标
+
 $$\mathcal{L}(\theta_k, \theta) = \mathbb{E}_{s, a \sim \pi_{\theta_k}} \left[ \frac{\pi_\theta(a | s)}{\pi_{\theta_k}(a | s)} A^{\pi_{\theta_k}}(s, a) \right]$$
+
 TRPO 的策略更新被证明是单调收敛的，即新策略的表现不会比旧策略更差，但这也导致其可能陷入局部最优解，同时，计算 KL 散度约束使得每次更新的过程需要进行二次优化，求解代价较高
 
 ---
@@ -106,11 +135,12 @@ TRPO 的策略更新被证明是单调收敛的，即新策略的表现不会比
 在优势为正时，说明这是个好动作，应当更加偏好，但如果一开始 r 比较小，此时梯度也是 0 ，不会增加偏好，这显然不符合预期；对于优势为负的情况同理，如果一开始非常偏好一个坏动作，就纠正不回来了
 
 所以实际应用中，还要额外取 min 
+
 $$
-\begin{align}
+\begin{aligned}
 \theta_{k+1} &= \operatorname{argmax}_\theta \mathbb{E}_{s, a \sim \pi_{\theta_k}} \left[ L(s, a, \theta_k, \theta) \right] \\
 L(s, a, \theta_k, \theta) &= \min \left( \frac{\pi_\theta(a | s)}{\pi_{\theta_k}(a | s)} A^{\pi_{\theta_k}}(s, a), \, \text{clip} \left( \frac{\pi_\theta(a | s)}{\pi_{\theta_k}(a | s)}, 1 - \epsilon, 1 + \epsilon \right) A^{\pi_{\theta_k}}(s, a) \right)
-\end{align}
+\end{aligned}
 $$
 
 ![[EAI导论/imgs/img10/image-1.png]]
@@ -121,7 +151,9 @@ $$
 其具体原理是：对于优势为正，当 r 比较大时，L 的梯度就是 0 了，防止 r 继续增加，优势为负时同理，防止过度减小
 
 第二种是 **Adaptive KL Penalty Coefficient (PPO-Penalty)** ，与其把 $D_{KL}$ 设为强制约束，不如把它放到目标函数里，作为一个惩罚项
+
 $$L^{KL PEN}(\theta) = \hat{\mathbb{E}}_t \left[ \frac{\pi_\theta(a_t | s_t)}{\pi_{\theta_{\text{old}}}(a_t | s_t)} \hat{A}_t - \beta \, \text{KL}[\pi_{\theta_{\text{old}}}(\cdot \, | \, s_t), \pi_\theta(\cdot \, | \, s_t)] \right]$$
+
 - $\beta$ 是惩罚系数，控制着对策略变化大小的厌恶程度
 
 如果 $\beta$ 是一个固定值，我们会遇到一个难题
@@ -163,15 +195,18 @@ Navigation 解决的是路径规划问题，而 Locomotion 关注的是如何实
 MPC 通过使用系统的动态模型来预测其未来的行为，并实时计算出一系列最优的控制动作，但只执行第一个动作，然后在下一个时刻重复这个过程，就好比下棋时算几步然后走一步
 
 具体来讲，MPC 定义了一个代价函数，需要求解一个 $\mathbf{u}$ ，在满足约束的前提下，使代价函数最小，其中 $\mathbf{x}(t)$ 是位置状态， $\mathbf{u}(t)$ 是控制输入
+
 $$\int_{t_s}^{t_f} l(\mathbf{x}(t), \mathbf{u}(t), t) \, dt$$
+
 需要满足以下约束
+
 $$
-\begin{aligned}
+\begin{aligneded}
 &\mathbf{x}(t_s) = \mathbf{x}_s \quad &&\text{Initial Condition} \\
 &\dot{\mathbf{x}} = \mathbf{f}(\mathbf{x}, \mathbf{u}, t) \quad &&\text{System Dynamic} \\
 &\mathbf{g}(\mathbf{x}, \mathbf{u}, t) = 0 \quad &&\text{Equality Constraints} \\
 &\mathbf{h}(\mathbf{x}, \mathbf{u}, t) \geq 0 \quad &&\text{Inequality Constraints}
-\end{aligned}
+\end{aligneded}
 $$
 
 比如下面一个例子，要维持平衡，防止上面的球掉下来

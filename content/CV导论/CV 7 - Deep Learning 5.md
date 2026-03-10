@@ -149,6 +149,7 @@ grounding 视觉定位，提取物体的边界框
 但这是非常不准确的，所以需要统计每个事物类别的 acc
 
 **Intersection over Union**
+
 $$
 IoU = \frac{target \cap prediction}{target \cup prediction}
 $$
@@ -162,8 +163,11 @@ $$
 实际上 mean IoU 达到 50%+ 就很不错了
 
 **Soft IoU Loss**
+
 $$IoU = \frac{I(X)}{U(X)}$$where, $I(X)$ and $U(X)$ can be approximated as follows
 $$I(X) = \sum_{v \in V} X_v * Y_v$$$$U(X) = \sum_{v \in V} (X_v + Y_v - X_v * Y_v)$$Therefore, the IoU loss $L_{IoU}$ can be defined as follows
+
+
 $$L_{IoU} = 1 - IoU = 1 - \frac{I(X)}{U(X)}$$
 
 

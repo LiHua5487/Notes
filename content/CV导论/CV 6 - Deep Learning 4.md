@@ -33,6 +33,7 @@ tags:
 ![[CV导论/imgs/img6/image-3.png|154x290]] ![[CV导论/imgs/img6/image-2.png|184x230]]
 
 反向传播时，分成两股传播
+
 $$
 \frac{\partial L}{\partial x} = \frac{\partial L}{\partial y} \cdot \left[ \frac{\partial \mathcal{F}(x)}{\partial x} + I \right]
 $$
@@ -65,21 +66,29 @@ $$
 
 除了对数据操作，还可以适当限制模型，不要啥都随便学
 引入**权重正则化**，可以减少过拟合发生
+
 $$
 L(W) = \frac{1}{N} \sum_{i=1}^N L_i(f(x_i, W), y_i) + \lambda R(W)
 $$
+
 - L2 regularization:
+
 $$
 R(W) = \sum_k \sum_l W_{k,l}^2 \quad \text{(Weight decay)}
 $$
+
 - L1 regularization:
+
 $$
 R(W) = \sum_k \sum_l |W_{k,l}|
 $$
+
 - Elastic net (L1 + L2):
+
 $$
 R(W) = \sum_k \sum_l \beta W_{k,l}^2 + |W_{k,l}|
 $$
+
 引入超参 $\lambda$ ，对正则化项做出权衡，防止其影响过大或过小
 实际过程中，可以先不加 $\lambda$ ，在 main loss 不降后，再适当调整 $\lambda$ 
 
@@ -87,7 +96,9 @@ $$
 
 - 在训练过程的每一次迭代中，以$p$的概率随机丢弃一些神经元（设为0）
 - 保留的神经元需要除以$1-p$，以保持一层的期望不变
+
 $$ h' = \begin{cases} 0 & \text{概率为 } p \\ \frac{h}{1-p} & \text{其他情况} \end{cases} $$
+
 - 在测试时就不用随机置零了
 
 这种随机置零可以防止对特定特征产生依赖，从而避免过拟合
@@ -129,6 +140,7 @@ Techniques
 $$
 \sigma(z)_i = \frac{\exp(\beta z_i)}{\sum_{j=1}^K \exp(\beta z_j)}
 $$
+
 - $\beta$ 调节放大效应，默认为 1
 	越大则放大效应越大，逐渐趋于 argmax；设为 0 则变为均等分布
 - $K=2$ 时即为 sigmoid 函数
@@ -139,33 +151,42 @@ $$
 ![[CV导论/imgs/img6/image-6.png]]
 
 当 ground truth 为 one-hot 时，可以采用 NLL loss
+
 $$L_i = -\log P(Y=y_i|X=x_i)$$
+
 当 ground truth 不是 one-hot 的，意味着有不确定性，或经 label smoothing，可以采用 **KL-Divergence** 衡量差异
+
 $$
 D_{KL}(P \parallel Q) = \sum_{x \in \mathcal{X}} P(x) \log \left( \frac{P(x)}{Q(x)} \right)
 $$
+
 - $D_{KL}(P \parallel Q) \geq 0$  当且仅当 $P=Q$ 时取等
 - 不满足交换对称性与三角不等式
 
 $$
-\begin{align}
+\begin{aligned}
 D_{KL}(P \parallel Q) &= H(P,Q) - H(P) \\
 where\ H(P,Q) &= -\sum_{x \in \mathcal{X}} P(x) \log Q(x) \\
 H(P) &= -\sum_{x \in \mathcal{X}} P(x) \log P(x)
 
-\end{align}
+\end{aligned}
 $$
+
 - $H(P,Q)$ 称为交叉熵
 
 如果把 P 设为 ground truth，那梯度下降时，$H(P)$ 的梯度就是 0 ，只取决于交叉熵，称之为**交叉熵损失**
+
 $$
 \mathcal{L}_{CE} = H(P, Q) = -\sum_{x \in \mathcal{X}} P(x) \log Q(x)
 $$
+
 - $P(x)$ 为 ground-truth ，代表真实概率
 - $Q(x)$ 为模型预测的概率
 
 当 P 是 one-hot 时，可以进一步化简为
+
 $$\mathcal{L}_{CE} = -\log Q(x)$$
+
 - 随机初始化时，$Q(x) = \frac{1}{N}$，交叉熵损失为 $\log N$
 - 无上界，下界为 0
 

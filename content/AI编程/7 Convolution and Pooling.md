@@ -152,6 +152,7 @@ __global__ void max_pool_forward(
 # Softmax
 
 对于输入序列 $[a_1,...,a_n]$ ，其 softmax 计算如下
+
 $$S_j = \frac{e^{a_j}}{\sum_{k=1}^N e^{a_k}} \quad \forall j \in 1..N$$
 
 代码实现时，一个简单的想法是直接按照公式计算
@@ -196,16 +197,21 @@ def cross_entropy(X, y):
 ```
 
 可见我们其实是知道损失函数 $L$ 关于 $p_i$ 的具体表达式的
+
 $$L = -\sum_k y_k \log(p_k)$$
+
 我们又知道 $p_k$ 关于 $a_i$ 的表达式，所以可以不用链式法则，而是直接计算 $\frac{\partial L}{\partial a_i}$
+
 $$
-\begin{align}
+\begin{aligned}
 \frac{\partial L}{\partial a_i} &= -\sum_k y_k \frac{\partial \log(p_k)}{\partial a_i}\\
 &= -\sum_k y_k \frac{\partial \log(p_k)}{\partial p_k} \times \frac{\partial p_k}{\partial a_i}\\
 &= -\sum_k y_k \frac{1}{p_k} \times \frac{\partial p_k}{\partial a_i}
-\end{align}
+\end{aligned}
 $$
+
 前面又计算过 $\frac{\partial p_k}{\partial a_i}$ 这一项
+
 $$\frac{\partial p_i}{\partial a_j} =
 \begin{cases}
 p_i (1 - p_i) & \text{if } i = j \\
@@ -213,13 +219,15 @@ p_i (1 - p_i) & \text{if } i = j \\
 \end{cases}$$
 将其代入，并把 $k=i$ 和 $k\neq i$ 两种情况的求和分开写
 $$
-\begin{align}
+
+\begin{aligned}
 \frac{\partial L}{\partial a_i} &= -y_i (1 - p_i) - \sum_{k \neq i} y_k \frac{1}{p_k} (-p_k \cdot p_i)\\
 &= -y_i (1 - p_i) + \sum_{k \neq i} y_k \cdot p_i\\
 &= -y_i + y_i \cdot p_i + \sum_{k \neq i} y_k \cdot p_i\\
 &= p_i \left( y_i + \sum_{k \neq i} y_k \right) - y_i\\
 &= p_i - y_i
-\end{align}
+\end{aligned}
+
 $$
 可得一个非常简洁的计算公式
 $$\frac{\partial L}{\partial a_i} = p_i - y_i$$

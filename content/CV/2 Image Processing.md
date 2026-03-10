@@ -6,7 +6,9 @@
 ![[CV/img/img2/image.png]]
 
 假设现有随机变量 $X$ ，其 **累积分布函数 cumulative distribution function (CDF)** 定义如下
+
 $$F(x)=P(X\leq x)$$
+
 设 $y=F(x)$  ，则我们取 $y$ 上的一个均匀分布，可以通过 $F^{-1}$ 的作用得到 $x$ 服从的分布（这也是如何得到一个服从特定分布的随机数的方法），那么反过来，对于 $x$ ，我们可以根据其分布计算出 $F$ ，那么 $y=F(x)$ 就服从均匀分布了
 
 ![[CV/img/img2/image-1.png]]
@@ -60,10 +62,15 @@ $$F(x)=P(X\leq x)$$
 
 双边滤波在此基础上引入了另一个权重，两个权重综合作用进行滤波
 - Domain Kernel ：衡量与中心像素的距离，这是一个高斯核，越靠近中心权重越大
+
 $$W_d(i, j) = \exp\left(-\frac{(x_i - x)^2 + (y_i - y)^2}{2\sigma_d^2}\right)$$
+
 - Range Kernel ：衡量与中心像素的灰度/颜色相似程度，越相似权重越大
+
 $$W_r(i, j) = \exp\left(-\frac{(I(x_i, y_i) - I(x, y))^2}{2\sigma_r^2}\right)$$
+
 最终的结果由这两个卷积核共同作用得到
+
 $$
 I_{\text{filtered}}(x, y) = \frac{1}{W_{\text{total}}} \sum_{x_i, y_i \in \Omega} I(x_i, y_i) \cdot \underbrace{W_d(i, j)}_{\text{空间权重}} \cdot \underbrace{W_r(i, j)}_{\text{值域权重}}
 $$
@@ -152,11 +159,17 @@ $$
 那这跟拉普拉斯有啥关系？拉普拉斯每一层的计算相当于计算两层高斯金字塔的差距，这个过程是在用 高斯函数的差 Difference of Gaussian (DoG) 去近似 高斯函数的拉普拉斯 Laplacian of Gaussian (Log) 
 
 拉普拉斯算子 $\nabla$ 定义为
+
 $$\nabla^2 f = \frac{\partial^2 f}{\partial x^2} + \frac{\partial^2 f}{\partial y^2}$$
+
 而高斯函数定义为
+
 $$G(x, y; \sigma) = \frac{1}{2\pi\sigma^2} e^{-\frac{x^2 + y^2}{2\sigma^2}}$$
+
 可以通过推导得到
+
 $$G(x, y, k\sigma) - G(x, y, \sigma) \approx (k - 1) \sigma^2 \nabla^2 G$$
+
 由于高斯滤波是低通滤波，两个高斯滤波的差距就是保留中间一段频率的滤波，这称为 带通滤波 band-pass filter
 
 ---

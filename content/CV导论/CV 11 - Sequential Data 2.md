@@ -41,12 +41,14 @@ Weighted Sample ：根据概率分布产生输出，不只考虑最高的
 - 但是有小概率可能选一个不合理的，偏差越来越大
 
 输出每个词时，考虑前面 T 个词，其概率为
+
 $$
-\begin{align}
+\begin{aligned}
 P(y|x) &= P(y_1|x) P(y_2|y_1, x) P(y_3|y_1, y_2, x) \cdots P(y_T|y_1, \dots, y_{T-1}, x) \\
 &= \prod_{t=1}^T P(y_t | y_1, \dots, y_{t-1}, x)
-\end{align}
+\end{aligned}
 $$
+
 考虑所有的组合，使这个概率最大化，但这开销很大
 
 采用 beam search，每次只保留 top k 个概率，k 称 beam size

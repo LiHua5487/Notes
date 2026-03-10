@@ -113,7 +113,7 @@ for j, point in enumerate(points):
 		gridh = (relis+direction[1]) / (h-1) * 2 - 1
 		gridw = (reljs+direction[0]) / (w-1) * 2 - 1
 		grid = torch.stack([gridw,gridh], dim=-1).unsqueeze(0).unsqueeze(0)
-		target = F.grid_sample(feat_resize.float(), grid, align_corners=True).squeeze(2)
+		target = F.grid_sample(feat_resize.float(), grid, aligned_corners=True).squeeze(2)
 		loss_motion += F.l1_loss(feat_resize[:,:,relis,reljs].detach(), target)
 
 loss = loss_motion
@@ -164,7 +164,7 @@ direction = direction / (torch.linalg.norm(direction) + 1e-7)
 gridh = (relis+direction[1]) / (h-1) * 2 - 1
 gridw = (reljs+direction[0]) / (w-1) * 2 - 1
 grid = torch.stack([gridw,gridh], dim=-1).unsqueeze(0).unsqueeze(0)
-target = F.grid_sample(feat_resize.float(), grid, align_corners=True).squeeze(2)
+target = F.grid_sample(feat_resize.float(), grid, aligned_corners=True).squeeze(2)
 ```
 
 - `gridh` 和 `gridw` 是归一到 $[0,1]$ 区间的坐标值，供后面 `.grid_sample()` 使用

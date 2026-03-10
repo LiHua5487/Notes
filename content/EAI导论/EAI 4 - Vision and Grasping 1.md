@@ -26,7 +26,9 @@
 ![[EAI导论/imgs/img4/image-1.png]]
 
 预测物体的位姿，即预测在相机坐标系下的 R 和 T ，满足
+
 $$X_{cam} = R \cdot X_{obj} + T$$
+
 对于已知物体，根据一个RGB图片，若相机内参已知，且各个角度看起来不一样，就能一一对应到位姿 ；根据点云，也能一一对应（对于对称的物体，多种位姿本身就是是等价的）
 
 ## Rotation Regression
@@ -74,13 +76,16 @@ $$
 **9D表示法**解决了上述loss权重的问题，每一个 3×3 矩阵都与一个旋转矩阵一一对应，可以通过 SVD 进行转化，将 $\mathbb{R}^3$ 映射到 $\text{SO}(3)$ 
 
 任意一个 3×3 的矩阵 $\mathbf{M}$ 可以通过 SVD 分解为
+
 $$
 \mathbf{M} = \mathbf{U} \mathbf{S} \mathbf{V}^T
 $$
+
 - $\mathbf{U}$ 和 $\mathbf{V}$ 是正交矩阵
 - $\mathbf{S}$ 是对角矩阵，包含奇异值（非负）
 
 而后将矩阵 $\mathbf{M}$ 转换为满足旋转矩阵性质的正交矩阵 $\hat{\mathbf{R}}$
+
 $$
 \hat{\mathbf{R}} = \mathbf{U} \mathbf{\Sigma} \mathbf{V}^T \quad \mathbf{\Sigma} = 
 \begin{bmatrix}
@@ -89,6 +94,7 @@ $$
 0 & 0 & \det(\mathbf{U} \mathbf{V}^T)
 \end{bmatrix}
 $$
+
 - $\mathbf{\Sigma}$ 是一个修正后的对角矩阵，用于确保行列式为 1
 
 其loss就可以是直接将预测结果与旋转矩阵计算L2 loss
@@ -104,17 +110,22 @@ $$
 得到一系列 3D-3D 对应的坐标后，求解 R 与 T
 
 先求解 R ，假设只有旋转没有平移，那求解过程就可以看作通过旋转模型，使其与观测到的姿态尽可能相近，即以下问题，这种问题被称为 **Orthogonal Procrustes Problem**
+
 $$
 \hat{\mathbf{A}} = \arg\min_{\mathbf{A} \in \mathbb{R}^{3 \times 3}} \| \mathbf{M}^T - \mathbf{A} \mathbf{N}^T \|_F^2 \quad \text{subject to } \mathbf{A}^T \mathbf{A} = \mathbf{I} \quad \mathbf{M},\mathbf{N} \in \mathbb{R}^{n \times 3}
 $$
+
 - 其中 $\|\mathbf{X}\|_F = \sqrt{\text{trace}(\mathbf{X}^\top \mathbf{X})} = \sqrt{\sum_{i,j} x_{ij}^2}$
 - $\mathbf{M}$ 和 $\mathbf{N}$ 代表 n 组点组成的矩阵，这些点是相对于各自的几何中心的坐标
 
 对 $\mathbf{M}^T \mathbf{N}$ 进行 SVD ，得到 $\mathbf{M}^T \mathbf{N} = \mathbf{U} \mathbf{D} \mathbf{V}^T$ ，那么
+
 $$
 \hat{\mathbf{A}} = \mathbf{U} \mathbf{V}^T
 $$
+
 这个 $\hat{\mathbf{A}}$ 行列式不一定是 1 ，还需要进行处理，由于额外要求行列式为 1 ，所以称为 **constrained OPP**
+
 $$
 \hat{\mathbf{A}} = \mathbf{U} 
 \begin{bmatrix}
@@ -126,9 +137,11 @@ $$
 $$
 
 对于一般情况，求解 R 和 T ，即求解以下问题
+
 $$
 \hat{\mathbf{R}}, \hat{\mathbf{T}} = \arg\min_{\mathbf{R} \in SO(3), \mathbf{T} \in \mathbb{R}^{1 \times 3}} \|\mathbf{M}^T - \mathbf{R} \mathbf{N}^T - \mathbf{T}\|_F^2
 $$
+
 1. 先转化成相对于几何中心的坐标 $\tilde{\mathbf{M}} = \mathbf{M} - \bar{\mathbf{M}}, \tilde{\mathbf{N}} = \mathbf{N} - \bar{\mathbf{N}}$ 
 2. 利用上述方法求解 $\tilde{\mathbf{M}}^T \approx \hat{\mathbf{R}} \tilde{\mathbf{N}}^T$ 得到 $\hat{\mathbf{R}}$
 3. $\hat{\mathbf{T}} = \bar{\mathbf{M}}^T - \hat{\mathbf{R}} \bar{\mathbf{N}}^T$

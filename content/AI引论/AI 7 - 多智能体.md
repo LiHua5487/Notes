@@ -90,7 +90,9 @@ tags:
 
 假设 $E$ 选择 1 的概率是 $p$，$O$ 选择 1 的概率是 $q$  
 对于 $O$，在已知 $E$ 的策略参数 $p$ 的情况下，想让自己收益最大，对于零和博弈，就是让对方收益最小，使得 $E$ 收益最小的选择为  
+
 $$\text{argmin}(2p - 3(1 - p), -3p + 4(1 - p))$$
+
 - 左边对应 $O$ 选 1 ，右边是 $O$ 选 2
   
 ![[AI引论/AIimg/img7/image 1.png|251x211]]
@@ -101,7 +103,9 @@ $$\text{argmin}(2p - 3(1 - p), -3p + 4(1 - p))$$
 此时，$O$ 采用混合策略建模，即设 $O$ 选 1 概率为 q
 
 对于 $E$，在已知 $O$ 的策略参数 $q$ 的情况下，使得 $E$ 收益最大的选择为  
+
 $$\text{argmax}(2q - 3(1 - q), -3q + 4(1 - q))$$
+
 对于 $O$ ，$q$ 的选择应使上述式最小，同样可有 $q = 7/12$，$E$ 的收益为 $-1/12$
 这种情况称为 $E$ 的**最差最好情况**
 
@@ -112,22 +116,26 @@ $$\text{argmax}(2q - 3(1 - q), -3q + 4(1 - q))$$
 记 $p = [p, 1 - p]^T, q = [q, 1 - q]^T$ 为一组混合策略，M 为收益矩阵
 
 针对 $E$ ，可以定义其最好的最差情况和最差的最好情况  
+
 $$
-\begin{align}
+\begin{aligned}
 V_{\text{maximin}} &= \max_p \min_q p^T M q \\
 V_{\text{minimax}} &= \min_q \max_p p^T M q
-\end{align}
+\end{aligned}
 $$
+
 - 其中 $p^T M q$ 为形式上的记号，代表双方采用混合策略 p q 时，最终的收益
 - 满足 $V_{\text{maximin}} \leq V_{\text{minimax}}$
 
 **冯诺依曼定理**：对于任意双人零和博弈，记 $M$ 为收益矩阵，$p_1$ 为玩家 $1$ 的混合策略，$p_2$ 为玩家 $2$ 的混合策略，若记 
+
 $$
-\begin{align}
+\begin{aligned}
 V_{\text{maximin}} = \max_{p_1} \min_{p_2} p_1^T M p_2 \tag{1}\\
 V_{\text{minimax}} = \min_{p_2} \max_{p_1} p_1^T M p_2 \tag{2}
-\end{align}
+\end{aligned}
 $$
+
 则有：$V_{\text{maximin}} = V_{\text{minimax}}$ ，此时 $(1)$ 的解 $p_1^*$ 和 $(2)$ 的解 $p_2^*$ 构成纳什均衡
 
 ## 合作博弈
@@ -162,39 +170,54 @@ $N$ 本身也是一个联盟，即所有参与者一起合作
 
 其中稳定性要求：
 1. 个体理性：每个人合作的收益不低于自己单独的收益
+
 $$x_i \geq v(\{i\})$$
+
 2. 团体理性：整个大联盟的所有收益都必须分配
+
 $$\sum_{i=1}^n x_i = v(N)$$
+
 3. 团体稳定性：合作产生了正面的效果，至少达到预期
+
 $$\sum_{i\in C}x_i\geq v(C)$$
 
 而对于公平性，先定义贡献
 **边际贡献**：参与者 $i$ 加入联盟 $C$ ($i \notin C$) 带来的额外收益
+
 $$
 \text{mc}_i(C) = v(C \cup \{i\}) - v(C)
 $$
 
 - 直觉上，边际贡献更大的参与者应该获得更多收益分配
 - 无效参与者 dummy ：对任何联盟都没贡献
+
 $$\forall C \subseteq N - \{i\}, \text{mc}_i(C) = 0$$
+
 - 对称参与者：两个人在任何联盟中贡献都一样
+
 $$\forall C \subseteq N - \{i, j\}, \text{mc}_i(C) = \text{mc}_j(C)$$
 
 **公平性公理**：设 $\phi_i(G)$ 是问题 $G = (N, v)$ 的一个分配方案，需满足：
 1. 所有收益必须得到分配
+
 $$
 \sum_{i \in N} \phi_i(G) = v(N)
 $$
+
 2. 无贡献者不分配收益
+
 $$
 \phi_i(G) = 0, \forall i \in \text{dummy}
 $$
 
 3. 对称参与者应得到相同收益
+
 $$
 \phi_i(G) = \phi_j(G), \forall \text{ symmetric } (i, j)
 $$
+
 4. 分配方案是线性可加的：对两个独立的博弈问题 $G = (N, v), G' = (N, v')$，定义 $G'' = G + G' = (N, v + v')$，则  
+
 $$
 \phi_i(G + G') = \phi_i(G) + \phi_i(G'), \forall i \in N
 $$
@@ -204,8 +227,10 @@ $$
 
 所以我们要考察所有可能的顺序，对应边际贡献的平均值
 这就是 **Shapley 值**
+
 $$
 \phi_i(G) = \sum_{C \subseteq N \setminus \{i\}} \frac{|C|!(n - |C| - 1)!}{n!} \text{mc}_i(C)
 $$
+
 - $\phi(G) = (\phi_1(G), \phi_2(G), ..., \phi_n(G))$ 为收益向量
 - Shapley 值是满足公平性公理的唯一解

@@ -5,28 +5,37 @@
 
 Phong 模型由三部分组成：环境光、漫反射光、镜面反射光，总的光照效果是这三部分加起来
 - 环境光
+
 $$
 I_{\text{ambient}} = k_a \times I_a
 $$
+
 	其中 $k_a$ 是环境光系数， $I_a$​ 是环境光强度
 - 漫反射光
+
 $$
 I_{\text{diffuse}} = k_d \times I_l \times (N \cdot L)
 $$
+
 	其中 $k_d$ 是漫反射系数，$I_l$ 是光源强度，$N$ 是表面法向量，$L$ 是光源方向
 - 镜面反射光
+
 $$
 I_{\text{specular}} = k_s \times I_l \times (R \cdot V)^n
 $$
+
 	其中 $k_s$ 是镜面反射系数，$I_l$ 是光源强度，$R$ 是光线反射方向量（光线从表面反射出去的方向），$V$ 是视线方向量（从表面到眼睛的方向），$n$ 是光泽度（越大越光滑）
 
 Blinn-Phong 对镜面反射的部分进行了优化，用半角向量 $H$ 代替反射向量 $R$ 
+
 $$
 
 I_{specular} = k_s \times I_l \times (N \cdot H)^n
 
 $$
+
 其中 $H$ 是半角向量，它是 $L$ 和 $V$ 的对角线方向，并进行归一化
+
 $$
 
 H = \frac{L + V}{\| L + V \|}
@@ -58,27 +67,40 @@ $$
 凹凸映射 Bump Mapping 通过调整物体表面不同地方的明暗程度，使物体看起来有凹凸不平的细节（但表面形状没有改变），这可以通过调整表面的法向量实现
 
 我们先计算原先的法向量，假设采用 $(u,v)$ 坐标，则表面上一点可以表示为 
+
 $$P=(x(u,v),y(u,v),z(u,v))$$
+
 分别对 $u$ 和 $v$ 求偏导得 $P_u$ 和 $P_v$ ，则该点法向量可以表示为
+
 $$N=P_u\times P_v,\quad \hat N=\frac{N}{\|N\|}$$
+
 而后需要调整法向量，《Bump Mapping Unparametrized Surfaces on the GPU》中的方法是接收一个高度图作为输入，每点有一个高度值 $H$ ，表示沿着原先的法向量方向移动多少（可正可负），则移动后点坐标变为
+
 $$P'=P+H\cdot \hat{N}$$
+
 对其求偏导得
+
 $$P'_u=P_u+H_u\cdot \hat{N}+H\cdot\frac{\partial\hat N}{\partial u}$$
+
 其中 $\frac{\partial\hat N}{\partial u}$ 是一个高阶小量，可以忽略，则
+
 $$P'_u=P_u+H_u\cdot \hat{N}$$
+
 对于 $P'_v$ 同理，可得调整后的法向量为
+
 $$
-\begin{align}
+\begin{aligned}
 N'&=P'_u\times P'_v\\
 &=P_u \times P_v + H_v \cdot P_u \times \hat N + H_u \cdot \hat N \times P_v + H_u H_v \cdot \hat N \times \hat N\\
 &=N+\underbrace{(H_v\cdot P_u\times \hat N-H_u\cdot P_v\times \hat N)}_D \\
 \hat N'&=\frac{N'}{\|N'\|}
-\end{align}
+\end{aligned}
 $$
+
 可见我们只需计算 $D$ ，再加到原先的法向量上，最后归一化即可
 
 在计算 $H_u$ 和 $H_v$ 时，直接使用差分近似即可；在计算 $P_u$ 和 $P_v$ 时，OpenGL 提供了 $dFdx$ 和 $dFdy$ 函数，但它们是对屏幕空间 $(x,y)$ 的导数，不过我们可以列出以下方程
+
 $$\begin{cases}
 \frac{\partial P}{\partial x}= \frac{\partial P}{\partial u}\frac{\partial u}{\partial x}+\frac{\partial P}{\partial v}\frac{\partial v}{\partial x}\\
 \frac{\partial P}{\partial y}= \frac{\partial P}{\partial u}\frac{\partial u}{\partial y}+\frac{\partial P}{\partial v}\frac{\partial v}{\partial y}
@@ -106,10 +128,12 @@ $$\begin{cases}
 在模型渲染到屏幕上时，经过了如下的坐标变换
 
 $$
-\begin{align}
+
+\begin{aligned}
 &\text{模型坐标系} \xrightarrow{\text{Model Matrix}} \text{世界坐标系} \xrightarrow{\text{View Matrix}} \text{相机/视图坐标系} \\
 &\xrightarrow{\text{投影矩阵 MVP}} \text{裁剪空间} \xrightarrow{\text{透视除法}} \text{归一化设备空间 NDC} \rightarrow \text{屏幕空间}
-\end{align}
+\end{aligned}
+
 $$
 
 ![[VCL/作业/img/img3/image-4.png]]
@@ -126,53 +150,76 @@ $$
 
 设模型空间中的顶点位置为 $p$，法向量为 $n$ ，经过视图变换 $V$ 后坐标为
 $$
+
 p_{eye} = V \cdot p
+
 $$
 又经过投影矩阵 $P$ 变换到裁剪空间，坐标变为
 $$
+
 p_{clip} = P \cdot p_{eye} = P \cdot V \cdot p
+
 $$
 我们需要在屏幕空间中获得固定宽度的轮廓线，设期望的轮廓线宽度为 $w$ 个像素，屏幕分辨率为 $W \times H$ 
 
 屏幕空间到 NDC 的映射为
 $$
+
 x_{ndc} = \frac{2 x_{screen}}{W} - 1, \quad y_{ndc} = 1 - \frac{2 y_{screen}}{H}
+
 $$
 因此，一个像素在NDC中的大小为
 $$
+
 \Delta x_{ndc} = \frac{2}{W}, \quad \Delta y_{ndc} = \frac{2}{H}
+
 $$
 现在考虑顶点偏移，我们希望顶点沿法线方向偏移，但需要在裁剪空间中进行，法线在裁剪空间中的方向为
 $$
+
 n_{clip} = (P \cdot V)_{3 \times 1} \cdot n
+
 $$
 为了获得屏幕空间中的固定宽度 $w$，先考虑在 NDC 中的偏移量，由于屏幕是 2D 的，我们只需在 xy 平面内进行偏移，其中 $n_{clip, xy}$ 为 $n_{clip}$ 的 xy 分量
 $$
+
 \Delta p_{ndc} = w \cdot \left(\frac{2}{W}, \frac{2}{H}\right) \cdot \frac{n_{clip, xy}}{\|n_{clip, xy}\|}
+
 $$
 而后考虑在裁剪空间中的偏移量，有
 $$
+
 p_{ndc} = \frac{p_{clip} + \Delta p_{clip}}{p_{clip, w}} = \frac{p_{clip}}{p_{clip, w}} + \Delta p_{ndc}
+
 $$
 可得裁剪空间中的偏移量为
 $$
+
 \Delta p_{clip} = p_{clip, w} \cdot \Delta p_{ndc}
+
 $$
 代入 $\Delta p_{ndc}$ 的表达式得
 $$
+
 \Delta p_{clip} = p_{clip, w} \cdot w \cdot \left(\frac{2}{W}, \frac{2}{H}\right) \cdot \frac{n_{clip, xy}}{\|n_{clip, xy}\|}
+
 $$
 
 ## 正面颜色渲染
 
 Gooch Shading 用冷暖色的变化来实现非真实感渲染，为了计算每一块的颜色，首先需要计算一个在传统 Lambert 光照模型中也使用的系数：表面法向量 $n$ 与光源方向 $l$ 的点积，这代表光线强度
 $$
+
 dot = n \cdot l
+
 $$
 但是 $dot$ 的取值范围是 $[-1, 1]$ ，需要变换到 $[0,1]$ 作为混合系数
 $$t= \frac{1}{2}(dot+1)$$
+
 最后通过插值计算颜色，其中 $k_{cool}$ 和 $k_{warm}$ 是事先设定的冷色和暖色
+
 $$color = (1 - t) \cdot k_{cool} + t \cdot k_{warm}$$
+
 为了增强卡通效果，我还对 $t$ 进行了离散化处理，这样能产生一些清晰的分界线，最终效果如下
 
 ![[VCL/作业/img/img3/image-6.png]]  
@@ -253,14 +300,21 @@ for (auto const & model : _sceneObject.OpaqueModels) {
 传统的方法是，求射线与三角形所在平面的交点，然后看在不在三角形内部，而 《Fast, Minimum Storage Ray/Triangle Intersection》中的 Möller-Trumbore 算法的过程如下
 
 对于射线，可以用起点 $O$ 和方向 $D$ 来表示
+
 $$R(t) = O + tD$$
+
 而三角形可以用重心坐标来表示，设三个顶点为 $V_0$ $V_1$ $V_2$ ，则
+
 $$T(u,v) = (1 - u - v)V_0 + uV_1 + vV_2$$
+
 要求 $u \geq 0, v \geq 0$ ，且 $u + v \leq 1$ ，以保证点在三角形内部
 
 如果射线与三角形相交，则射线上某点 $R(t)$ 应该等于三角形上某点 $T(u,v)$ 
+
 $$O + tD = (1 - u - v)V_0 + uV_1 + vV_2$$
+
 把未知数 $t, u, v$ 放到一边，变形为
+
 $$
 \begin{bmatrix}
 -D, & V_1 - V_0, & V_2 - V_0
@@ -272,7 +326,9 @@ v
 \end{bmatrix}
 = O - V_0
 $$
+
 定义 $E_1 = V_1 - V_0,\ E_2 = V_2 - V_0,\ T = O - V_0$，则方程变为
+
 $$
 \begin{bmatrix}
 -D, & E_1, & E_2
@@ -284,7 +340,9 @@ v
 \end{bmatrix}
 = T
 $$
+
 这可以用克拉默法则来求解，结果为
+
 $$
 \begin{bmatrix}
 t \\
@@ -299,7 +357,9 @@ v
 (T \times E_1) \cdot D
 \end{bmatrix}
 $$
+
 在实际计算中，常常先计算一些中量来加速，比如定义 $P = D \times E_2$ 和 $Q = T \times E_1$，则结果为
+
 $$
 \begin{bmatrix}
 t \\
@@ -314,6 +374,7 @@ P \cdot T \\
 Q \cdot D
 \end{bmatrix}
 $$
+
 计算出 $t, u, v$ 后，需要检查它们是否有效
 - $t\geq 0$ ：交点在射线的正方向上
 - $u \geq 0,\ v \geq 0,\ u + v \leq 1$ ：交点在三角形内部
@@ -339,7 +400,7 @@ Whitted 风格的光追算法过程如下
 
 我搞了个 BVH 来加速，其想法是把场景中的物体分组放进不同的盒子里（层次包围盒），然后再把这些小盒子放进更大的盒子里，形成一个树结构，对于一个光线，可以先检查它是否击中大盒子，如果没击中，就可以跳过整个大盒子里的所有物体，大大减少计算量
 
-这里我采用 AABB 包围盒 (Axis-Aligned Bounding Box) ，即一个与坐标轴对齐的立方体，只需记录最大和最小的两个顶点就可以表示其范围，内部的点满足 $min_x \leq x \leq max_x, min_y \leq y \leq max_y,  min_z \leq z \leq max_z$ 
+这里我采用 AABB 包围盒 (Axis-aligneded Bounding Box) ，即一个与坐标轴对齐的立方体，只需记录最大和最小的两个顶点就可以表示其范围，内部的点满足 $min_x \leq x \leq max_x, min_y \leq y \leq max_y,  min_z \leq z \leq max_z$ 
 
 构建BVH树的过程如下
 - 先把所有三角形放到一个盒子里，作为根节点
@@ -349,7 +410,9 @@ Whitted 风格的光追算法过程如下
 ---
 
 下面判断一个光线是否与一个包围盒相交，一个光线/射线可以参数化表示为
+
 $$R(t)=O+tD$$
+
 - $O$ 为起点，设 $O=(x_0,y_0,z_0)$ 
 - $D$ 为方向，可以看作速度，设 $D=(v_x,v_y,v_z)$
 
@@ -358,19 +421,23 @@ $$R(t)=O+tD$$
 ![[VCL/作业/img/img3/image-10.png]]
 
 考虑光线到达 $C_i$ 的时间 $t_i$ ，以 $C_1$ 为例，我们可以把光线的运动分解为 $x$ 和 $y$ 方向的匀速直线运动，则有
+
 $$
-\begin{align}
+\begin{aligned}
 &x_{OC_1}=min_x-x_0 \\
 &t_1=\frac{x_{OC_1}}{v_x}=\frac{min_x-x_0}{v_x}
-\end{align}
+\end{aligned}
 $$
+
 同理可得 $t_2,t_3,t_4$ ，再结合另一条光线（橙色），可以发现以下规律：光线入射包围盒的时间是 $t_1,t_2$ 中的最大者，而出射时间是 $t_3,t_4$ 的最小者，即
+
 $$
-\begin{align}
+\begin{aligned}
 t_{\text{enter}}&=\text{max}(t_1,t_2)\\
 t_{\text{exit}}&=\text{min}(t_3,t_4)
-\end{align}
+\end{aligned}
 $$
+
 如果光线与包围盒相交，应满足
 - $t_{\text{exit}}\geq t_{\text{enter}}$ ：确保先射入，再离开
 - $t_{\text{exit}}\geq 0$ ：确保光线从正面击中（这里不要求 $t_{\text{enter}}\geq 0$ ，是因为光线从包围盒内部发出，也认为是相交）

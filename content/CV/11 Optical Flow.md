@@ -21,11 +21,17 @@
 - 运动一致性：一个点与其邻近点的移动方式应该差不多
 
 假设一点从 $(x,y)$ 移动到了 $(x+u,y+v)$ ，我们要求解出 $(u,v)$ ，直接暴力匹配开销太大了，考虑先列一些方程，由亮度恒定性，有
+
 $$I(x,y,t)=I(x+u,y+v,t+1)$$
+
 将右式用泰勒展开近似可得
+
 $$I(x + u,y + v,t + 1) \approx I(x,y,t) + I_x u + I_y v + I_t$$
+
 其中 $I_x=\frac{\partial I}{\partial x},I_y=\frac{\partial I}{\partial y}$  ，则
+
 $$I_x u + I_y v + I_t=\nabla I[u,v]+I_t \approx 0$$
+
 当 $[u,v]$ 比较小时，可以这么近似，但是如果 $u$ 或 $v$ 非常大，就不行了，所以需要“小位移”的假设
 
 将 $I_x u + I_y v + I_t=0$ 视为一个直线，则点 $(x,y)$ 对应的光流 $(u,v)$ 就处在这个直线上
@@ -33,10 +39,13 @@ $$I_x u + I_y v + I_t=\nabla I[u,v]+I_t \approx 0$$
 ![[CV/img/img11/image-2.png]]
 
 将 $(u,v)$ 分解为沿着直线 $u_p$ 和垂直直线 $u_n$ 这两个分量，很容易计算出 $u_n$ 
+
 $$u_n = \frac{|I_t|}{(I_x^2 + I_y^2)}(I_x, I_y)$$
+
 但 $u_p$ 没法确定，这就带来歧义性，所以说从光流推断的运动方向和真实的运动方向不一定一样
 
 为此，利用“运动一致性”的假设，取一个 5×5 的小窗口，假设其光流一样，即 $(u,v)$ 相同，则每一个像素都可以列一个方程，整合到一起，发现正好是 $Ax=b$ 的形式
+
 $$
 \underbrace{\begin{bmatrix}
 I_x(p_1) & I_y(p_1) \\
@@ -54,7 +63,9 @@ I_t(p_1) \\
 I_t(p_{25})
 \end{bmatrix}}_{b}
 $$
+
 利用最小二乘法，即求解 $A^TAx=A^Tb$ ，也就是下面的方程
+
 $$
 \underbrace{\begin{bmatrix}
 \sum I_x I_x & \sum I_x I_y \\
@@ -70,6 +81,7 @@ v
 \sum I_y I_t
 \end{bmatrix}}_{A^Tb}
 $$
+
 左边这个矩阵正好与 Harris Corner 里 response 对应的矩阵一样
 
 ## Coarse-to-Fine Optical Flow Estimation
@@ -89,10 +101,13 @@ Horn-Schunck Optical Flow 做出的假设是
 - 光滑性：光流向量在空间上是平滑变化的
 
 其 Energy 函数如下
+
 $$
 \min_{u,v} \sum_{i,j} \left\{ E_d(i,j) + \lambda E_s(i,j) \right\} = \iint \underbrace{\left( I_x u + I_y v + I_t \right)^{2}}_{\text{brightness constancy}} + \lambda \underbrace{\left( \|\nabla u\|^{2} + \|\nabla v\|^{2} \right)}_{\text{smoothness}} dxdy
 $$
+
 其中 smooth term 定义为与周围 4 个像素的光流的差异
+
 $$E_s(i,j) = \frac{1}{4} \left[ (u_{ij} - u_{i+1,j})^2 + (u_{ij} - u_{i,j+1})^2 + (v_{ij} - v_{i+1,j})^2 + (v_{ij} - v_{i,j+1})^2 \right]$$
 
 Lucas-Kanade Optical Flow 中考察一个局部窗口内的光流，适合捕捉细节的运动；Horn-Schunck Optical Flow 考虑全局的光流变化，侧重整体的运动

@@ -83,20 +83,24 @@ This process is called **Convolution**.
 The weight of convolution kernel can be modified by Learning.
 
 #### Convolution Theorem 卷积定理
+
 $$
-\begin{align}
+\begin{aligned}
 \mathcal{F}(f*g) = \mathcal{F}(f)\mathcal{F}(g) \\ 
 \therefore h = \mathcal{F}^{-1}(\mathcal{F}(f)\mathcal{F}(g))
-\end{align}
+\end{aligned}
 $$
+
 即 $时域的卷积 \rightarrow 频域的乘积 \xrightarrow{求逆} 卷积的结果$
 其中傅里叶变换 $\mathcal{F}(f)$ : $时域 \xrightarrow{\mathcal{F}} 频域$
 
 卷积与傅里叶变换的关系
 根据卷积定理，卷积在时域中是傅里叶变换的乘法，即：
+
 $$
 f(x) * g(x) \xrightarrow{\text{Fourier Transform}} F(u) \cdot G(u)
 $$
+
 这里：
 - $f(x) * g(x)$ 是信号 $f(x)$ 和滤波器 $g(x)$ 的卷积。
 - $F(u) \cdot G(u)$ 是它们在频率域中的对应元素逐点相乘。
@@ -117,6 +121,7 @@ $$
 	在大型卷积操作中，频域方法比直接运算更快，特别是当卷积核较大时
 
 公式加速的视图：
+
 $$
 \text{conv2d}(I, K) \approx \mathcal{F}^{-1}\left(\mathcal{F}(I) \cdot \mathcal{F}(K)\right)
 $$
@@ -145,6 +150,7 @@ Basic Filter Types
 ## Binarization 二值化
 
 Define a threshold $\tau$, e.g., $\tau = 100$.
+
 $$
 h[m, n] =
 \begin{cases} 
@@ -152,6 +158,7 @@ h[m, n] =
 0, & \text{otherwise.}
 \end{cases}
 $$
+
 P.S. This process is not a linear system.
 
 - Example
@@ -181,11 +188,14 @@ An edge is defined as a region in the image where there is a “significant” c
 - **Metrics** 指标
 	- **Precision** 精确率 
 		衡量  “模型预测对了的边缘占预测出的边缘的比例”：
+
 		$$ Precision = \frac{TP}{TP + FP} $$
 
 	 - **Good Localization**
 		衡量 “检测到的边缘的位置准确性“
+
 		$$ Recall = \frac{TP}{TP + FN} $$
+
 		- 减少检测边缘和真实边缘之间的位置误差，使边缘的定位更准确
 		- 高 Recall 的意义：模型能够检测到尽量多的真实边缘（漏报少）
 		- 但高 Recall 不一定说明模型的预测质量高，可能同时带来了很多误报
@@ -210,9 +220,11 @@ What Causes An Edge?
 	![[CV导论/imgs/img/image-11.png|424x311]]
 	Seems that we can save one operation!
 - **Derivative Theorem of Convolution**
+
 $$
 \frac{d}{dx}(f * g) = f * \frac{d}{dx}g
 $$
+
 	 ![[image-12.png|390x237]]
 
 

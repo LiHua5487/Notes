@@ -15,20 +15,26 @@
 ![[CV/img/img8/image-1.png]]
 
 从数学的角度来看，由于我们只知道一堆 2D 坐标，没有更多的信息，如果对 $X$ 应用一个变换 $Q_{4\times 4}$ ，并把相机参数对应的投影矩阵 $P$ 调整为 $PQ^{-1}$ ，仍然可以得到相同的 2D 坐标，这种情况称为 **Projective Ambiguity** 
+
 $$x \simeq PX = (P Q^{-1})(Q X)$$
+
 如果直接求解，还原出的 3D 场景可能很离谱
 
 ![[CV/img/img8/image-2.png]]
 
 考虑给 $Q$ 添加一些约束，比如平行性约束（平行线变换后仍然平行），那 $Q$ 就应该长这样，这种情况称为 **Affine Ambiguity** 
+
 $$Q_A = \begin{bmatrix} A & t \\ 0^T & 1 \end{bmatrix}$$
+
 - $A$ 为一个 3×3 的满秩矩阵，对应一个仿射变换
 - $t$ 为一个平移变换
 
 ![[CV/img/img8/image-3.png]]
 
 再严格一点，添加正交约束（相互垂直的线变换后仍然垂直），那 $Q$ 就长这样，这种情况称为 **Similarity Ambiguity** ，这对应使用投影相机拍摄下的约束
+
 $$Q_S = \begin{bmatrix} sR & t \\ 0^T & 1 \end{bmatrix}$$
+
 - $R$ 是一个旋转矩阵，$s$ 是缩放因子，$t$ 是平移变换
 
 ![[CV/img/img8/image-4.png]]
@@ -42,10 +48,15 @@ $$Q_S = \begin{bmatrix} sR & t \\ 0^T & 1 \end{bmatrix}$$
 ![[CV/img/img8/image-5.png]]
 
 从数学的角度去看，在透视投影中，投影点 $(x,y)$ 通常遵循如下关系
+
 $$x = f \frac{X}{Z}, \quad y = f \frac{Y}{Z}$$
+
 然而在弱投影下，我们把深度近似为一个常量 $Z \approx Z_\text{avg}$ ​，则投影关系变为
+
 $$x \approx f \frac{X}{Z_\text{avg}}, \quad y \approx f \frac{Y}{Z_\text{avg}}$$
+
 这等价于对点 $(X,Y,Z)$ 进行仿射变换，如果把 $\frac{f}{Z_\text{avg}}$ 视为一个常数，那这个变换正好与正交投影类似（直接把物体垂直投影到成像平面上，丢弃了深度 $z$ ）
+
 $$\begin{pmatrix}
 x \\
 y \\
@@ -64,7 +75,9 @@ z \\
 1
 \end{pmatrix}
 $$
+
 那么相机的投影矩阵 $P$ 可以简化为
+
 $$P = \begin{bmatrix}
 K_{2D} & t_{2D} \\
 0 & 1
@@ -84,6 +97,7 @@ a_{21} & a_{22} & a_{23} & t_{2} \\
 \end{bmatrix}$$
 则坐标变换在笛卡尔坐标下就可以表示为
 $$\begin{pmatrix}
+
 x \\
 y
 \end{pmatrix}
@@ -112,17 +126,22 @@ t_{2}
 >这里 -12 是因为考虑到 $Q$ 引入的不确定性，而 Affine Ambiguity 中 $Q$ 为仿射变换，有 12 个自由度
 
 为了简化方程，把一个图像上的 $n$ 个点中心化，消去平移向量
+
 $$
-\begin{align}
+\begin{aligned}
 \hat{x}_{ij} & = x_{ij} - \frac{1}{n} \sum_{k=1}^n x_{ik} \\
 & = A_i X_j + t_i - \frac{1}{n} \sum_{k=1}^n \left( A_i X_k + t_i \right) \\
 & = A_i \left( X_j - \frac{1}{n} \sum_{k=1}^n X_k \right) \\
 & = A_i \hat{X}_j
-\end{align}
+\end{aligned}
 $$
+
 同时把世界坐标原点设在这 $n$ 个点的 3D 坐标的中心，那么 $\hat{X}_j=X_j$ ，于是方程变为
+
 $$\hat x_{ij}=A_iX_j$$
+
 把所有的方程合并成矩阵形式
+
 $$
 \underbrace{\begin{bmatrix}
 \hat{x}_{11} & \hat{x}_{12} & \cdots & \hat{x}_{1n} \\
@@ -140,19 +159,25 @@ A_m
 X_1 & \cdots & X_n
 \end{bmatrix}}_{S_{3\times n}}
 $$
+
 注意这里 $\hat x_{ij}=A_iX_j$ 是 2D 的，所以 $D$ 一共有 $2m$ 行，$M$ 代表着一系列相机参数，$S$ 就是还原出的 3D 坐标 
 
 考虑 $D$ 的秩，根据矩阵乘积的秩的规律，有
+
 $$\text{rank}(D) \leq \min(\text{rank}(M), \text{rank}(S))$$
+
 而由于 $M$ 和 $S$ 的形状，可得这俩矩阵的秩不超过 3 ，则 $D$ 的秩不超过 3 ，于是我们将 $D$ 进行 SVD 分解，并取出前 3 行/列
 
 ![[CV/img/img8/image-7.png]]
 
 那么 $M$ 和 $S$ 就是
+
 $$M = U_3 \Sigma^{\frac{1}{2}}_3, \quad S = \Sigma^{\frac{1}{2}}_3 V^T_3$$
+
 但是由于 Affine Ambiguity ，这里得到的解是仿射解，我们希望得到的是欧几里得解（比如拍摄了一个正方体，直接得到的仿射解是一个平行六面体，而希望得到的欧几里得解是一个立方体）
 
 所以我们给 $M$ 和 $S$ 添加一个 $Q$ ，使得添加 $Q$ 后的 $M'$ 和 $S'$ 是欧几里得解
+
 $$
 D = 
 \begin{bmatrix}
@@ -165,13 +190,17 @@ A_m Q
 Q^{-1} X_1 & Q^{-1} X_2 & \cdots & Q^{-1} X_n
 \end{bmatrix}
 $$
+
 >这里的 $Q$ 不是 Affine Ambiguity 中的 $Q_A$ ，而是对应着 $Q_A$ 中的 $A$ ，需要矫正 $A$ 带来的仿射影响
 
 这要求 $A_iQ$ 是一个正交矩阵，即
+
 $$(A_iQ)(A_iQ)^T=A_i(QQ^T)A_i^T=I_{2\times 2}$$
+
 直接用这个方程求解 $Q$ 比较困难，因为其关于 $Q$ 是非线性的，可以定义 $N=QQ^T$ ，求解 $N$ ，这就是线性的了，可以用最小二乘法求解，需要把这个方程转换为 $Hx=b$ 的形式
 
 由于 $N$ 是对称阵，可以假设
+
 $$
 N = 
 \begin{bmatrix}
@@ -180,11 +209,13 @@ n_{12} & n_{22} & n_{23} \\
 n_{13} & n_{23} & n_{33}
 \end{bmatrix}
 $$
+
 而后把 $A_iNA_i^T=I$ 展开，再把展开后的方程写为 $Hx=b$ 的形式求解
 
 得到 $N$ 后，需要进一步解出 $Q$ ，这可以使用 Cholesky decomposition （将一个正定对称阵分解为下三角矩阵右乘其转置 $A=LL^T$ ）
 
 最后，只需把 $M$ 和 $S$ 用 $Q$ 更新一下
+
 $$M\leftarrow MQ,\quad S\leftarrow Q^{-1}S$$
 
 ## Incremental SFM

@@ -107,9 +107,12 @@ we can get a number with $w^Tx + b$
 
 Q: bias 怎么设置？不同 filter？不同位置？
 A：一个 filter 一个 bias，如果每个格子一个 bias，那求和后相当于一个 bias
+
 $$\sum (w_i^Tp_i + b_i) = \sum w_i^Tp_i + \sum b_i = \sum w_i^Tp_i + b$$
+
 若image的不同位置设置不同 bias，会破坏平移等变性
 bias 的作用，以 ReLU 为例，bias 可以控制是否通过 ReLU
+
 $$ReLU(\sum w_i^Tp_i + b)$$
 
 **Convolution Kernel**
@@ -118,7 +121,9 @@ dimension: $k×k×C_1×C_2$
 k 为卷积核大小， $C_1$ 为输入通道数， $C_2$ 为输出通道数（也是卷积核个数）
 
 stride 步长：每次卷积核移动几格
+
 $$Output size = (N - F) / stride + 1$$
+
 - N 为输入图像大小，F 为卷积核大小
 不能整除怎么办？ 引入 padding 操作
 

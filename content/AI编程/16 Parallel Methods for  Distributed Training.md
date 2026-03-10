@@ -113,11 +113,17 @@ Solution 2: Ring Attention
 尽管 softmax 需要对整个一列进行，但实际上只用转一圈（而不用先转一圈传递 $K$ ，等 softmax 完了再转圈传 $V$ ），具体原理参考下面的推导
 
 简化起见，设 $Q=(q_1,q_2,q_3)^T,K=(k_1,k_2,k_3)^T,V=(v_1,v_2,v_3)^T$ ，要求 $Y=\text{softmax}(QK^T)V$ ，考虑第 $i$ 个设备，即对于 $q_i$ ，可得
+
 $$q_iK^T=(q_ik_1,q_ik_2,q_ik_3)$$
+
 那么 softmax 结果为
+
 $$\text{softmax}(q_iK^T)=(\frac{e^{q_ik_1}}{\sum_{j=1}^3e^{q_ik_j}},\frac{e^{q_ik_2}}{\sum_{j=1}^3e^{q_ik_j}},\frac{e^{q_ik_3}}{\sum_{j=1}^3e^{q_ik_j}})$$
+
 再乘上 $V$ 可得
+
 $$y_i=\frac{\sum_{j=1}^3e^{q_ik_j}\cdot v_j}{\sum_{j=1}^3e^{q_ik_j}}$$
+
 也就是说，我们只需要维护两个累积量，分别累积 $e^{q_ik_j}\cdot v_j$ 和 $e^{q_ik_j}$ 就行
 
 # Bottlenecks of Distributed Training

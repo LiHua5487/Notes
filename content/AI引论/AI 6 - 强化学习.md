@@ -34,11 +34,15 @@ tags:
 ![[AI引论/AIimg/img7/image-1.png]]
 
 轨迹（亦称episode/rollout） ：状态、行动、奖励的序列
+
 $$\tau = (s_0, a_0, r_0, s_1, a_1, r_1, ..., s_t, r_t, ...)$$
+
 - 不断利用某一策略行动的结果
 
 在一条轨迹上，有一个累积收益
+
 $$G(\tau) = r_0 + \gamma r_1 + \gamma^2 r_2 + \cdots = \sum_{i=0}^{T} \gamma^i r_i$$
+
 折扣因子 $\gamma \ (0 \leq \gamma \leq 1)$ ：描述未来收益的重要程度
 -  若 $\gamma = 1$，则近的收益和远的收益一样重要
 -  若 $\gamma = 0$，则只看下一步的收益（最贪心）
@@ -46,7 +50,9 @@ $$G(\tau) = r_0 + \gamma r_1 + \gamma^2 r_2 + \cdots = \sum_{i=0}^{T} \gamma^i r
 
 对于一个策略是好是坏，可以用价值函数 $V_{\pi}$ 判断
 状态价值 $V_{\pi}(s)$ ：从 $s$ 出发执行策略 $\pi$ 能获得的累积收益
+
 $$V_{\pi}(s) = \mathbb{E}_{\tau \sim \pi}[G(\tau) | s_0 = s] = \mathbb{E}_{\tau \sim \pi}\left[\sum_t \gamma^t r_t \mid s_0 = s\right]$$
+
 - $\mathbb{E}$ 表示期望
 - 从同一个状态出发，状态价值越大，策略越好
 - 使得 $V$ 最大的策略就是最优策略，记作 $\pi*$，根据最优策略得到的状态价值就是最优状态价值，记作 $V*$ 
@@ -54,56 +60,68 @@ $$V_{\pi}(s) = \mathbb{E}_{\tau \sim \pi}[G(\tau) | s_0 = s] = \mathbb{E}_{\tau 
 在 MDP 问题中，根据不同状态得到的最优策略是相同的，即存在一个全局的最优策略
 
 动作价值 $Q_{\pi}(s,a)$ ：从 $s$ 出发并做动作 $a$，之后再执行策略 $\pi$ 能获得的累积收益
+
 $$Q_{\pi}(s,a) = \mathbb{E}_{\tau \sim \pi}[G(\tau) | s_0 = s, a_0 = a] = \mathbb{E}_{\tau \sim \pi}\left[\sum_t \gamma^t r_t \mid s_0 = s, a_0 = a\right]$$
+
 - 有些时候计算动作价值更方便，因为可以直接取 argmax 得到最优动作
 
 # Bellman 方程
 
 对于当前状态，可以先根据策略走一步达到下一个状态
 当前状态的状态价值就是走一步得到的奖励加上之后状态的状态价值
+
 $$
-\begin{align}
+\begin{aligned}
 V_{\pi}(s) &= \mathbb{E}_{\tau \sim \pi}[G(\tau)|s_0 = s] \\ 
 &= \mathbb{E}_{\tau \sim \pi}[r_0 + \gamma r_1 + \gamma^2 r_2 + \cdots |s_0 = s] \\ 
 &= \mathbb{E}_{(a_0, r_0, s_1, a_1, r_1, s_2, \dots) \sim \pi}[r_0 + \gamma(r_1 + \gamma r_2 + \cdots)] \\ 
 &= \mathbb{E}_{(a_0,r_0,s_1) \sim \pi}[r_0 + \gamma \mathbb{E}_{(a_1,r_1,s_2, \dots) \sim \pi}[r_1 + \gamma r_2 + \cdots]] \\ 
 &= \mathbb{E}_{(a_0,r_0,s_1) \sim \pi}[r_0 + \gamma V_{\pi}(s_1)] \\ 
-\end{align}
+\end{aligned}
 $$
+
 而先走一步有不同的走法，通过状态转移方程，达到不同的下一个状态，所以可以变成这样
+
 $$
 V_{\pi}(s) = \sum_{a} \pi(a|s) \sum_{s',r} p(s',r|s,a) [r + \gamma V_{\pi}(s')].
 $$
+
 这就得到了 **Bellman 期望方程**
 对于动作价值，第一步 $a$ 是固定下来的
+
 $$
-\begin{align}
+\begin{aligned}
 V_{\pi}(s) &= \sum_{a} \pi(a|s) \sum_{s',r} p(s',r|s,a) [r + \gamma V_{\pi}(s')] \\
 Q_{\pi}(s,a) &= \sum_{s',r} p(s',r|s,a)[r + \gamma V_{\pi}(s')] \\
 &\forall s \in S, a \in A(s), s' \in S^+ \\[1em]
-\end{align}
+\end{aligned}
 $$
 
 要得到最优价值，就是对于不同的策略，选择对应价值最大的
+
 $$
-\begin{align}
+\begin{aligned}
 V^*(s) &= \max_{\pi} V_{\pi}(s) \\
 Q^*(s,a) &= \max_{\pi} Q_{\pi}(s,a)
-\end{align}
+\end{aligned}
 $$
+
 最优的策略，就是走动作价值最大的一个动作，那最优价值就是这样
+
 $$
 V^*(s) = \max_{a} Q^*(s,a) 
 $$
+
 可以得到 **Bellman 最优方程**
+
 $$
-\begin{align}
+\begin{aligned}
 V^*(s) &= \max_{a} \mathbb{E}[r_t + \gamma V^*(S_{t+1}) | S_t = s, A_t = a] \\
 &= \max_{a} \sum_{s',r} p(s',r|s,a)[r + \gamma V^*(s')] \\[1em]
 Q^*(s,a) &= \mathbb{E}[r_t + \gamma \max_{a'} Q^*(S_{t+1},a') | S_t = s, A_t = a] \\
 &= \sum_{s',r} p(s',r|s,a)[r + \gamma \max_{a'} Q^*(s',a')] \\
 &\forall s \in S, a \in A(s), s' \in S^+
-\end{align}
+\end{aligned}
 $$
 
 ![[AI引论/AIimg/img7/image-2.png]]
@@ -115,24 +133,30 @@ $$
 对于一个策略 $\pi$，可以利用 Bellman 方程得到状态价值函数 $V_\pi$
 
 Bellman期望方程：
+
 $$
 V_\pi(s) = \sum_a \pi(a|s) \sum_{s',r} p(s',r|s,a)[r + \gamma V_\pi(s')]
 $$
+
 先初始化价值函数，给所有状态的 $V(s)$ 初始化为任意值（通常为 0）
 利用这个式子进行迭代更新：
+
 $$
 V_{k+1}(s) = \sum_a \pi(a|s) \sum_{s',r} p(s',r|s,a)[r + \gamma V_k(s')]
 $$
+
 - $k$ 代表迭代步数
 
 $\max_{s \in S} |V_{k+1}(s) - V_k(s)|$ 足够小时停止迭代，代表 $V_\pi(s)$ 几乎没变化
 可以近似认为 $V'_\pi(s) = V_\pi(s)$ ，满足
+
 $$
-\begin{align}
+\begin{aligned}
 V'_\pi(s) &= \sum_a \pi(a|s) \sum_{s',r} p(s',r|s,a)[r + \gamma V_\pi(s')] \\
 &= \sum_a \pi(a|s) \sum_{s',r} p(s',r|s,a)[r + \gamma V'_\pi(s')]
-\end{align}
+\end{aligned}
 $$
+
 这正好符合 Bellman 期望方程，可以认为得到的就是最优状态价值函数
 
 ## 策略提升
@@ -140,16 +164,20 @@ $$
 还可以利用 Bellman 方法改进策略
 
 根据状态估值计算动作估值：
+
 $$
 Q_\pi(s, a) = \sum_{s',r} p(s',r|s,a)[r + \gamma v_\pi(s')]
 $$
+
 贪心选择动作产生新策略
+
 $$
-\begin{align}
+\begin{aligned}
 \pi'(s) &= \arg\max_a Q_\pi(s, a) \\
 &= \arg\max_a \sum_{s',r} p(s',r|s,a)[r + \gamma v_\pi(s')]
-\end{align}
+\end{aligned}
 $$
+
 可以证明，新的策略一定不会比原策略差，即状态价值不低于原策略的
 
 ![[AI引论/AIimg/img7/image-4.png]]
@@ -159,6 +187,7 @@ $$
 $$
 \pi_0 \xrightarrow{\text{E}} v_{\pi_0} \xrightarrow{\text{I}} \pi_1 \xrightarrow{\text{E}} v_{\pi_1} \xrightarrow{\text{I}} \pi_2 \xrightarrow{\text{E}} \cdots \xrightarrow{\text{I}} \pi_* \xrightarrow{\text{E}} v_*
 $$
+
 -  $\xrightarrow{\text{E}}$ 表示策略估值，$\xrightarrow{\text{I}}$ 表示策略提升
 
 有限MDP问题中：$S, A, R$ 的取值都有有限个
@@ -168,6 +197,7 @@ $$
 问题在于收敛很慢
 可以利用 Bellman 最优方程迭代，即**值迭代**
 在值函数收敛之后，根据最优价值函数 $V^*(s)$ 得到对应的最优策略 
+
 $$
 \pi^*(s) = \arg\max_a \sum_{s'} P(s' \mid s, a) \Big[R(s, a, s') + \gamma V^*(s')\Big]
 $$
@@ -190,6 +220,7 @@ Q-Learning 无需知道环境的状态转移方程，仅通过与环境交互学
 	- 目标策略通常是贪心策略，选择使 $Q(s,a)$ 最大的动作
 
 Q-Learning 中，行为策略是 $\epsilon$-greedy 策略
+
 $$
 a_t =
 \begin{cases} 
@@ -197,21 +228,27 @@ a_t =
 \arg\max_a Q(s_t, a) \,  & \text{概率 } 1 - \epsilon 
 \end{cases}
 $$
+
 而目标策略是完全贪心策略
+
 $$
 \pi(s_{t+1}) = \arg\max_{a'} Q(s_{t+1}, a')
 $$
 
 核心思想是利用 Bellman 最优方程的最优动作价值函数更新
+
 $$
 Q^*(s,a) = \mathbb{E}[r_t + \gamma \max_{a'} Q^*(S_{t+1},a') | S_t = s, A_t = a]
 $$
+
 希望通过更新 Q 
 
 在实际应用中，期望被基于采样的经验替代，更新公式为
+
 $$
 Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_t + \gamma \max_{a'} Q(s_{t+1}, a') - Q(s_t, a_t) \right]
 $$
+
 - 学习率 $\alpha \in (0, 1]$：用于控制新经验对更新的影响
 - $r_t + \gamma \max_{a'} Q(s_{t+1}, a')$：TD 目标值，根据与当前值的差距逐渐向其逼近
 - 更新公式称为 Q 函数，$Q(s,a)$ 称为 Q 值
@@ -247,20 +284,26 @@ $$
 目的是要学习一个含有参数 $\theta$ 的函数 $Q_\theta(s,a)$
 
 目标值，为了让 Q 值收敛到满足贝尔曼方程的值
+
 $$y_t = r_t + \gamma \max_{a'} Q_\theta(s_{t+1}, a')$$
+
  - $r_t$ ：当前动作的即时奖励
  - $\gamma \cdot \max_{a'} Q_\theta(s_{t+1}, a')$ ：考虑未来累积奖励，折扣因子 $\gamma \in [0, 1]$ 控制权重
 
 更新方程 
+
 $$
 Q_\theta(s_t, a_t) \leftarrow Q_\theta(s_t, a_t) + \alpha \left(y_t - Q_\theta(s_t, a_t)\right)
 $$
+
 - 通过优化神经网络，使得 $y_t$ 和 $Q_\theta(s_t, a_t)$ 的差距最小
 
 优化目标，把上述更新公式转为一个均方误差 (MSE) 损失函数
+
 $$
 \mathcal{L}(\theta) = \mathbb{E}_{(s_t, a_t) \sim D} \left[ \left( Q_\theta(s_t, a_t) - \left( r_t + \gamma \max_{a'} Q_\text{target}(s_{t+1}, a') \right) \right)^2 \right]
 $$
+
 - D 是经验回放池 replay buffer，存储历史的 $(s_t, a_t, r_t, s_{t+1})$ ，训练时随机采样小批量数据来更新网络
 - $Q_{target}$ 是目标网络，每隔一定步数根据 $Q_\theta$ 更新一次，避免训练同时修改目标和预测值，导致训练震荡
 
@@ -270,6 +313,7 @@ $$
 所以，需要引入经验放回池，把之前所有的尝试记下来
 
  通过最小化损失函数 $\mathcal{L}(\theta)$，就可以更新网络的参数 $\theta$
+
 $$
 \theta^\star \leftarrow \arg\min_\theta \frac{1}{2} \sum_{(s_t, a_t) \in D} \left[ Q_\theta(s_t, a_t) - \left(r + \gamma \max_{a'} Q_{target}(s_{t+1}, a')\right) \right]^2
 $$

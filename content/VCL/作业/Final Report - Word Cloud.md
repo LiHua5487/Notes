@@ -34,16 +34,20 @@ xmake run lab-final
 ## 阿基米德螺旋线
 
 阿基米德螺旋线的极坐标公式为
+
 $$r(\theta) = m\theta + b$$
+
 对于一个离散的步数 $n$ ，螺旋线上第 $n$ 个点的直角坐标 $(x_n, y_n)$ 为
+
 $$
-\begin{align}
+\begin{aligned}
 \theta_n &= \alpha \cdot n \\
 r_n &= \beta \cdot n \\
 x_n &= x_c + r_n \cdot \cos(\theta_n) \\
 y_n &= y_c + r_n \cdot \sin(\theta_n)
-\end{align}
+\end{aligned}
 $$
+
 - $\alpha$ ：超参数，角度步长，决定旋转速度
 - $\beta$ ：超参数，半径步长，决定往外扩张的速度
 - $(x_c, y_c)$ ：图像中心点坐标
@@ -53,6 +57,7 @@ $$
 ## Shape Wordle
 
 [Shape Wordle](https://enac.hal.science/hal-02399743/file/shapeSSS.pdf) 算法能够为给定区域计算出一个与之形状适配的螺旋线（形状感知螺旋线），该算法会事先计算出一个距离场 $\phi(x,y)$ （如相对于区域边缘的 SDF），在任意点 $p = (x, y)$ 处，螺旋线下一步的移动量 $(dx, dy)$ 为
+
 $$
 \begin{pmatrix}
 dx \\
@@ -60,6 +65,7 @@ dy
 \end{pmatrix}
 = \frac{mR\,d\eta}{r}\mathbf{N} + R\,d\eta\,\mathbf{T}
 $$
+
 - $m$ ：超参数，控制螺旋线各圈之间的间距
 - $d\eta$：超参数，角度步长
 - $R$：点 $p$ 处距离场等值线的局部曲率半径
