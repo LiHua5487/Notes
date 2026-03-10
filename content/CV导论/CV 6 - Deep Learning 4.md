@@ -97,7 +97,9 @@ $$
 - 在训练过程的每一次迭代中，以$p$的概率随机丢弃一些神经元（设为0）
 - 保留的神经元需要除以$1-p$，以保持一层的期望不变
 
-$$ h' = \begin{cases} 0 & \text{概率为 } p \\ \frac{h}{1-p} & \text{其他情况} \end{cases} $$
+$$
+h' = \begin{cases} 0 & \text{概率为 } p \\ \frac{h}{1-p} & \text{其他情况} \end{cases}
+$$
 
 - 在测试时就不用随机置零了
 
@@ -152,7 +154,9 @@ $$
 
 当 ground truth 为 one-hot 时，可以采用 NLL loss
 
-$$L_i = -\log P(Y=y_i|X=x_i)$$
+$$
+L_i = -\log P(Y=y_i|X=x_i)
+$$
 
 当 ground truth 不是 one-hot 的，意味着有不确定性，或经 label smoothing，可以采用 **KL-Divergence** 衡量差异
 
@@ -185,7 +189,9 @@ $$
 
 当 P 是 one-hot 时，可以进一步化简为
 
-$$\mathcal{L}_{CE} = -\log Q(x)$$
+$$
+\mathcal{L}_{CE} = -\log Q(x)
+$$
 
 - 随机初始化时，$Q(x) = \frac{1}{N}$，交叉熵损失为 $\log N$
 - 无上界，下界为 0

@@ -188,13 +188,17 @@ An edge is defined as a region in the image where there is a “significant” c
 - **Metrics** 指标
 	- **Precision** 精确率 
 		衡量  “模型预测对了的边缘占预测出的边缘的比例”：
-
-		$$ Precision = \frac{TP}{TP + FP} $$
+		
+$$
+Precision = \frac{TP}{TP + FP}
+$$
 
 	 - **Good Localization**
 		衡量 “检测到的边缘的位置准确性“
-
-		$$ Recall = \frac{TP}{TP + FN} $$
+		
+$$
+Recall = \frac{TP}{TP + FN}
+$$
 
 		- 减少检测边缘和真实边缘之间的位置误差，使边缘的定位更准确
 		- 高 Recall 的意义：模型能够检测到尽量多的真实边缘（漏报少）

@@ -151,7 +151,13 @@ GS-Net 表现出较强的泛化能力，这是因为
 - 输出 Objectness 是一个二分类任务，判断点在物体上还是桌面上
 - 输出 Graspness 是一个回归任务，评估该点适合抓取的程度
 
->Objectness 实际上是一个二维向量，包含点在物体和桌面上的概率，即$$O_p = [\text{background score}, \text{object score}]$$虽然用 Sigmoid + Binary Cross-Entropy(BCE) 也可以解决二分类问题，但在 PyTorch/TensorFlow 等框架中，更常规和通用的做法是用 Softmax + Cross-Entropy 
+>Objectness 实际上是一个二维向量，包含点在物体和桌面上的概率，即
+
+$$
+O_p = [\text{background score}, \text{object score}]
+$$
+
+虽然用 Sigmoid + Binary Cross-Entropy(BCE) 也可以解决二分类问题，但在 PyTorch/TensorFlow 等框架中，更常规和通用的做法是用 Softmax + Cross-Entropy 
 
 接下来对 $N$ 个点按 Objectness 和 Graspness 进行筛选
 - 根据 Objectness 只保留在物体上的点

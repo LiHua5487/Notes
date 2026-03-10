@@ -22,15 +22,21 @@
 
 假设一点从 $(x,y)$ 移动到了 $(x+u,y+v)$ ，我们要求解出 $(u,v)$ ，直接暴力匹配开销太大了，考虑先列一些方程，由亮度恒定性，有
 
-$$I(x,y,t)=I(x+u,y+v,t+1)$$
+$$
+I(x,y,t)=I(x+u,y+v,t+1)
+$$
 
 将右式用泰勒展开近似可得
 
-$$I(x + u,y + v,t + 1) \approx I(x,y,t) + I_x u + I_y v + I_t$$
+$$
+I(x + u,y + v,t + 1) \approx I(x,y,t) + I_x u + I_y v + I_t
+$$
 
 其中 $I_x=\frac{\partial I}{\partial x},I_y=\frac{\partial I}{\partial y}$  ，则
 
-$$I_x u + I_y v + I_t=\nabla I[u,v]+I_t \approx 0$$
+$$
+I_x u + I_y v + I_t=\nabla I[u,v]+I_t \approx 0
+$$
 
 当 $[u,v]$ 比较小时，可以这么近似，但是如果 $u$ 或 $v$ 非常大，就不行了，所以需要“小位移”的假设
 
@@ -40,7 +46,9 @@ $$I_x u + I_y v + I_t=\nabla I[u,v]+I_t \approx 0$$
 
 将 $(u,v)$ 分解为沿着直线 $u_p$ 和垂直直线 $u_n$ 这两个分量，很容易计算出 $u_n$ 
 
-$$u_n = \frac{|I_t|}{(I_x^2 + I_y^2)}(I_x, I_y)$$
+$$
+u_n = \frac{|I_t|}{(I_x^2 + I_y^2)}(I_x, I_y)
+$$
 
 但 $u_p$ 没法确定，这就带来歧义性，所以说从光流推断的运动方向和真实的运动方向不一定一样
 
@@ -108,7 +116,9 @@ $$
 
 其中 smooth term 定义为与周围 4 个像素的光流的差异
 
-$$E_s(i,j) = \frac{1}{4} \left[ (u_{ij} - u_{i+1,j})^2 + (u_{ij} - u_{i,j+1})^2 + (v_{ij} - v_{i+1,j})^2 + (v_{ij} - v_{i,j+1})^2 \right]$$
+$$
+E_s(i,j) = \frac{1}{4} \left[ (u_{ij} - u_{i+1,j})^2 + (u_{ij} - u_{i,j+1})^2 + (v_{ij} - v_{i+1,j})^2 + (v_{ij} - v_{i,j+1})^2 \right]
+$$
 
 Lucas-Kanade Optical Flow 中考察一个局部窗口内的光流，适合捕捉细节的运动；Horn-Schunck Optical Flow 考虑全局的光流变化，侧重整体的运动
 

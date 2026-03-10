@@ -35,13 +35,17 @@ tags:
 
 轨迹（亦称episode/rollout） ：状态、行动、奖励的序列
 
-$$\tau = (s_0, a_0, r_0, s_1, a_1, r_1, ..., s_t, r_t, ...)$$
+$$
+\tau = (s_0, a_0, r_0, s_1, a_1, r_1, ..., s_t, r_t, ...)
+$$
 
 - 不断利用某一策略行动的结果
 
 在一条轨迹上，有一个累积收益
 
-$$G(\tau) = r_0 + \gamma r_1 + \gamma^2 r_2 + \cdots = \sum_{i=0}^{T} \gamma^i r_i$$
+$$
+G(\tau) = r_0 + \gamma r_1 + \gamma^2 r_2 + \cdots = \sum_{i=0}^{T} \gamma^i r_i
+$$
 
 折扣因子 $\gamma \ (0 \leq \gamma \leq 1)$ ：描述未来收益的重要程度
 -  若 $\gamma = 1$，则近的收益和远的收益一样重要
@@ -51,7 +55,9 @@ $$G(\tau) = r_0 + \gamma r_1 + \gamma^2 r_2 + \cdots = \sum_{i=0}^{T} \gamma^i r
 对于一个策略是好是坏，可以用价值函数 $V_{\pi}$ 判断
 状态价值 $V_{\pi}(s)$ ：从 $s$ 出发执行策略 $\pi$ 能获得的累积收益
 
-$$V_{\pi}(s) = \mathbb{E}_{\tau \sim \pi}[G(\tau) | s_0 = s] = \mathbb{E}_{\tau \sim \pi}\left[\sum_t \gamma^t r_t \mid s_0 = s\right]$$
+$$
+V_{\pi}(s) = \mathbb{E}_{\tau \sim \pi}[G(\tau) | s_0 = s] = \mathbb{E}_{\tau \sim \pi}\left[\sum_t \gamma^t r_t \mid s_0 = s\right]
+$$
 
 - $\mathbb{E}$ 表示期望
 - 从同一个状态出发，状态价值越大，策略越好
@@ -61,7 +67,9 @@ $$V_{\pi}(s) = \mathbb{E}_{\tau \sim \pi}[G(\tau) | s_0 = s] = \mathbb{E}_{\tau 
 
 动作价值 $Q_{\pi}(s,a)$ ：从 $s$ 出发并做动作 $a$，之后再执行策略 $\pi$ 能获得的累积收益
 
-$$Q_{\pi}(s,a) = \mathbb{E}_{\tau \sim \pi}[G(\tau) | s_0 = s, a_0 = a] = \mathbb{E}_{\tau \sim \pi}\left[\sum_t \gamma^t r_t \mid s_0 = s, a_0 = a\right]$$
+$$
+Q_{\pi}(s,a) = \mathbb{E}_{\tau \sim \pi}[G(\tau) | s_0 = s, a_0 = a] = \mathbb{E}_{\tau \sim \pi}\left[\sum_t \gamma^t r_t \mid s_0 = s, a_0 = a\right]
+$$
 
 - 有些时候计算动作价值更方便，因为可以直接取 argmax 得到最优动作
 
@@ -285,7 +293,9 @@ $$
 
 目标值，为了让 Q 值收敛到满足贝尔曼方程的值
 
-$$y_t = r_t + \gamma \max_{a'} Q_\theta(s_{t+1}, a')$$
+$$
+y_t = r_t + \gamma \max_{a'} Q_\theta(s_{t+1}, a')
+$$
 
  - $r_t$ ：当前动作的即时奖励
  - $\gamma \cdot \max_{a'} Q_\theta(s_{t+1}, a')$ ：考虑未来累积奖励，折扣因子 $\gamma \in [0, 1]$ 控制权重
@@ -317,8 +327,4 @@ $$
 $$
 \theta^\star \leftarrow \arg\min_\theta \frac{1}{2} \sum_{(s_t, a_t) \in D} \left[ Q_\theta(s_t, a_t) - \left(r + \gamma \max_{a'} Q_{target}(s_{t+1}, a')\right) \right]^2
 $$
-
-
-
-
 

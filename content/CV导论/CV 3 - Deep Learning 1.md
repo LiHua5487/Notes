@@ -63,10 +63,17 @@ while some less important features need to be abandoned.
 
 use MNIST data base, with 28×28 resolution for each image
 flatten the image to a one-dimensional vector $x \in R^{784}$ as input
-Let’s assume a linear function $$h(x)=g(\theta^Tx)$$
+Let’s assume a linear function 
+
+$$
+h(x)=g(\theta^Tx)
+$$
+
 $g(z)$ is a **Sigmoid Function**, which converts $z=\theta^Tx$ from $(-\infty,\infty)$ to $(0,1)$
 
-$$g(z) = \frac{1}{1 + e^{-z}}$$
+$$
+g(z) = \frac{1}{1 + e^{-z}}
+$$
 
 then we need to decide the fitting/training objective by using **Loss Function**
 
@@ -87,26 +94,36 @@ p(y = 1 \mid x; \theta) = h_\theta(x) \\
 p(y = 0 \mid x; \theta) = 1 - h_\theta(x)
 \end{aligned}$$
 将 $y =0$ 和 $y=1$ 的情况写在一起，就变成
-$$p(y \mid x; \theta) = \big(h_\theta(x)\big)^y \big(1 - h_\theta(x)\big)^{1-y}$$
+
+$$
+
+p(y \mid x; \theta) = \big(h_\theta(x)\big)^y \big(1 - h_\theta(x)\big)^{1-y}
+
+$$
+
 
 假设不同数据组之间相互独立，那整体概率就变成
 
 $$
+
 \begin{aligned}
 p(Y \mid X; \theta) &= \prod_{i=1}^n p\left(y^{(i)} \mid x^{(i)}; \theta\right) = \prod_{i=1}^n \left(h_\theta(x^{(i)})\right)^{y^{(i)}} \left(1 - h_\theta(x^{(i)})\right)^{1 - y^{(i)}} \\
 \log p(Y \mid X; \theta) &= \sum_{i=1}^n y^{(i)} \log\left(h_\theta(x^{(i)})\right) + \left(1 - y^{(i)}\right) \log\left(1 - h_\theta(x^{(i)})\right)
 \end{aligned}
+
 $$
 
 由此得到 **Negative Likelihood Loss (NLL)**
 
 $$
+
 \begin{aligned}
 \mathcal{L}(\theta) 
 &= - \log p(Y \mid X; \theta) \\
 &= - \sum_{i=1}^n \left[ y^{(i)} \log\left(h_\theta(x^{(i)})\right) 
 + \left(1 - y^{(i)}\right) \log\left(1 - h_\theta(x^{(i)})\right) \right]
 \end{aligned}
+
 $$
 
 而后最小化这个损失
@@ -122,7 +139,13 @@ notice that the gradient of Loss implies the fastest direction to raise Loss
 then we just need to move along the direction opposite to the gradient
 so we can update the params like this
 
-$$\theta := \theta - \alpha \nabla_\theta \mathcal{L}(\theta)$$where $\alpha$ is a hyper parameter, which means **Learning Rate**
+
+$$
+
+\theta := \theta - \alpha \nabla_\theta \mathcal{L}(\theta)
+
+$$
+where $\alpha$ is a hyper parameter, which means **Learning Rate**
 - If $\alpha$ is small enough, then GD will definitely lead to a smaller loss after the update. However, a too small needs too many iterations to get the bottom.
 - If is too big,  overshoot! Loss not necessary to decrease.
 

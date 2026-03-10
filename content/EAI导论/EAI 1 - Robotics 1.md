@@ -30,7 +30,9 @@ articulated object 关节物体
 
 假设坐标系 $s$ 通过某种旋转和平移与 $b$ 重合，将这两个变换在 $s$ 下分别用旋转矩阵 $\mathbf{R}^s_{s \to b}$ 和平移向量 $\mathbf{t}^s_{s \to b}$ 表示，则有如下转换关系
 
-$$\mathbf{p}^s = \mathbf{R}^s_{s \to b} \cdot \mathbf{p}^b + \mathbf{t}^s_{s \to b}$$
+$$
+\mathbf{p}^s = \mathbf{R}^s_{s \to b} \cdot \mathbf{p}^b + \mathbf{t}^s_{s \to b}
+$$
 
 >先把物体放到 $s$ 的坐标原点（无旋转），则该点在 $s$ 下的坐标值就等于 $\mathbf{p}^b$ ，而后把旋转和平移应用上去就行
 
@@ -66,15 +68,21 @@ $$
 
 可见平移项破坏了线性变换的性质，但是可以采用齐次坐标，这样就能表示成线性变换了：在齐次坐标系下，坐标变成
 
-$$\tilde{p} = \begin{bmatrix}p \\1\end{bmatrix} \in \mathbb{R}^4$$
+$$
+\tilde{p} = \begin{bmatrix}p \\1\end{bmatrix} \in \mathbb{R}^4
+$$
 
 上述变换就可以表示为一个矩阵
 
-$$T_{s \to b}^s = \begin{bmatrix}R_{s \to b}^s & t_{s \to b}^s \\0 & 1\end{bmatrix} \in \mathbb{R}^{4 \times 4}$$
+$$
+T_{s \to b}^s = \begin{bmatrix}R_{s \to b}^s & t_{s \to b}^s \\0 & 1\end{bmatrix} \in \mathbb{R}^{4 \times 4}
+$$
 
 那坐标变换就可以写成这样
 
-$$\tilde{p}^s = T_{s \to b}^s\ \tilde{p}^b$$
+$$
+\tilde{p}^s = T_{s \to b}^s\ \tilde{p}^b
+$$
 
 这个变换还有以下性质
 
@@ -190,7 +198,9 @@ end-effector 的 pose 有以下的描述方式
 
 特殊正交群 Special Orthogonal Group ，n 维空间下记作 $SO(n)$ 
 
-$$\text{SO}(n) = \{ R \in \mathbb{R}^{n \times n} : \det(R) = 1, R R^T = I \}$$
+$$
+\text{SO}(n) = \{ R \in \mathbb{R}^{n \times n} : \det(R) = 1, R R^T = I \}
+$$
 
 - Group 群：一种闭合的代数结构，表示可以进行某种操作（如矩阵乘法）并保持在同一个集合中
 - Orthogonal 正交的：$R R^T = I$  
@@ -208,7 +218,9 @@ $\text{SO(n)}$ 可用来代表 n 维的旋转操作
 
 特殊欧几里得群 Special Euclidean Group ，记作 $\text{SE}(3)$
 
-$$\text{SE}(3) := \left\{ T = \begin{bmatrix}R & t \\ 0 & 1\end{bmatrix},R \in \text{SO}(3), t \in \mathbb{R}^3\right\}$$
+$$
+\text{SE}(3) := \left\{ T = \begin{bmatrix}R & t \\ 0 & 1\end{bmatrix},R \in \text{SO}(3), t \in \mathbb{R}^3\right\}
+$$
 
 - Group ： $\text{SE}(3)$ 是代数意义上的一个群，意味着其有以下性质
 

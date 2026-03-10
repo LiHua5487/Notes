@@ -42,7 +42,9 @@ $$
 
 把这个点经过内参外参的投影，就能得到图片中 vanishing point 的坐标
 
-$$v \cong P X_\infty$$
+$$
+v \cong P X_\infty
+$$
 
 两个 vanishing point 可以确定一个 vanishing line ，在图片中，其到地面的距离（通常选取一个在地上的物体作为参照）就是相机的高度
 

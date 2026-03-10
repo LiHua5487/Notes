@@ -35,7 +35,9 @@ xmake run lab-final
 
 阿基米德螺旋线的极坐标公式为
 
-$$r(\theta) = m\theta + b$$
+$$
+r(\theta) = m\theta + b
+$$
 
 对于一个离散的步数 $n$ ，螺旋线上第 $n$ 个点的直角坐标 $(x_n, y_n)$ 为
 

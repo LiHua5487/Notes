@@ -15,11 +15,15 @@
 
 我们把直线用隐式方程表示，其中 $N$ 为经过 $P_0$ 的直线的法向量，$P$ 为直线上的任一点
 
-$$N \cdot (P - P_0)=0$$
+$$
+N \cdot (P - P_0)=0
+$$
 
 为了判断点在直线的哪一侧，可以将左侧定义为 $F$
 
-$$F(P) := N \cdot (P - P_0)$$
+$$
+F(P) := N \cdot (P - P_0)
+$$
 
 - 当 $F < 0$ 时，$P$ 点位于直线上方，当 $F > 0$ 时位于直线下方，$F = 0$ 时点 $P$ 在直线上
 
@@ -33,17 +37,23 @@ $$
 
 定义 $\Delta_0=(1,\frac{1}{2})$ ，则 $(x+1,y+\frac{1}{2})=P+\Delta_0$ ，我们就需要判断下式的正负
 
-$$F(P+\Delta_0)=F(P)+N\cdot \Delta_0\tag{1}$$
+$$
+F(P+\Delta_0)=F(P)+N\cdot \Delta_0\tag{1}
+$$
 
 在判断完后，绘制下一个点，定义其偏移量为 $\Delta_1$ ，可见要么 $\Delta_1=(1,0)$ ，要么 $\Delta_1=(1,1)$ ，判断这个点之后往哪画时，即判断下式的正负
 
-$$F(P+\Delta_1+\Delta_0)=F(P)+N\cdot \Delta_1+N\cdot \Delta_0\tag{2}$$
+$$
+F(P+\Delta_1+\Delta_0)=F(P)+N\cdot \Delta_1+N\cdot \Delta_0\tag{2}
+$$
 
 可以发现 $(1)$ 和 $(2)$ 式中都有一个公共项 $N\cdot \Delta_0$ ，这是一个定值；而每次绘制下一个点时，$F$ 的变化量是 $N\cdot \Delta_1$ ，这只有两种取值，这些值都是可以预先计算好的
 
 此外，在一开始判断 $(x_0,y_0)$ 下一步往哪画时，有
 
-$$F(P_0+\Delta_0)=F(P_0)+N\cdot \Delta_0=N\cdot \Delta_0$$
+$$
+F(P_0+\Delta_0)=F(P_0)+N\cdot \Delta_0=N\cdot \Delta_0
+$$
 
 所以我们维护一个 $F$ ，将其初始值设为 $N\cdot \Delta_0$ ，每次绘制后将其变化 $N\cdot \Delta_1$ 
 
@@ -76,18 +86,24 @@ void draw_line(int x0, int y0, int x1, int y1) {
 
 考虑用两点式表示这个直线
 
-$$(y-y_0)(x_1-x_0)-(x-x_0)(y_1-y_0)=0$$
+$$
+(y-y_0)(x_1-x_0)-(x-x_0)(y_1-y_0)=0
+$$
 
 则点 $(x,y)$ 到直线的距离 $d$ 为
 
-$$d=\frac{|(y-y_0)(x_1-x_0)-(x-x_0)(y_1-y_0)|}{\sqrt{A^2+B^2}}$$
+$$
+d=\frac{|(y-y_0)(x_1-x_0)-(x-x_0)(y_1-y_0)|}{\sqrt{A^2+B^2}}
+$$
 
 - 其中 $A$ 和 $B$ 是把直线转换成 $Ax+By+C=0$ 后的系数
 - 记 $dx=x_1-x_0,\quad dy=y_1-y_0$ ，则 $A=-dy,\quad B=dx$
 
 我们维护一个误差值 $err$ ，可见它实际上是点到直线的距离的一个倍数
 
-$$err(x,y)=(y-y_0)dx-(x-x_0)dy$$
+$$
+err(x,y)=(y-y_0)dx-(x-x_0)dy
+$$
 
 - 在第一象限内，$err>0$ 说明点在直线左上侧，$err<0$ 说明点在直线右下侧，$err=0$ 说明点正好处在直线上
 - 在第一象限内，增加 $x$ 会使 $err$ 减小，增加 $y$ 会使 $err$ 增大
@@ -100,11 +116,15 @@ $$err(x,y)=(y-y_0)dx-(x-x_0)dy$$
 
 我们考虑点 $(x,y)$ 到直线的竖直距离 $d_y$ ，记直线倾斜角为 $\theta$ ，点到直线的垂线距离为 $d$ ，则（这里取有向距离，即区分正负，不取绝对值）
 
-$$d_y=\frac{d}{\text{cos}\theta},\quad \text{tan}\theta=\frac{dy}{dx},\quad d=\frac{err}{\sqrt{dx^2+dy^2}}$$
+$$
+d_y=\frac{d}{\text{cos}\theta},\quad \text{tan}\theta=\frac{dy}{dx},\quad d=\frac{err}{\sqrt{dx^2+dy^2}}
+$$
 
 可得
 
-$$err=dx\cdot d_y$$
+$$
+err=dx\cdot d_y
+$$
 
 右边的含义就是把竖直距离放缩 $dx$ 倍，这正好与图片关于黄色线段的放缩相对应，那么放缩后的黄色线段就是 $err$
 

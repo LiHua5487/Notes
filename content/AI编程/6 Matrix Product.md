@@ -5,11 +5,15 @@
 
 矩阵乘法定义如下
 
-$$C_{m\times n}=A_{m\times s}\cdot B_{s\times n}, \quad \text{where } c_{ij}=\sum_{k=1}^s a_{ik}b_{kj}$$
+$$
+C_{m\times n}=A_{m\times s}\cdot B_{s\times n}, \quad \text{where } c_{ij}=\sum_{k=1}^s a_{ik}b_{kj}
+$$
 
 更一般的，加上偏置项和系数，就称为 **general matrix multiplication (gemm)**
 
-$$C=\alpha A\cdot B+\beta C$$
+$$
+C=\alpha A\cdot B+\beta C
+$$
 
 在 CPU 上，只需依次遍历计算 $C$ 的每个位置即可，在 GPU 上，一个简单的方式是每个线程负责计算一个位置
 
@@ -70,7 +74,9 @@ sgemm_naive<<<gridDim, blockDim>>>(M, N, K, alpha, A, B, beta, C);
 
 算术强度 Arithmetic Intensity 的定义如下，其衡量每字节数据所执行的计算量
 
-$$\text{Arithmetic Intensity} = \frac{\text{计算量/FLOP}}{\text{内存访问量/Byte}}$$
+$$
+\text{Arithmetic Intensity} = \frac{\text{计算量/FLOP}}{\text{内存访问量/Byte}}
+$$
 
 - 算术强度低，表示每个字节的内存访问对应很少的计算操作，计算单元闲着没事干，但内存访问很频繁，此时容易受到带宽的限制
 - 算术强度低，表示每个字节的内存访问对应大量的计算操作，计算单元很忙，此时容易受到计算能力的限制
@@ -209,7 +215,9 @@ x + 3z \\
 
 可以总结出以下计算方法，首先根据 `value` 和 `col` 可以得到结果中出现的所有项，以下标 1 元素为例， `value` 的下标 1 元素是 3 ，说明其系数为 3 ；`col` 的下标 1 元素是 2 ，取乘法中的列向量 `X=[x,y,z]` 的下标 2 元素 $z$ ，二者组合起来就是 $3z$ 
 
-$$[x, 3z, 2x, y, 4y, 3z]$$
+$$
+[x, 3z, 2x, y, 4y, 3z]
+$$
 
 >这种运算称为 **map** ，即根据 `value` `col` `X` 计算 scale product
 
@@ -412,7 +420,9 @@ cublasSgemm(
 
 它实现了这样一个运算
 
-$$C\leftarrow \alpha A_{m\times k}\cdot B_{k\times n}+\beta C_{m\times n}$$
+$$
+C\leftarrow \alpha A_{m\times k}\cdot B_{k\times n}+\beta C_{m\times n}
+$$
 
 - $m,n,k$ 对应 `sgemm` 中的那三个参数
 - $lda=m,\quad ldb=n,\quad ldc=m$ ，这里的 $m,n$ 均为转置之前的

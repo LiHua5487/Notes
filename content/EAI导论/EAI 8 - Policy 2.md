@@ -80,7 +80,9 @@ $$
 
 对于其中的 $\log p_\theta(\tau)$ 项，由于
 
-$$p_\theta(s_1, \mathbf{a}_1, \dots, s_T, \mathbf{a}_T) = p(s_1) \prod_{t=1}^T \pi_\theta(\mathbf{a}_t | s_t) p(s_{t+1} | s_t, \mathbf{a}_t)$$
+$$
+p_\theta(s_1, \mathbf{a}_1, \dots, s_T, \mathbf{a}_T) = p(s_1) \prod_{t=1}^T \pi_\theta(\mathbf{a}_t | s_t) p(s_{t+1} | s_t, \mathbf{a}_t)
+$$
 
 两边取 log 得
 
@@ -112,7 +114,9 @@ $$
 
 这样就可以利用梯度来更新参数了，由于希望期望更大，所以是梯度上升
 
-$$\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$$
+$$
+\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)
+$$
 
 注意到，梯度式子中并没有出现奖励的梯度，而是奖励值本身，这意味着 RL 不要求奖励函数本身可导（甚至不需要知道奖励函数的具体形式，只需要能够从环境中获得每个时间步的奖励值即可），这极大地扩展了强化学习的应用范围，可以处理奖励是稀疏的、非连续的情况
 
@@ -198,7 +202,9 @@ $$
 
 给奖励项增减一个常数值 b ，会发现其根本不影响梯度
 
-$$\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \nabla_\theta \log p_\theta(\tau) [r(\tau) - b]$$
+$$
+\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \nabla_\theta \log p_\theta(\tau) [r(\tau) - b]
+$$
 
 这是因为把常数项部分提取出来，可以得到这部分梯度为 0 
 
@@ -214,7 +220,19 @@ $$
 这从直观上很好理解，如果所有的累计奖励都一样，那模型根本不知道啥好啥坏，自然就不知道学习啥，即没法更新梯度
 
 >注：这和 BC 的梯度公式并不相同，本质上是因为期望的含义不同
->这里的期望实际上是$$\mathbb{E}_{\tau \sim \pi_\theta} \left[ \nabla_\theta \log \pi_\theta(a | s) \right]$$而 BC 中的期望实际上是$$\mathbb{E}_{(s, a) \sim D} \left[ \nabla_\theta \log \pi_\theta(a | s) \right]$$其中 $\mathbb{E}_{X \sim P}(Y)$ 表示随机变量 $X$ 遵循分布 $P$ 时 $Y$ 的期望
+>这里的期望实际上是
+
+$$
+\mathbb{E}_{\tau \sim \pi_\theta} \left[ \nabla_\theta \log \pi_\theta(a | s) \right]
+$$
+
+而 BC 中的期望实际上是
+
+$$
+\mathbb{E}_{(s, a) \sim D} \left[ \nabla_\theta \log \pi_\theta(a | s) \right]
+$$
+
+其中 $\mathbb{E}_{X \sim P}(Y)$ 表示随机变量 $X$ 遵循分布 $P$ 时 $Y$ 的期望
 
 这个 b 就称作**基线 baseline**，那 b 设置成多少合适呢，设置成平均值 $b = \frac{1}{N} \sum_{i=1}^N r(\tau)$ 虽然不是最好的，但效果还不错；更一般的，可以设为关于状态的函数 $b(s_t)$
 
@@ -252,7 +270,9 @@ $$
 
 采用 Q 值代替 $G_t$ 后，可以选取 $V(s_t)$ 作为 baseline ，代表 $s_t$ 下各种动作的平均好坏，而 $Q(s_t,a_t)-V(s_t)$ 就表示采取动作 $a_t$ 相较于平均水平怎么样，把这个式子定义为状态 $s_t$ 下动作 $a_t$ 的**优势函数 advantage function**
 
-$$A(s_t,a_t)=Q(s_t,a_t)-V(s_t)$$
+$$
+A(s_t,a_t)=Q(s_t,a_t)-V(s_t)
+$$
 
 梯度公式就变成了
 
@@ -271,7 +291,9 @@ $$
 
 其中 $s_{t+1}$ 存在一个分布是因为采取相同动作后可能到达不同状态状态（比如有概率偏离），但是实际过程中，是会运行动作 $a_t$ 并得到下一状态 $s_{t+1}$ ，不妨直接取到达的这个状态的值函数代替期望值，那么
 
-$$A^\pi(s_t,a_t)\approx r(s_t,a_t)+V^\pi(s_{t+1})-V^\pi(s_t)$$
+$$
+A^\pi(s_t,a_t)\approx r(s_t,a_t)+V^\pi(s_{t+1})-V^\pi(s_t)
+$$
 
 而奖励函数一般是预先已知的，只需要获得值函数即可，这么做的合理之处在于
 - 无偏估计：虽然单个样本可能不能完全代表期望，但如果我们有大量样本，样本平均值会收敛到期望值（大数定律）
@@ -303,10 +325,18 @@ $$
 
 对于 $V^\pi(s_{i,t+1})$ ，可以采用之前训练过程中的网络进行拟合
 
-$$y_{i,t} \approx r(s_{i,t}, a_{i,t}) + \hat{V}^\pi_\phi(s_{i,t+1})$$
+$$
+y_{i,t} \approx r(s_{i,t}, a_{i,t}) + \hat{V}^\pi_\phi(s_{i,t+1})
+$$
 
 >训练过程中，每隔一定周期才保存一次模型作为目标，防止目标经常变动导致训练不稳定，尽管在目标网络的更新周期内（即目标网络保存一次，但没到下一次保存），使用旧的目标网络计算目标值可能会产生一种“往回拽”的效果，即当前网络被拉向旧的目标值
->但这种效应是可控的，并且通过精心设计的更新机制，整体训练仍然能够稳定进步，比如采用 **软更新** 的方式，在保存周期的期间，每一步都进行更新，混合进去一小部分当前网络的参数，其中 $\tau$ 为更新率，代表当前网络参数的比例$$\theta^{V'} \leftarrow \tau \theta^V + (1 - \tau) \theta^{V'}$$而且，尽管用的是旧的函数，每次更新策略后，又会产生新的训练数据，这会带来新的状态和动作，从而影响到目标值（因为其中的 $a_{i,t}$ 和 $s_{i,t+1}$ 变了），所以目标整体来说还是在前进的
+>但这种效应是可控的，并且通过精心设计的更新机制，整体训练仍然能够稳定进步，比如采用 **软更新** 的方式，在保存周期的期间，每一步都进行更新，混合进去一小部分当前网络的参数，其中 $\tau$ 为更新率，代表当前网络参数的比例
+
+$$
+\theta^{V'} \leftarrow \tau \theta^V + (1 - \tau) \theta^{V'}
+$$
+
+而且，尽管用的是旧的函数，每次更新策略后，又会产生新的训练数据，这会带来新的状态和动作，从而影响到目标值（因为其中的 $a_{i,t}$ 和 $s_{i,t+1}$ 变了），所以目标整体来说还是在前进的
 
 则训练数据的结构如下，这个目标值被称为 **TD Target**
 
@@ -348,24 +378,34 @@ $$
 
 之前讨论的是有限时间步，对于无限时间步，需要引入折扣因子 discount factor ，其累计收益如下
 
-$$G(\tau) = r_0 + \gamma r_1 + \gamma^2 r_2 + \cdots = \sum_{t=0}^{T} \gamma^t r_t$$
+$$
+G(\tau) = r_0 + \gamma r_1 + \gamma^2 r_2 + \cdots = \sum_{t=0}^{T} \gamma^t r_t
+$$
 
 上述 TD Target 就变成了
 
-$$y_{i,t} \approx r(s_{i,t}, a_{i,t}) + \gamma \hat{V}^\pi_\phi(s_{i,t+1})$$
+$$
+y_{i,t} \approx r(s_{i,t}, a_{i,t}) + \gamma \hat{V}^\pi_\phi(s_{i,t+1})
+$$
 
 则梯度公式变为
 
-$$\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_{i,t} \mid s_{i,t}) \left( r(s_{i,t}, a_{i,t}) + \gamma \hat{V}^\pi_\phi(s_{i,t+1}) - \hat{V}^\pi_\phi(s_{i,t}) \right)$$
+$$
+\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_{i,t} \mid s_{i,t}) \left( r(s_{i,t}, a_{i,t}) + \gamma \hat{V}^\pi_\phi(s_{i,t+1}) - \hat{V}^\pi_\phi(s_{i,t}) \right)
+$$
 
 其中优势函数为
 
-$$\hat{A}^\pi(s_{i,t}, a_{i,t}) = \left( r(s_{i,t}, a_{i,t}) + \gamma \hat{V}^\pi_\phi(s_{i,t+1}) - \hat{V}^\pi_\phi(s_{i,t}) \right)$$
+$$
+\hat{A}^\pi(s_{i,t}, a_{i,t}) = \left( r(s_{i,t}, a_{i,t}) + \gamma \hat{V}^\pi_\phi(s_{i,t+1}) - \hat{V}^\pi_\phi(s_{i,t}) \right)
+$$
 
 在进行蒙特卡洛近似时，有两种选择
 - Option1：一条轨迹中不同时间步 t 的权重设为从此时 t 到最后结束时 T 的奖励之和
 
-$$\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_{i,t} \mid s_{i,t}) \left( \sum_{t'=t}^T \gamma^{t'-t} r(s_{i,t'}, a_{i,t'}) \right) \tag{1}$$
+$$
+\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_{i,t} \mid s_{i,t}) \left( \sum_{t'=t}^T \gamma^{t'-t} r(s_{i,t'}, a_{i,t'}) \right) \tag{1}
+$$
 
 - Option2：一条轨迹中不同时间步 t 的权重相同，是整条轨迹的累计奖励
 

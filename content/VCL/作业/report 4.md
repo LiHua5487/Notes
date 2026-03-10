@@ -91,7 +91,9 @@ $$
 
 对于弹簧系统，要求 $x^{k+1}$ ，通过一番推导可得，等价于求解以下目标
 
-$$x^{k+1} = \arg \min_{x} \frac{1}{2h^2} \| x - y^k \|^2_M + E(x)$$
+$$
+x^{k+1} = \arg \min_{x} \frac{1}{2h^2} \| x - y^k \|^2_M + E(x)
+$$
 
 - $y^k = x^k + h v^k + h^2 M^{-1} f_{ext}$ ，$f_{ext}$ 为外力，可以认为是已知量
 - $E(x)$ 为系统的总弹性势能
@@ -100,7 +102,9 @@ $$x^{k+1} = \arg \min_{x} \frac{1}{2h^2} \| x - y^k \|^2_M + E(x)$$
 
 令 $g(x)=\frac{1}{2h^2} \| x - y^k \|^2_M + E(x)$ ，利用二阶泰勒展开可以转化为以下迭代方程
 
-$$x_{i+1} = x_i - H^{-1}_g(x_i) \nabla g(x_i)$$
+$$
+x_{i+1} = x_i - H^{-1}_g(x_i) \nabla g(x_i)
+$$
 
 其中 $H_g(x_i)$ 是 $g(x)$ 关于 $x_i$ 的 Hessian 矩阵
 
@@ -110,15 +114,22 @@ $$H_g(x_i) = \begin{bmatrix}
 \frac{\partial^2 g(x_i)}{\partial x \partial z} & \frac{\partial^2 g(x_i)}{\partial y \partial z} & \frac{\partial^2 g(x_i)}{\partial z^2}
 \end{bmatrix}$$
 对于弹簧系统，我们认为 $g(x)$ 性质足够好，只需要进行一步牛顿迭代即可，即求解以下方程（可以把 $x^{k+1} - x^k$ 视为一个整体，这就变成 $Ax=b$ 的形式）
-$$H_g(x^k)(x^{k+1} - x^k) = -\nabla g(x^k)$$
+
+$$
+
+H_g(x^k)(x^{k+1} - x^k) = -\nabla g(x^k)
+
+$$
 
 下面需要计算 $\nabla g(x^k)$ 和 $H_g(x^k)$ ，由 $g(x)$ 定义得
 
 $$
+
 \begin{aligned}
 &\nabla g(x^k) = \frac{1}{h^2} M (x^k - y^k) + \nabla E(x^k)\\
 &H_g(x^k) = \frac{1}{h^2} M + H(x^k)
 \end{aligned}
+
 $$
 
 其中 $H(x^k)$ 是系统弹性势能 $E(x)$ 的 Hessian 矩阵，我们先看 $\nabla E(x^k)$ 
@@ -127,15 +138,24 @@ $$
 
 设 $E_{ij}$ 表示质点 $i$ 和 $j$ 之间的弹簧的弹性势能，则其关于 $x_i$ 的负梯度就是质点 $i$ 受到这根弹簧的弹力
 
-$$\nabla_i E_{ij} = f_{ij}$$
+$$
+
+\nabla_i E_{ij} = f_{ij}
+
+$$
 
 把与质点 $i$ 相连的所有弹簧的梯度求和，就可以得到 $E(x)$ 关于 $x_i$ 的梯度
 
-$$\nabla_i E(x^k) = \sum_j \nabla_i E_{ij}(x^k)$$
+$$
+
+\nabla_i E(x^k) = \sum_j \nabla_i E_{ij}(x^k)
+
+$$
 
 把所有质点的这个梯度放到一起，就得到了 $E(x)$ 关于 $x^k$ 的梯度
 
 $$\nabla E(x^k) = \begin{pmatrix}
+
 \nabla_1 E(x^k) \\
 \vdots \\
 \nabla_n E(x^k)
@@ -144,6 +164,7 @@ $$\nabla E(x^k) = \begin{pmatrix}
 ---
 
 再看 $H(x^k)$ ，先考虑一个弹簧 $(i,j)$ 的势能的 Hessian 矩阵 $H_{ij}(x^k)$ 
+
 $$
 
 \begin{aligned}
@@ -152,14 +173,18 @@ $$
 \end{aligned}
 
 $$
+
 记其为 $H_e\in \mathbb{R}^{3\times 3}$ ，则可得
+
 $$
 
 \frac{\partial^2 E_{ij}(x^k)}{\partial x_i \partial x_j} = -H_e,\quad
 \frac{\partial^2 E_{ij}(x^k)}{\partial x_j^2} = H_e
 
 $$
+
 那么 $H_{ij}(x^k)$ 就是下面这样，其中省略号部分全是 0 ，而 $H_e$ 和 $-H_e$ 块位于行/列的第 $i$ 和 $j$ 个 3×3 子块处，这代表弹簧 $(i,j)$ 对于整个系统的贡献
+
 $$H_{ij}(x^k) = \begin{bmatrix}
 
 \vdots & \vdots & \vdots & \vdots & \vdots \\
@@ -170,7 +195,11 @@ $$H_{ij}(x^k) = \begin{bmatrix}
 \end{bmatrix}$$
 那么整个系统的 Hessian 矩阵就是
 
-$$H(x^k) = \sum_{(i,j)} H_{ij}(x^k)$$
+$$
+
+H(x^k) = \sum_{(i,j)} H_{ij}(x^k)
+
+$$
 
 最终可得效果如下
 

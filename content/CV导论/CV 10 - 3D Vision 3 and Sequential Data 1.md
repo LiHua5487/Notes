@@ -85,8 +85,6 @@ mesh 是 graph ，可以用 GNN 处理
 $$
 h_t = f_W(h_{t-1}, x_t)
 $$
-
-
 $$
 y_t = f_{W_{hy}}(h_t)
 $$
@@ -96,7 +94,9 @@ $$
 **Vanilla RNN** 
 计算当前时刻的隐藏状态 $h_t$
 
-$$h_t=f(W_th_{t-1}+W_xx_t+b_h)$$
+$$
+h_t=f(W_th_{t-1}+W_xx_t+b_h)
+$$
 
 - $W_h$  $W_x$ $b_h$ 在不同时间步共享
 - $f$ 为激活函数（如 tanh relu）
@@ -104,7 +104,9 @@ $$h_t=f(W_th_{t-1}+W_xx_t+b_h)$$
 
 如果当前时刻需要输出，就可以由 $h_t$ 得到
 
-$$y_t=g(W_yh_t+b_y)$$
+$$
+y_t=g(W_yh_t+b_y)
+$$
 
 - $W_y$  $b_y$ 在不同时间步共享
 - $g$ 为激活函数（如 softmax）

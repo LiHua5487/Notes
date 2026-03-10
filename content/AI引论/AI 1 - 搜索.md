@@ -145,7 +145,9 @@ priority queue
 **可接受的启发**
 当启发函数满足
 
-$$0\leqslant h(n)\leqslant h^*(n)$$
+$$
+0\leqslant h(n)\leqslant h^*(n)
+$$
 
 - $n$ 代表当前节点的信息
 - $h(n)$ 为启发函数，$h^*(n)$ 为当前到目标的最小的真实代价
@@ -156,35 +158,49 @@ $$0\leqslant h(n)\leqslant h^*(n)$$
 
 假设 $A$ 是一个最优的目标节点，$B$ 是一个次优的目标节点，即满足 
 
-$$g(A) < g(B)$$
+$$
+g(A) < g(B)
+$$
 
 $h$ 是可接受的启发函数，满足
 
-$$0 \leq h(n) \leq h^*(n) = g(A) - g(n)$$
+$$
+0 \leq h(n) \leq h^*(n) = g(A) - g(n)
+$$
 
 我们需要证明：$A$ 一定比 $B$ 更早离开优先队列
 
 假设 B 已经在队列里，A 的一些前序节点 n 也在队列里（A 也是自己的前序）
 那么需要证明：n 比 B 先离开队列，也就是要证
 
-$$f(n)\leqslant f(B)$$
+$$
+f(n)\leqslant f(B)
+$$
 
 对于 n ，有
 
-$$f(n)=g(n)+h(n)\leqslant g(n)+h^*(n)=g(A)$$
+$$
+f(n)=g(n)+h(n)\leqslant g(n)+h^*(n)=g(A)
+$$
 
 由于 A 是目标节点，$h(A)=0$ ，有 $g(A)=f(A)$，故
 
-$$f(n)\leqslant f(A)$$
+$$
+f(n)\leqslant f(A)
+$$
 
 另一方面，由于 B 也是目标节点，有 $g(B)=f(B)$
 由于 B 是次优的，有 $g(A)<g(B)$ ，则 
 
-$$f(A)<f(B)$$
+$$
+f(A)<f(B)
+$$
 
 综合以上可得
 
-$$f(n)\leqslant f(A) < f(B)$$
+$$
+f(n)\leqslant f(A) < f(B)
+$$
 
 也就是说明 n 比 B 先离开队列，即 A 的前序节点永远比 B 先离开
 那么最终 A 就会比 B 先离开，找到的结果就是 A ，也就说明一定是最优的
@@ -201,7 +217,9 @@ $$f(n)\leqslant f(A) < f(B)$$
 而一致性要求每一条边的估计代价都要小于这条边的实际代价
 考虑经过一条边从 A 到 C ，由于 h 是相对于目标点而言，那么估计的这条边的代价就是 $h(A)-h(C)$ ，需要满足
 
-$$h(A)\ –\ h(C) ≤ cost(A \to C)$$
+$$
+h(A)\ –\ h(C) ≤ cost(A \to C)
+$$
 
 这保证了沿着搜索路径，f 永远不会变小
 

@@ -234,12 +234,9 @@ with (x_1,x_5) = (T, T)\ \ C_2 \implies x_6 = True \\
 with (x_5) = (T)\ \ C_3 \implies x_7 = True 
 \end{aligned}
 $$
-
-
 $$
 (x_1,x_6,x_7) = (T, T, T) \implies C_4 = False \implies f = False
 $$
-
 
 ![[AIimg/img1/image-11.png]]
 

@@ -268,7 +268,9 @@ $$
 
 其中 $\theta$ 为 $(w,b)$ ，故可采用下式作为概率
 
-$$p(y | x; \theta)=\sigma(y \cdot f(x))$$
+$$
+p(y | x; \theta)=\sigma(y \cdot f(x))
+$$
 
 则 log-likelihood 可表示为 
 
@@ -321,7 +323,9 @@ $$
 训练时，要将模型输出 $f_k(x)$ 转化为取第 $k$ 类的概率
 - 不能使用 sigmoid 函数，因为需满足归一化条件
 
-$$\sum_{k \in [K]} p(y = k | x) = 1$$
+$$
+\sum_{k \in [K]} p(y = k | x) = 1
+$$
 
 - 解决方法：使用 softmax 函数
 
@@ -331,9 +335,17 @@ $$
 
 - e 指数的放大效应会使得如果 $f_k(x) \gg f_j(x), \forall j \neq k$，则 $p(y = k | x) \approx 1$
 
-假设 $f_k(x)$ 的参数为 $\theta_k$，最大化训练集 $\{(x_i, y_i) | i \in [n]\}$ 的对数似然： $$ \max_{\{\theta_k\}} \sum_{i \in [n]} \log p(y_i | x_i) = \sum_{i \in [n]} \log \left[ \frac{e^{f_{y_i}(x_i)}}{\sum_{j \in [K]} e^{f_j(x_i)}} \right] $$等价于最小化交叉熵损失： 
+假设 $f_k(x)$ 的参数为 $\theta_k$，最大化训练集 $\{(x_i, y_i) | i \in [n]\}$ 的对数似然： 
 
-$$ \min_{\{\theta_k\}} -\frac{1}{n} \sum_{i \in [n]} \log \left[ \frac{e^{f_{y_i}(x_i)}}{\sum_{j \in [K]} e^{f_j(x_i)}} \right] = \frac{1}{n} \sum_{i \in [n]} \left( \log \left[ \sum_{j \in [K]} e^{f_j(x_i)} \right] - f_{y_i}(x_i) \right) $$
+$$
+\max_{\{\theta_k\}} \sum_{i \in [n]} \log p(y_i | x_i) = \sum_{i \in [n]} \log \left[ \frac{e^{f_{y_i}(x_i)}}{\sum_{j \in [K]} e^{f_j(x_i)}} \right]
+$$
+
+等价于最小化交叉熵损失： 
+
+$$
+\min_{\{\theta_k\}} -\frac{1}{n} \sum_{i \in [n]} \log \left[ \frac{e^{f_{y_i}(x_i)}}{\sum_{j \in [K]} e^{f_j(x_i)}} \right] = \frac{1}{n} \sum_{i \in [n]} \left( \log \left[ \sum_{j \in [K]} e^{f_j(x_i)} \right] - f_{y_i}(x_i) \right)
+$$
 
 # 正则化
 
@@ -352,28 +364,36 @@ $$
 
 - 采用 **L2 正则化** 
 
-$$R(f) = \|w\|_2^2 = w^T w = \sum_{j \in [d]} w_j^2$$
+$$
+R(f) = \|w\|_2^2 = w^T w = \sum_{j \in [d]} w_j^2
+$$
 
 - 作用：$w_j^2$ 会放大较大的权重，用于惩罚少数过大的权重维度，使分配更平均
 
 - 训练方法：**岭回归 (Ridge Regression)**
 
-$$ \min_{w, b} \frac{1}{n} \sum_{i \in [n]} (w^T x_i + b - y_i)^2 + \lambda \|w\|^2 $$
-
-
-$$ \frac{\partial J(w, b)}{\partial w} = \frac{2}{n} \sum_{i \in [n]} (w^T x_i + b - y_i)x_i + 2\lambda w \in \mathbb{R}^d $$
+$$
+\min_{w, b} \frac{1}{n} \sum_{i \in [n]} (w^T x_i + b - y_i)^2 + \lambda \|w\|^2
+$$
+$$
+\frac{\partial J(w, b)}{\partial w} = \frac{2}{n} \sum_{i \in [n]} (w^T x_i + b - y_i)x_i + 2\lambda w \in \mathbb{R}^d
+$$
 
 2. 输入数据中存在大量没用的特征维度，但仍然赋予了它们非零的权重
 
 - 采用 **L1 正则化** 
 
-$$R(f) = \|w\|_1 = \sum_{j \in [d]} |w_j|$$
+$$
+R(f) = \|w\|_1 = \sum_{j \in [d]} |w_j|
+$$
 
 - 作用：鼓励稀疏的 $w$，即 $w$ 中大部分维度为零，仅有少数维度非零
 
 - 训练方法：**Lasso回归**
 
-$$ \min_{w, b} \frac{1}{n} \sum_{i \in [n]} (w^T x_i + b - y_i)^2 + \lambda \|w\|_1 $$
+$$
+\min_{w, b} \frac{1}{n} \sum_{i \in [n]} (w^T x_i + b - y_i)^2 + \lambda \|w\|_1
+$$
 
 ![[AIimg/img2/image-3.png|442x323]]
 
@@ -390,7 +410,4 @@ $$
 $$
 \frac{\partial J(w, b)}{\partial w} = -\frac{1}{n} \sum_{i \in [n]} [1 - p(y_i | x_i; w, b)] y_i x_i + 2\lambda w \quad \in \mathbb{R}^d
 $$
-
-
-
 

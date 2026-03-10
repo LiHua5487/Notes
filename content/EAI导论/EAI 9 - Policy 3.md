@@ -19,7 +19,9 @@ $$
 
 而 policy gradient 如下
 
-$$\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_\theta \log \pi_\theta (\mathbf{a}_{i,t} | \mathbf{s}_{i,t}) \left( \left( \sum_{t'=t}^T \gamma^{t'-t} r(\mathbf{s}_{i,t'}, \mathbf{a}_{i,t'}) \right) - b \right)$$
+$$
+\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_\theta \log \pi_\theta (\mathbf{a}_{i,t} | \mathbf{s}_{i,t}) \left( \left( \sum_{t'=t}^T \gamma^{t'-t} r(\mathbf{s}_{i,t'}, \mathbf{a}_{i,t'}) \right) - b \right)
+$$
 
 - 由于只采样了一个轨迹，方差较大
 - 由上回的推导可得，减去常数项仍是无偏的
@@ -30,14 +32,18 @@ $$\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_\
 
 这种情况下，优势函数如下，通过调整 n ，在减小方差和无偏之间进行 trad-off ，一般 n 不取太大（如 2 或 4）
 
-$$\hat{A}^\pi_n(\mathbf{s}_t, \mathbf{a}_t) = \sum_{t'=t}^{t+n} \gamma^{t'-t} r(\mathbf{s}_{t'}, \mathbf{a}_{t'}) + \gamma^n \hat{V}^\pi_\phi(\mathbf{s}_{t+n}) - \hat{V}^\pi_\phi(\mathbf{s}_t)$$
+$$
+\hat{A}^\pi_n(\mathbf{s}_t, \mathbf{a}_t) = \sum_{t'=t}^{t+n} \gamma^{t'-t} r(\mathbf{s}_{t'}, \mathbf{a}_{t'}) + \gamma^n \hat{V}^\pi_\phi(\mathbf{s}_{t+n}) - \hat{V}^\pi_\phi(\mathbf{s}_t)
+$$
 
 - $n = 1$ 时变为 Actor-Critic 
 - $n \rightarrow \infty$ 时变为带 bias 的 policy gradient 
 
 但 n 可以不只取一个值，可以让 n 取遍所有整数值，然后进行加权求和
 
-$$\hat{A}^\pi_{\text{GAE}}(\mathbf{s}_t, \mathbf{a}_t) = \sum_{n=1}^\infty w_n \hat{A}^\pi_n(\mathbf{s}_t, \mathbf{a}_t)$$
+$$
+\hat{A}^\pi_{\text{GAE}}(\mathbf{s}_t, \mathbf{a}_t) = \sum_{n=1}^\infty w_n \hat{A}^\pi_n(\mathbf{s}_t, \mathbf{a}_t)
+$$
 
 为了得到递归形式，取权重 $w_n \propto \lambda^{n-1}$ ，其中 $\lambda \in (0,1)$ ，化简可得
 

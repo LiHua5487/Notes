@@ -24,12 +24,16 @@ tags:
 
 一个简单的 explicit density model 表达式如下
 
-$$p(x) = p(x_1, x_2, \dots, x_n)$$
+$$
+p(x) = p(x_1, x_2, \dots, x_n)
+$$
 
 - $p(x)$ 表示图片 $x$ 的概率，每个 $x_i$ 表示图像的一个像素
 利用 chain rule ，可以表示成这样
 
-$$p(x) = \prod_{i=1}^n p(x_i | x_1, \dots, x_{i-1})$$
+$$
+p(x) = \prod_{i=1}^n p(x_i | x_1, \dots, x_{i-1})
+$$
 
 指定 $x_i$ 的位置顺序，类似于RNN逐个 $x_i$ 去生成
 这是 auto regressive  的，但是效率太低了
@@ -60,13 +64,17 @@ $$p(x) = \prod_{i=1}^n p(x_i | x_1, \dots, x_{i-1})$$
 再假设采样过程 $p(x|z)$ 也是一个高斯分布，只用去预测 $\mu$ 和 $\sigma$
 据此可以得到 x 的分布
 
-$$p_{\theta}(x) = \int p(z) p_{\theta}(x|z) dz$$
+$$
+p_{\theta}(x) = \int p(z) p_{\theta}(x|z) dz
+$$
 
 但积分很难求，即便使用蒙特卡洛近似，梯度噪声非常大
 
 考虑另一种表示方式
 
-$$p_{\theta}(x) = \frac{p_{\theta}(x, z)}{p_{\theta}(z|x)} = \frac{p_{\theta}(z) p_{\theta}(x|z)}{p_{\theta}(z|x)}$$
+$$
+p_{\theta}(x) = \frac{p_{\theta}(x, z)}{p_{\theta}(z|x)} = \frac{p_{\theta}(z) p_{\theta}(x|z)}{p_{\theta}(z|x)}
+$$
 
 要求 $p_{\theta}(z|x)$ ，但不能直接求，不过这部分相当于 encoder 的过程，考虑建模成高斯分布，用 $q_{\phi}(z|x)$ 去近似，也对应一组 $\mu$ 和 $\sigma$
 
@@ -83,7 +91,9 @@ $$p_{\theta}(x) = \frac{p_{\theta}(x, z)}{p_{\theta}(z|x)} = \frac{p_{\theta}(z)
 使用变分近似，把最后一项扔了，由于这一项非负，所以扔掉后是一个下界
 而 $\mathbb{E}_{z} \left[ \log p_{\theta}(x^{(i)}|z) \right]$ 这部分也是很难计算的，用蒙特卡洛近似，去掉 $\mathbb{E}_{z}$
 
-$$\mathcal{L}_{\text{ELBO}} = \log p_{\theta}(x^{(i)}|z) - D_{KL}(q_{\phi}(z|x^{(i)}) \| p(z))$$
+$$
+\mathcal{L}_{\text{ELBO}} = \log p_{\theta}(x^{(i)}|z) - D_{KL}(q_{\phi}(z|x^{(i)}) \| p(z))
+$$
 
 对于 $D_{KL}(q_{\phi}(z|x^{(i)}) \| p(z))$ ，由于假设为高斯分布，就是 $D_{KL}(\mathcal{N}(\mu_{z|x}, \sigma_{z|x}) \| \mathcal{N}(0, I))$ ，这一部分是有解析形式的
 
@@ -253,7 +263,9 @@ $$
 数学原理表明，当 $\beta_t$ 足够小时，每一步加噪声的逆操作也满足正态分布
 若已知 $x_0$ 的分布，则可以推导出去噪的公式
 
-$$\mu_\theta(\mathbf{x}_t, t) = \frac{1}{\sqrt{1 - \beta_t}} \left( \mathbf{x}_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \boldsymbol{\epsilon}_t \right)$$
+$$
+\mu_\theta(\mathbf{x}_t, t) = \frac{1}{\sqrt{1 - \beta_t}} \left( \mathbf{x}_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \boldsymbol{\epsilon}_t \right)
+$$
 
 其中 $\epsilon_t$ 是根据 $x_0$ ，利用公式 $\mathbf{x}_t = \sqrt{\bar{\alpha}_t} \mathbf{x}_0 + \sqrt{(1 - \bar{\alpha}_t)} \boldsymbol{\epsilon}$ 得到的，但实际生成图象时并不知道 $x_0$ 的分布，所以需要学习去噪过程
 

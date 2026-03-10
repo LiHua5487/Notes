@@ -47,7 +47,6 @@ A: 其实是 2.5D，涉及到 2D 与 3D 的联系
 
 ![[CV导论/imgs/img8/image-3.png|675x259]]
 
-
 $$
 \begin{aligned}
 \mathbf{P} = 
@@ -104,16 +103,18 @@ $$
 实际上，图像的原点并不是这个点，还要转换到图像坐标
 为此，需要加一个平移项
 
-$$(x, y, z) \rightarrow \left(f \frac{x}{z} + c_x,\ f \frac{y}{z} + c_y\right)$$
+$$
+(x, y, z) \rightarrow \left(f \frac{x}{z} + c_x,\ f \frac{y}{z} + c_y\right)
+$$
 
 而且，计算机里的图像是按照像素储存的，还要将坐标转换为像素位置
 
 $$
 (x, y, z) \rightarrow \left(\alpha \frac{x}{z} + c_x,\ \beta \frac{y}{z} + c_y\right) \\
 $$
-
-
-$$\alpha = fk,\ \beta = fl$$
+$$
+\alpha = fk,\ \beta = fl
+$$
 
 其中系数 $k, l$ 单位是 pixel/m ，表示图像传感器在两个方向上每米有多少个像素， $f$ 单位是 m  
 
@@ -125,11 +126,15 @@ $$\alpha = fk,\ \beta = fl$$
 考虑从欧几里得坐标 E 变为齐次坐标 H
 欧氏坐标 $\rightarrow$ 齐次坐标
 
-$$(x, y, z) \implies \begin{bmatrix} x \\ y \\ z \\ 1 \end{bmatrix}$$
+$$
+(x, y, z) \implies \begin{bmatrix} x \\ y \\ z \\ 1 \end{bmatrix}
+$$
 
 齐次坐标 $\rightarrow$ 欧氏坐标
 
-$$\begin{bmatrix} x \\ y \\ z \\ w \end{bmatrix} \implies (x/w, y/w, z/w)$$
+$$
+\begin{bmatrix} x \\ y \\ z \\ w \end{bmatrix} \implies (x/w, y/w, z/w)
+$$
 
 变换后的坐标添加一个占位的齐次项 1 ，再都乘 $z$ ，原始坐标也变成齐次坐标
 
@@ -164,8 +169,6 @@ z \\
 1
 \end{bmatrix}
 $$
-
-
 $$
 M =
 \begin{bmatrix}
@@ -186,13 +189,15 @@ K =
 0 & 0 & 1
 \end{bmatrix}
 $$
-
-
-$$where\ \alpha = fk,\ \beta = fl$$
+$$
+where\ \alpha = fk,\ \beta = fl
+$$
 
 则这个变换简写为
 
-$$P' = MP = K \begin{bmatrix} I & 0 \end{bmatrix} P$$
+$$
+P' = MP = K \begin{bmatrix} I & 0 \end{bmatrix} P
+$$
 
 >可见一般来讲计算时先得到的是 $\alpha$ 和 $\beta$ ，即以像素为单位的焦距 $f_X$ 和 $f_Y$ 
 
@@ -208,7 +213,9 @@ $$P' = MP = K \begin{bmatrix} I & 0 \end{bmatrix} P$$
 但实际上，上面的 $P = (x,y,z)$ 是在相机坐标系的坐标，而不是实际的世界坐标
 世界坐标系 $P_w = (X,Y,Z)$ 到相机坐标系的变换可以分为旋转和平移两个过程
 
-$$R \begin{bmatrix} X \\ Y \\ Z \end{bmatrix} + T = \begin{bmatrix} x \\ y \\ z \end{bmatrix}$$
+$$
+R \begin{bmatrix} X \\ Y \\ Z \end{bmatrix} + T = \begin{bmatrix} x \\ y \\ z \end{bmatrix}
+$$
 
 为此，引入 3D 平动变换与旋转变换，并用齐次坐标表示
 
@@ -231,8 +238,6 @@ z \\
 1
 \end{bmatrix}
 $$
-
-
 $$
 \begin{aligned}
 R_x(\alpha) &=
@@ -255,8 +260,6 @@ R_z(\gamma) &=
 \end{bmatrix} \\
 \end{aligned}
 $$
-
-
 $$
 R = R_x(\alpha) R_y(\beta) R_z(\gamma), \quad
 \mathbf{P'} \rightarrow
@@ -278,8 +281,15 @@ $$
 
 用其次坐标可以表示为
 
-$$\begin{bmatrix} R & T \\ 0 & 1 \end{bmatrix} \begin{bmatrix} X \\ Y \\ Z \\ 1 \end{bmatrix} = \begin{bmatrix} x \\ y \\ z \\ 1 \end{bmatrix}$$或简写为
-$$\begin{bmatrix} R & T \end{bmatrix} \begin{bmatrix} X \\ Y \\ Z \\ 1 \end{bmatrix} = \begin{bmatrix} x \\ y \\ z \end{bmatrix}$$
+$$
+\begin{bmatrix} R & T \\ 0 & 1 \end{bmatrix} \begin{bmatrix} X \\ Y \\ Z \\ 1 \end{bmatrix} = \begin{bmatrix} x \\ y \\ z \\ 1 \end{bmatrix}
+$$
+
+或简写为
+
+$$
+\begin{bmatrix} R & T \end{bmatrix} \begin{bmatrix} X \\ Y \\ Z \\ 1 \end{bmatrix} = \begin{bmatrix} x \\ y \\ z \end{bmatrix}
+$$
 
 则整个过程可以表示为
 
@@ -310,7 +320,9 @@ $$
 
 如果设 
 
-$$M = K\begin{bmatrix} R & T \end{bmatrix}$$
+$$
+M = K\begin{bmatrix} R & T \end{bmatrix}
+$$
 
 对于正常的投影变换，M形如
 
@@ -455,18 +467,24 @@ $$
 
 得到方程组
 
-$$\begin{cases} -u_1 (\mathbf{m}_3 P_1) + \mathbf{m}_1 P_1 = 0 \\-v_1 (\mathbf{m}_3 P_1) + \mathbf{m}_2 P_1 = 0 \\\vdots \\-u_n (\mathbf{m}_3 P_n) + \mathbf{m}_1 P_n = 0 \\-v_n (\mathbf{m}_3 P_n) + \mathbf{m}_2 P_n = 0\end{cases}$$
+$$
+\begin{cases} -u_1 (\mathbf{m}_3 P_1) + \mathbf{m}_1 P_1 = 0 \\-v_1 (\mathbf{m}_3 P_1) + \mathbf{m}_2 P_1 = 0 \\\vdots \\-u_n (\mathbf{m}_3 P_n) + \mathbf{m}_1 P_n = 0 \\-v_n (\mathbf{m}_3 P_n) + \mathbf{m}_2 P_n = 0\end{cases}
+$$
 
 化为矩阵形式
 
-$$\mathbf{P} \mathbf{m} = 0$$
+$$
+\mathbf{P} \mathbf{m} = 0
+$$
 
 其中
 
-$$\mathbf{P} \overset{\text{def}}{=} \begin{pmatrix}P_1^T & 0^T & -u_1 P_1^T \\0^T & P_1^T & -v_1 P_1^T \\\vdots & \vdots & \vdots \\P_n^T & 0^T & -u_n P_n^T \\0^T & P_n^T & -v_n P_n^T\end{pmatrix}_{2n \times 12}$$
-
-
-$$\mathbf{m} \overset{\text{def}}{=} \begin{pmatrix}\mathbf{m}_1^T \\\mathbf{m}_2^T \\\mathbf{m}_3^T\end{pmatrix}_{12 \times 1}$$
+$$
+\mathbf{P} \overset{\text{def}}{=} \begin{pmatrix}P_1^T & 0^T & -u_1 P_1^T \\0^T & P_1^T & -v_1 P_1^T \\\vdots & \vdots & \vdots \\P_n^T & 0^T & -u_n P_n^T \\0^T & P_n^T & -v_n P_n^T\end{pmatrix}_{2n \times 12}
+$$
+$$
+\mathbf{m} \overset{\text{def}}{=} \begin{pmatrix}\mathbf{m}_1^T \\\mathbf{m}_2^T \\\mathbf{m}_3^T\end{pmatrix}_{12 \times 1}
+$$
 
 为了防止 $m = 0$ ，指定归一化形式 $||m|| = 1$
 这样以来，这个问题就化为了和线性回归类似的形式
@@ -538,11 +556,15 @@ Q：为什么深度图是 2.5D
 A：
 对于图像上的一个点
 
-$$(u, v) = \left(\alpha \frac{x}{z} + c_x, \beta \frac{y}{z} + c_y\right)$$
+$$
+(u, v) = \left(\alpha \frac{x}{z} + c_x, \beta \frac{y}{z} + c_y\right)
+$$
 
 已知 $z$ ，还需要知道相机内参才能还原为 3D
 
-$$x = z(u - c_x)/\alpha, \quad y = z(v - c_y)/\beta$$
+$$
+x = z(u - c_x)/\alpha, \quad y = z(v - c_y)/\beta
+$$
 
 这个过程称为 depth back projection 深度图反投影
 

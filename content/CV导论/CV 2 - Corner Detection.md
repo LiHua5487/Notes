@@ -27,7 +27,6 @@ This process is convex optimization. 凸优化（只有一个全局最小值）
 
 ![](CV导论/imgs/img2/image-6.png)
 
-
 $$
 E = \sum(ax_i+by_i-d)^2 = 
 ||
@@ -57,8 +56,6 @@ find $(a, b, d)$ to minimize E, which is to minimize ||Ah||
 $$
 ||Ah||^2 = (A(\sum \alpha_i x_i))^2 = \sum(\alpha_i \lambda_i)^2
 $$
-
-
 $$
 \because||h|| = 1\ \ \therefore\sum \alpha_i ^2 = 1
 $$
@@ -68,7 +65,9 @@ h即为最小的特征值对应的特征向量
 
 但是一般的，对于 $AX=0$ 这种方程，会使用**SVD 奇异值分解** 的方法求解
 
-$$A_{n×3} = U_{n×n}\Sigma_{n×3}V_{3×3}^T$$
+$$
+A_{n×3} = U_{n×n}\Sigma_{n×3}V_{3×3}^T
+$$
 
 找到 $\Sigma$ 中最小的奇异值所在的列，取 $V$ 中的这一列即为 $X$ ，而一般奇异值会按从大到小排，所以取 $X$ 为 $V$ 中最后一列
 
@@ -80,7 +79,9 @@ h = h / np.linalg.norm(h)
 
 而对于 $AX=B$ 的情况，$X$ 为
 
-$$X = V \Sigma^+ U^T B$$
+$$
+X = V \Sigma^+ U^T B
+$$
 
 其中 $\Sigma^+$ 是 $\Sigma$ 的伪逆矩阵，即将 $\Sigma$ 中的非零奇异值取倒数，然后转置，不过一般不会直接用这个式子，而是使用现成的库求解
 

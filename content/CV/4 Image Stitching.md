@@ -96,11 +96,15 @@ $$
 
 实际求解中，可以利用最小二乘估计，即最小化下式
 
-$$E = \| \mathbf{A} \mathbf{t} - \mathbf{b} \|_2^2 = \mathbf{t}^T \mathbf{A}^T \mathbf{A} \mathbf{t} - 2 \mathbf{t}^T\mathbf{A}^T \mathbf{b} + \mathbf{b}^T \mathbf{b}$$
+$$
+E = \| \mathbf{A} \mathbf{t} - \mathbf{b} \|_2^2 = \mathbf{t}^T \mathbf{A}^T \mathbf{A} \mathbf{t} - 2 \mathbf{t}^T\mathbf{A}^T \mathbf{b} + \mathbf{b}^T \mathbf{b}
+$$
 
 对其求导可得极值点，即解以下方程
 
-$$\mathbf{A}^T \mathbf{A} \mathbf{t} = \mathbf{A}^T \mathbf{b}$$
+$$
+\mathbf{A}^T \mathbf{A} \mathbf{t} = \mathbf{A}^T \mathbf{b}
+$$
 
 ---
 
@@ -128,11 +132,17 @@ y_i \\
 1
 \end{bmatrix}$$
 由于用的是齐次坐标， $[x\ y\ 1]$ 和 $[wx\ wy\ w]$ 实际上是一样的，所以实际上 T 只有 8 个自由度，至少需要 4 组点，为此可以规定 $h_{22}$ 为 1 ，也可以规定所有元素平方和为 1，一般采用后者，即
-$$||h||^2=1,\quad \text{where } h=[h_{00} \cdots h_{22}]$$
+
+$$
+
+||h||^2=1,\quad \text{where } h=[h_{00} \cdots h_{22}]
+
+$$
 
 把方程表达为矩阵形式得
 
 $$\begin{bmatrix}
+
 x_1 & y_1 & 1 & 0 & 0 & 0 & -x_1'x_1 & -x_1'y_1 & -x_1' \\
 0 & 0 & 0 & x_1 & y_1 & 1 & -y_1'x_1 & -y_1'y_1 & -y_1' \\
 & & & & &\vdots & & &\\
@@ -157,15 +167,22 @@ h_{22}
 0
 \end{bmatrix}$$
 可总结为以下方程
-$$\mathbf{A}_{2n \times 9} \mathbf{h}_9 = \mathbf{0}_{2n}, \quad||h||^2=1$$
+
+$$
+\mathbf{A}_{2n \times 9} \mathbf{h}_9 = \mathbf{0}_{2n}, \quad||h||^2=1
+$$
 
 采用拉格朗日乘数法
 
-$$E = \| \mathbf{A} \mathbf{h} \|^2 + \lambda (\| \mathbf{h} \|^2 - 1) = \mathbf{h}^T \mathbf{A}^T \mathbf{A} \mathbf{h} + \lambda \mathbf{h}^T \mathbf{h} - \lambda$$
+$$
+E = \| \mathbf{A} \mathbf{h} \|^2 + \lambda (\| \mathbf{h} \|^2 - 1) = \mathbf{h}^T \mathbf{A}^T \mathbf{A} \mathbf{h} + \lambda \mathbf{h}^T \mathbf{h} - \lambda
+$$
 
 即需求解以下方程
 
-$$\mathbf{A}^T \mathbf{A} \mathbf{h} = \lambda \mathbf{h}$$
+$$
+\mathbf{A}^T \mathbf{A} \mathbf{h} = \lambda \mathbf{h}
+$$
 
 ---
 
@@ -189,15 +206,21 @@ $$\mathbf{A}^T \mathbf{A} \mathbf{h} = \lambda \mathbf{h}$$
 
 我们希望保留 $\Omega$ 部分的纹理等信息，这可以用梯度来代表，问题可以变为最小化梯度差异
 
-$$E = \min_f \sum_{(i,j) \in \Omega} \|\nabla f(i,j) - \nabla g(i,j)\|^2$$
+$$
+E = \min_f \sum_{(i,j) \in \Omega} \|\nabla f(i,j) - \nabla g(i,j)\|^2
+$$
 
 同时还要保证过渡平滑，可以规定为 $\Omega$ 部分的边缘处 $\partial \Omega$ 要和目标图像一样
 
-$$\forall (i,j)\in \partial \Omega,\quad f(i,j)=f^*(i,j)$$
+$$
+\forall (i,j)\in \partial \Omega,\quad f(i,j)=f^*(i,j)
+$$
 
 在求解时，可以采用最小二乘法，把二者合并到一个式子里，最小化以下目标
 
-$$\min_f \|A f - G\|^2 + \lambda \|B f - F\|^2$$
+$$
+\min_f \|A f - G\|^2 + \lambda \|B f - F\|^2
+$$
 
 - $\|A f - G\|^2$ 代表梯度约束，$A$ 是求梯度的矩阵形式，$G$ 是源图像的梯度矩阵
 - $\|B f - F\|^2$ 代表边界约束，$B$ 是边界选择矩阵，$F$ 是目标图像边界的像素值矩阵
@@ -208,15 +231,19 @@ $$\min_f \|A f - G\|^2 + \lambda \|B f - F\|^2$$
 
 在将 $\nabla f$ 离散化时（以 $x$ 方向为例），一个简单的想法是
 
-$$\frac{\partial f}{\partial x} \approx f(x + 1,y) - f(x,y)$$
+$$
+\frac{\partial f}{\partial x} \approx f(x + 1,y) - f(x,y)
+$$
 
 但下面的方法更逼近，因为泰勒展开后可以消掉二阶导那一项
 
-$$\frac{\partial f}{\partial x} \approx \frac{f(x + 1,y) - f(x-1,y)}{2}$$
+$$
+\frac{\partial f}{\partial x} \approx \frac{f(x + 1,y) - f(x-1,y)}{2}
+$$
 
 而拉普拉斯算子 $\nabla^2$ 的离散化是
 
-$$\nabla^2 f \approx f(x + 1,y) + f(x - 1,y) + f(x,y + 1) + f(x,y - 1) - 4f(x,y)$$
-
-
+$$
+\nabla^2 f \approx f(x + 1,y) + f(x - 1,y) + f(x,y + 1) + f(x,y - 1) - 4f(x,y)
+$$
 

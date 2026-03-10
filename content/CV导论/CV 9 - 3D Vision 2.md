@@ -16,7 +16,9 @@ Stereo Sensors 双目传感器
 
 记这两个点位置为 u 和 u' ，定义**视差 disparity** 
 
-$$disparity=u-u'=\frac{Bf}{z}$$
+$$
+disparity=u-u'=\frac{Bf}{z}
+$$
 
 - B 是双目距离，f 是焦距
 - $u - u'$ 不是世界空间中的距离，而是投到一个图里，在图像坐标系的距离
@@ -153,12 +155,16 @@ mesh 经常用于可视化，以及生成 ground-truth
 1. 计算每个三角面片的面积 
 	设三角面片的三个顶点分别为 $\mathbf{v}_1, \mathbf{v}_2, \mathbf{v}_3$，则该三角面片的面积为
 
-$$A_i = \frac{1}{2} \| (\mathbf{v}_2 - \mathbf{v}_1) \times (\mathbf{v}_3 - \mathbf{v}_1) \|$$
+$$
+A_i = \frac{1}{2} \| (\mathbf{v}_2 - \mathbf{v}_1) \times (\mathbf{v}_3 - \mathbf{v}_1) \|
+$$
 
 2. 计算每个面片的采样权重
 	根据每个三角面片的面积，将其面积占比作为权重
 
-$$P_i = \frac{A_i}{\sum_{j=1}^N A_j}$$
+$$
+P_i = \frac{A_i}{\sum_{j=1}^N A_j}
+$$
 
 3. 采样三角面片 
 	根据概率分布 $P_i$，独立同分布地采样三角面片
@@ -170,7 +176,9 @@ $$P_i = \frac{A_i}{\sum_{j=1}^N A_j}$$
 	可以补一个对称的三角形变成平行四边形
 	在这个平行四边形均匀采样，如果落在补充区域，就对称回原来的三角形
 
-$$\mathbf{p} = (1 - \sqrt{r_1}) \mathbf{v}_1 + \sqrt{r_1}(1 - r_2) \mathbf{v}_2 + \sqrt{r_1} r_2 \mathbf{v}_3$$
+$$
+\mathbf{p} = (1 - \sqrt{r_1}) \mathbf{v}_1 + \sqrt{r_1}(1 - r_2) \mathbf{v}_2 + \sqrt{r_1} r_2 \mathbf{v}_3
+$$
 
 - $\mathbf{p}$ 是采样得到的点
 - $r_1, r_2 \in [0, 1]$ 是两个独立的随机数，用于均匀采样三角面片

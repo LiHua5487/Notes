@@ -148,7 +148,9 @@ $$
 
 根据误差，就可以调节输出来控制运动，比如把速度作为输出，一个简单的想法是让速度与误差成比例，就得到一个基本的控制器 ，**Proportional (P) Control**
 
-$$\dot{\theta}(t) = K_p \theta_e(t)$$
+$$
+\dot{\theta}(t) = K_p \theta_e(t)
+$$
 
 - $\dot{\theta}(t)$ 是系统的输出（在这里是速度）
 - $K_p$ 是比例增益系数，是一个常数
@@ -159,13 +161,17 @@ $$\dot{\theta}(t) = K_p \theta_e(t)$$
 
 如果目标是一个匀速运动 $\theta_d(t) = ct+a$ ，那结果就是这样
 
-$$\theta_e(t) = \frac{c}{K_p} + \left(\theta_e(0) - \frac{c}{K_p}\right)e^{-K_p t}$$
+$$
+\theta_e(t) = \frac{c}{K_p} + \left(\theta_e(0) - \frac{c}{K_p}\right)e^{-K_p t}
+$$
 
 其中有个常数项 $\frac{c}{K_p}$ ，就是稳态误差 steady-state error ，这意味着永远无法达到目标运动，一直都落后一点
 
 需要加一个修正项来进一步消除误差，得到 **Proportional-Integral (PI) Control**
 
-$$\dot{\theta}(t) = K_p \theta_e(t) + K_i \int_{0}^{t} \theta_e(t) \, dt$$
+$$
+\dot{\theta}(t) = K_p \theta_e(t) + K_i \int_{0}^{t} \theta_e(t) \, dt
+$$
 
 那么上述匀速控制的结果就是这样
 
@@ -175,7 +181,9 @@ $$\dot{\theta}(t) = K_p \theta_e(t) + K_i \int_{0}^{t} \theta_e(t) \, dt$$
 
 为了抑制超调，还可以再加一个 derivative (D) 项，得到 PID 控制器
 
-$$\dot{\theta}(t) = K_p \theta_e(t) + K_i \int_{0}^{t} \theta_e(t) \, dt + K_d\dot{\theta_e}(t)$$
+$$
+\dot{\theta}(t) = K_p \theta_e(t) + K_i \int_{0}^{t} \theta_e(t) \, dt + K_d\dot{\theta_e}(t)
+$$
 
 P 控制器只能消除定点控制的稳态误差，而 PI 控制器还能消除匀速控制的稳态误差，但不是所有目标轨迹的误差都能消除
 

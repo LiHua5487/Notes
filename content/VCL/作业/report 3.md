@@ -68,23 +68,33 @@ $$
 
 我们先计算原先的法向量，假设采用 $(u,v)$ 坐标，则表面上一点可以表示为 
 
-$$P=(x(u,v),y(u,v),z(u,v))$$
+$$
+P=(x(u,v),y(u,v),z(u,v))
+$$
 
 分别对 $u$ 和 $v$ 求偏导得 $P_u$ 和 $P_v$ ，则该点法向量可以表示为
 
-$$N=P_u\times P_v,\quad \hat N=\frac{N}{\|N\|}$$
+$$
+N=P_u\times P_v,\quad \hat N=\frac{N}{\|N\|}
+$$
 
 而后需要调整法向量，《Bump Mapping Unparametrized Surfaces on the GPU》中的方法是接收一个高度图作为输入，每点有一个高度值 $H$ ，表示沿着原先的法向量方向移动多少（可正可负），则移动后点坐标变为
 
-$$P'=P+H\cdot \hat{N}$$
+$$
+P'=P+H\cdot \hat{N}
+$$
 
 对其求偏导得
 
-$$P'_u=P_u+H_u\cdot \hat{N}+H\cdot\frac{\partial\hat N}{\partial u}$$
+$$
+P'_u=P_u+H_u\cdot \hat{N}+H\cdot\frac{\partial\hat N}{\partial u}
+$$
 
 其中 $\frac{\partial\hat N}{\partial u}$ 是一个高阶小量，可以忽略，则
 
-$$P'_u=P_u+H_u\cdot \hat{N}$$
+$$
+P'_u=P_u+H_u\cdot \hat{N}
+$$
 
 对于 $P'_v$ 同理，可得调整后的法向量为
 
@@ -214,11 +224,20 @@ dot = n \cdot l
 
 $$
 但是 $dot$ 的取值范围是 $[-1, 1]$ ，需要变换到 $[0,1]$ 作为混合系数
-$$t= \frac{1}{2}(dot+1)$$
+
+$$
+
+t= \frac{1}{2}(dot+1)
+
+$$
 
 最后通过插值计算颜色，其中 $k_{cool}$ 和 $k_{warm}$ 是事先设定的冷色和暖色
 
-$$color = (1 - t) \cdot k_{cool} + t \cdot k_{warm}$$
+$$
+
+color = (1 - t) \cdot k_{cool} + t \cdot k_{warm}
+
+$$
 
 为了增强卡通效果，我还对 $t$ 进行了离散化处理，这样能产生一些清晰的分界线，最终效果如下
 
@@ -301,21 +320,34 @@ for (auto const & model : _sceneObject.OpaqueModels) {
 
 对于射线，可以用起点 $O$ 和方向 $D$ 来表示
 
-$$R(t) = O + tD$$
+$$
+
+R(t) = O + tD
+
+$$
 
 而三角形可以用重心坐标来表示，设三个顶点为 $V_0$ $V_1$ $V_2$ ，则
 
-$$T(u,v) = (1 - u - v)V_0 + uV_1 + vV_2$$
+$$
+
+T(u,v) = (1 - u - v)V_0 + uV_1 + vV_2
+
+$$
 
 要求 $u \geq 0, v \geq 0$ ，且 $u + v \leq 1$ ，以保证点在三角形内部
 
 如果射线与三角形相交，则射线上某点 $R(t)$ 应该等于三角形上某点 $T(u,v)$ 
 
-$$O + tD = (1 - u - v)V_0 + uV_1 + vV_2$$
+$$
+
+O + tD = (1 - u - v)V_0 + uV_1 + vV_2
+
+$$
 
 把未知数 $t, u, v$ 放到一边，变形为
 
 $$
+
 \begin{bmatrix}
 -D, & V_1 - V_0, & V_2 - V_0
 \end{bmatrix}
@@ -325,11 +357,13 @@ u \\
 v
 \end{bmatrix}
 = O - V_0
+
 $$
 
 定义 $E_1 = V_1 - V_0,\ E_2 = V_2 - V_0,\ T = O - V_0$，则方程变为
 
 $$
+
 \begin{bmatrix}
 -D, & E_1, & E_2
 \end{bmatrix}
@@ -339,11 +373,13 @@ u \\
 v
 \end{bmatrix}
 = T
+
 $$
 
 这可以用克拉默法则来求解，结果为
 
 $$
+
 \begin{bmatrix}
 t \\
 u \\
@@ -356,11 +392,13 @@ v
 (D \times E_2) \cdot T \\
 (T \times E_1) \cdot D
 \end{bmatrix}
+
 $$
 
 在实际计算中，常常先计算一些中量来加速，比如定义 $P = D \times E_2$ 和 $Q = T \times E_1$，则结果为
 
 $$
+
 \begin{bmatrix}
 t \\
 u \\
@@ -373,6 +411,7 @@ Q \cdot E_2 \\
 P \cdot T \\
 Q \cdot D
 \end{bmatrix}
+
 $$
 
 计算出 $t, u, v$ 后，需要检查它们是否有效
@@ -411,7 +450,11 @@ Whitted 风格的光追算法过程如下
 
 下面判断一个光线是否与一个包围盒相交，一个光线/射线可以参数化表示为
 
-$$R(t)=O+tD$$
+$$
+
+R(t)=O+tD
+
+$$
 
 - $O$ 为起点，设 $O=(x_0,y_0,z_0)$ 
 - $D$ 为方向，可以看作速度，设 $D=(v_x,v_y,v_z)$
@@ -423,19 +466,23 @@ $$R(t)=O+tD$$
 考虑光线到达 $C_i$ 的时间 $t_i$ ，以 $C_1$ 为例，我们可以把光线的运动分解为 $x$ 和 $y$ 方向的匀速直线运动，则有
 
 $$
+
 \begin{aligned}
 &x_{OC_1}=min_x-x_0 \\
 &t_1=\frac{x_{OC_1}}{v_x}=\frac{min_x-x_0}{v_x}
 \end{aligned}
+
 $$
 
 同理可得 $t_2,t_3,t_4$ ，再结合另一条光线（橙色），可以发现以下规律：光线入射包围盒的时间是 $t_1,t_2$ 中的最大者，而出射时间是 $t_3,t_4$ 的最小者，即
 
 $$
+
 \begin{aligned}
 t_{\text{enter}}&=\text{max}(t_1,t_2)\\
 t_{\text{exit}}&=\text{min}(t_3,t_4)
 \end{aligned}
+
 $$
 
 如果光线与包围盒相交，应满足

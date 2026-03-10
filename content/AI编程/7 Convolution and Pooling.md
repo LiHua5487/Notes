@@ -153,7 +153,9 @@ __global__ void max_pool_forward(
 
 对于输入序列 $[a_1,...,a_n]$ ，其 softmax 计算如下
 
-$$S_j = \frac{e^{a_j}}{\sum_{k=1}^N e^{a_k}} \quad \forall j \in 1..N$$
+$$
+S_j = \frac{e^{a_j}}{\sum_{k=1}^N e^{a_k}} \quad \forall j \in 1..N
+$$
 
 代码实现时，一个简单的想法是直接按照公式计算
 
@@ -185,7 +187,9 @@ def stable_softmax(x):
 
 这还能进一步简化，由于 softmax 层一般是在最后面，用于计算交叉熵损失
 
-$$H(y, p) = -\sum_i y_i \log(p_i)$$
+$$
+H(y, p) = -\sum_i y_i \log(p_i)
+$$
 
 ```python
 def cross_entropy(X, y):
@@ -198,7 +202,9 @@ def cross_entropy(X, y):
 
 可见我们其实是知道损失函数 $L$ 关于 $p_i$ 的具体表达式的
 
-$$L = -\sum_k y_k \log(p_k)$$
+$$
+L = -\sum_k y_k \log(p_k)
+$$
 
 我们又知道 $p_k$ 关于 $a_i$ 的表达式，所以可以不用链式法则，而是直接计算 $\frac{\partial L}{\partial a_i}$
 
@@ -230,15 +236,10 @@ $$
 
 $$
 可得一个非常简洁的计算公式
-$$\frac{\partial L}{\partial a_i} = p_i - y_i$$
 
+$$
 
+\frac{\partial L}{\partial a_i} = p_i - y_i
 
-
-
-
-
-
-
-
+$$
 

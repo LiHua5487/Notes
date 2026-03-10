@@ -53,17 +53,23 @@ $$
 
 可见 $x$ 与 $x'$ 满足关系 $x'=Rx+t$ ，二者是线性相关的，这可以使用混合积 triple product 来表示
 
-$$x'\cdot [t\times (RX)]=0$$
+$$
+x'\cdot [t\times (RX)]=0
+$$
 
 >向量 $a\ b\ c$ 的混合积 $a\cdot (b\times c)$ 的几何含义是以它们为边的平行六面体的体积，所以可推出以下性质： $a\cdot (b\times c)=c\cdot (a\times b)=b\cdot (c\times a)$
 
 把点乘和叉乘都用矩阵乘表示，可得
 
-$$x'^T[t_\times]Rx=0$$
+$$
+x'^T[t_\times]Rx=0
+$$
 
 把 $[t_\times]R$ 定义为一个矩阵 $E_{3\times 3}$ ，这就是 **本质矩阵 essential matrix** 
 
-$$x'^TEx=0$$
+$$
+x'^TEx=0
+$$
 
 - 可计算得 $E$ 秩为 2 
 - $R$ 和 $t$ 各 3 个自由度，而 $E$ 在齐次坐标下放缩等价，共 5 个自由度
@@ -74,25 +80,35 @@ $$x'^TEx=0$$
 
 此外，还可以得到极点，以 $x$ 所处图片的极点 $e$ 为例，由于极点处在所有极线上，可得
 
-$$\forall l,\ l^Te=0$$
+$$
+\forall l,\ l^Te=0
+$$
 
 即
 
-$$\forall x',\ x'^TEe=0$$
+$$
+\forall x',\ x'^TEe=0
+$$
 
 取 $x'$ 为 $(0\ ...\ 1\ ...\ 0)$ ，可得 $Ee$ 的每一个元素都是 0 ，即
 
-$$Ee=0$$
+$$
+Ee=0
+$$
 
 ## Fundamental Matrix
 
 对于不知道相机内参的情况，方程变为
 
-$$x'^TEx=x'^T_{\text{pixel}}K'^{-T}EK^{-1}x_{\text{pixel}}=0$$
+$$
+x'^TEx=x'^T_{\text{pixel}}K'^{-T}EK^{-1}x_{\text{pixel}}=0
+$$
 
 把 $K'^{-T}EK^{-1}$ 定义为矩阵 $F$ ，这就是 **基本矩阵 fundamental matrix** 
 
-$$x'^T_{\text{pixel}}Fx_{\text{pixel}}=0$$
+$$
+x'^T_{\text{pixel}}Fx_{\text{pixel}}=0
+$$
 
 - 可计算得 $F$ 秩为 2 
 - 一个 3×3 矩阵自由度为 9 ，而 $E$ 在齐次坐标下放缩等价，又由于其不满秩，$Det(F)=0$ ，共 7 个自由度
@@ -208,7 +224,12 @@ s & 0 & -s \cdot x_{\text{mean}} \\
 0 & 0 & 1
 \end{bmatrix}$$
 假设两个图的归一化矩阵分别为 $T$ 和 $T'$ ，在使用归一化后的坐标计算 $F$ 后，需要再变回来
-$$F'=T'^TFT$$
+
+$$
+
+F'=T'^TFT
+
+$$
 
 ---
 

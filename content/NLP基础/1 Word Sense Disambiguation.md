@@ -183,7 +183,11 @@ $$
 
 常常使用 F1，即取 $\beta=1$ 
 
-$$F_{1} = \frac{2}{\frac{1}{Pre} + \frac{1}{Rec}} = \frac{2 \times Pre \times Rec}{Pre + Rec}$$
+
+$$
+F_{1} = \frac{2}{\frac{1}{Pre} + \frac{1}{Rec}} = \frac{2 \times Pre \times Rec}{Pre + Rec}
+$$
+
 
 - 宏平均 Marco F1：对每个义项算 F1 ，再取平均
 - 微平均 Micro F1：把所有义项的 TP/FP/FN 各自加起来，算总体的 precision 和 recall ，再拿这俩算 F1 

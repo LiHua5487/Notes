@@ -66,7 +66,9 @@ $$
 
 可得深度计算公式为
 
-$$z=\frac{fB}{x-x'}$$
+$$
+z=\frac{fB}{x-x'}
+$$
 
 - $f$ 为焦距 
 - $B$ 为两个相机的基线距离
@@ -74,7 +76,9 @@ $$z=\frac{fB}{x-x'}$$
 
 这里的 $x-x'$ 就对应着视差 disparity
 
-$$disparity=u-u'=\frac{Bf}{z}$$
+$$
+disparity=u-u'=\frac{Bf}{z}
+$$
 
 - 视差是针对于像素坐标而言的，如果最后想要求以 m 为单位的深度，要么把视差转换单位，要么使用以像素为单位的焦距 $f_X$ 
 - 可见深度与视差成倒数关系，一般我们会先求出视差图，再转换为深度图，视差图可以看作一个中间载体
@@ -92,11 +96,15 @@ $$disparity=u-u'=\frac{Bf}{z}$$
 那具体咋在 scanline 上找一个点的最佳匹配位置呢？我们用一个滑窗去检测 scanline 上每一点的局部特征，并与该点比较，选出最值点，可以定义如下的公式去计算匹配度
 - Sum of squared differences (SSD)  
 
-$$SSD(x, y, d) = \| w_L(x, y) - w_R(x - d, y) \|_2^2$$
+$$
+SSD(x, y, d) = \| w_L(x, y) - w_R(x - d, y) \|_2^2
+$$
 
 - Zero Normalized Cross-Correlation (ZNCC), $\bar{w}$ is the mean of vector $w$ 
 
-$$ZNCC(x, y, d) = \frac{(w_L(x, y) - \bar{w}_L(x, y))^T (w_R(x - d, y) - \bar{w}_R(x - d, y))}{\| w_L(x, y) - \bar{w}_L(x, y) \|_2 \| w_R(x - d, y) - \bar{w}_R(x - d, y) \|_2}$$
+$$
+ZNCC(x, y, d) = \frac{(w_L(x, y) - \bar{w}_L(x, y))^T (w_R(x - d, y) - \bar{w}_R(x - d, y))}{\| w_L(x, y) - \bar{w}_L(x, y) \|_2 \| w_R(x - d, y) - \bar{w}_R(x - d, y) \|_2}
+$$
 
 检测时，我们不用考虑整个 scanline ，由于 $z=\frac{fB}{x-x'}>0$ ，所以 $x>x'$ ，即由于视差存在，对于左图中的一个点，在右图中的对应点会偏左一些，只需要检测这个点的左边部分即可
 

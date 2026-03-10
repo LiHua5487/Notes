@@ -164,53 +164,23 @@ $$
 
 **Soft IoU Loss**
 
-$$IoU = \frac{I(X)}{U(X)}$$where, $I(X)$ and $U(X)$ can be approximated as follows
-$$I(X) = \sum_{v \in V} X_v * Y_v$$$$U(X) = \sum_{v \in V} (X_v + Y_v - X_v * Y_v)$$Therefore, the IoU loss $L_{IoU}$ can be defined as follows
+$$
+IoU = \frac{I(X)}{U(X)}
+$$
 
+where, $I(X)$ and $U(X)$ can be approximated as follows
 
-$$L_{IoU} = 1 - IoU = 1 - \frac{I(X)}{U(X)}$$
+$$
+I(X) = \sum_{v \in V} X_v * Y_v
+$$
 
+$$
+U(X) = \sum_{v \in V} (X_v + Y_v - X_v * Y_v)
+$$
 
+Therefore, the IoU loss $L_{IoU}$ can be defined as follows
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+$$
+L_{IoU} = 1 - IoU = 1 - \frac{I(X)}{U(X)}
+$$
 

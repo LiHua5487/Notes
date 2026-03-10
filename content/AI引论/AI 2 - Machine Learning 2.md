@@ -194,8 +194,6 @@ $$
 $$
 A_*, t_* = \arg\max_{A \in F, t \in T_A} g(D, A, t)
 $$
-
-
 $$
 g(D, A, t) = H(D) - \left( \frac{|D^{A, t, +}|}{|D|} H(D^{A, t, +}) + \frac{|D^{A, t, -}|}{|D|} H(D^{A, t, -}) \right)
 $$
@@ -221,18 +219,12 @@ $$
 $$
 \text{样本均值} \quad \bar{y}_D = \frac{1}{|D|} \sum_{j \in D} y_j
 $$
-
-
 $$
 \text{样本方差（未除以 } |D| \text{）} \quad L(D) = \sum_{j \in D} (y_j - \bar{y}_D)^2
 $$
-
-
 $$
 L(D, A) = \sum_{i \in [m]} L(D^{A = a_i})
 $$
-
-
 $$
 A_* = \arg\min_{A \in F} L(D, A)
 $$

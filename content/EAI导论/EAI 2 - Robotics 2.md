@@ -87,7 +87,9 @@ $$
 
 这样叉乘就可以表示为
 
-$$\vec{a} \times \vec{b} = [\vec{a}]\vec{b}$$
+$$
+\vec{a} \times \vec{b} = [\vec{a}]\vec{b}
+$$
 
 那上式就变为
 
@@ -97,7 +99,9 @@ $$
 
 可以发现，定义的 $[\vec{a}]$ 满足 $[\vec{a}]^3=-[\vec{a}]$ ，结合 $sin$ 和 $cos$ 泰勒展开得
 
-$$\text{Rot}(\vec{\omega}, \theta)x = (I + \theta[\vec{\omega}] + \frac{\theta^2}{2!}[\vec{\omega}]^2 + \frac{\theta^3}{3!}[\vec{\omega}]^3 + \cdots)x \tag{2}$$
+$$
+\text{Rot}(\vec{\omega}, \theta)x = (I + \theta[\vec{\omega}] + \frac{\theta^2}{2!}[\vec{\omega}]^2 + \frac{\theta^3}{3!}[\vec{\omega}]^3 + \cdots)x \tag{2}
+$$
 
 而这正好是 $e^x$ 的泰勒展开的形式，只不过指数是矩阵，不妨采取以下定义
 
@@ -107,7 +111,9 @@ $$
 
 那么就得到了以下结论
 
-$$\text{Rot}(\vec{\omega}, \theta)x = e^{[\vec{\omega}]\theta}x, \ \forall x \in \mathbb{R}^3$$
+$$
+\text{Rot}(\vec{\omega}, \theta)x = e^{[\vec{\omega}]\theta}x, \ \forall x \in \mathbb{R}^3
+$$
 
 同时，根据 $(1)(2)$ 和上述矩阵幂次的定义，有
 
@@ -128,7 +134,9 @@ $$
 
 如果要求 $\theta \in (0, \pi)$ ，那每个旋转矩阵就唯一对应一个轴角表示
 
-$$\theta = \arccos\frac{1}{2}[\operatorname{tr}(R) - 1],\  [\vec{\omega}] = \frac{1}{2\sin\theta}(R - R^T)$$
+$$
+\theta = \arccos\frac{1}{2}[\operatorname{tr}(R) - 1],\  [\vec{\omega}] = \frac{1}{2\sin\theta}(R - R^T)
+$$
 
 对于 $\theta = 0$ 或 $\theta = \pi$ 的情况要特殊处理，尤其是 $\theta = \pi$ 处不连续
 
@@ -141,17 +149,23 @@ $$\theta = \arccos\frac{1}{2}[\operatorname{tr}(R) - 1],\  [\vec{\omega}] = \fra
 可以定义为从 $R_1$ 的 pose 变成 $R_2$ 的 pose 需要的（最小）变动
 根据 $\ (R_2 R_1^T)R_1 = R_2$ ，可以将距离定义为如下式子
 
-$$\operatorname{dist}(R_1, R_2) = \theta(R_2 R_1^T) = \arccos \frac{1}{2}[\operatorname{tr}(R_2 R_1^T) - 1]$$
+$$
+\operatorname{dist}(R_1, R_2) = \theta(R_2 R_1^T) = \arccos \frac{1}{2}[\operatorname{tr}(R_2 R_1^T) - 1]
+$$
 
 ## Quaternion
 
 1. 四元数是存在三个虚部的复数，形如
 
-$$q = w + ix + jy + kz \in \mathbb{R}^4$$
+$$
+q = w + ix + jy + kz \in \mathbb{R}^4
+$$
 
 - 其中 $i, j, k$ 是虚数单位，满足 
 
-$$i^2 = j^2 = k^2 = ijk = -1,\ i \cdot j = k，j \cdot k = i, \ k \cdot i = j$$
+$$
+i^2 = j^2 = k^2 = ijk = -1,\ i \cdot j = k，j \cdot k = i, \ k \cdot i = j
+$$
 
 - 同时 $j\cdot i = -k$ ，其余同理
 
@@ -160,13 +174,17 @@ $$i^2 = j^2 = k^2 = ijk = -1,\ i \cdot j = k，j \cdot k = i, \ k \cdot i = j$$
 
 - 对于 $q_1 = (w_1, \vec{v}_1)$ 与 $q_2 = (w_2, \vec{v}_2)$ ，其乘积如下  
 
-$$q_1 q_2 = \left(w_1 w_2 - \vec{v}_1^T \vec{v}_2, \, w_1 \vec{v}_2 + w_2 \vec{v}_1 + \vec{v}_1 \times \vec{v}_2 \right)$$
+$$
+q_1 q_2 = \left(w_1 w_2 - \vec{v}_1^T \vec{v}_2, \, w_1 \vec{v}_2 + w_2 \vec{v}_1 + \vec{v}_1 \times \vec{v}_2 \right)
+$$
 
 - 注意 $\vec{v}_1 \times \vec{v}_2 \neq \vec{v}_2 \times \vec{v}_1$
 
 2. 四元数的共轭 $q^*$ 定义为，若 $q = q_0 + q_1 i + q_2 j + q_3 k$，则其共轭为
 
-$$q^* = q_0 - q_1 i - q_2 j - q_3 k = (w,-\vec{v})$$
+$$
+q^* = q_0 - q_1 i - q_2 j - q_3 k = (w,-\vec{v})
+$$
 
 - 几何意义是将旋转轴的方向反向
 
@@ -174,7 +192,9 @@ $$q^* = q_0 - q_1 i - q_2 j - q_3 k = (w,-\vec{v})$$
 
 4. 四元数的逆 $q^{-1}$ 定义为
 
-$$q^{-1} = \frac{q^*}{\|q\|^2}$$
+$$
+q^{-1} = \frac{q^*}{\|q\|^2}
+$$
 
 - 对于单位四元数，逆 $q^{-1}$ 和共轭 $q^*$ 是等价的
 
@@ -185,7 +205,9 @@ $$q^{-1} = \frac{q^*}{\|q\|^2}$$
 轴角表示和四元数相互转换关系如下
 Exponential coordinate → Quaternion
 
-$$q = [\cos(\theta/2), \sin(\theta/2)\vec{\omega}]$$
+$$
+q = [\cos(\theta/2), \sin(\theta/2)\vec{\omega}]
+$$
 
 Exponential coordinate ← Quaternion
 
@@ -205,7 +227,9 @@ $$
 旋转矩阵与四元数的转换
 Rotation ← Quaternion  
 
-$$R(q) = E(q) G(q)^T$$
+$$
+R(q) = E(q) G(q)^T
+$$
 
 - where $E(q) = [-\vec{v}, wI + [\vec{v}]]$ and $G(q) = [-\vec{v}, wI - [\vec{v}]]$  
 
@@ -217,7 +241,9 @@ Rotation → Quaternion
 四元数表示下，向量的旋转如下
 假设向量 $\vec{x}$ 与单位四元数 $q$ ，首先将 $\vec{x}$ 扩充为 $x = (0, \vec{x})$ ，那旋转后就变为
 
-$$x' = qxq^{-1} = qxq^*$$
+$$
+x' = qxq^{-1} = qxq^*
+$$
 
 对于多次旋转的情况，只需将四元数相乘
 由上，$(q_2(q_1 x q_1^*)q_2^*)$ 表示先进行旋转 $q_1$ 再进行旋转 $q_2$
@@ -231,11 +257,15 @@ $$x' = qxq^{-1} = qxq^*$$
 下面定义两个单位四元数之间的角距离
 3 维空间中，两个向量的夹角余弦值就是其点积，类似地，定义两个单位四元数的夹角为
 
-$$<p,q>=\text{arccos}(p\cdot q)$$
+$$
+<p,q>=\text{arccos}(p\cdot q)
+$$
 
 由于四元数用半角表示旋转角度，所以实际相差的夹角要乘 2 ，同时，考虑到一个旋转对应 $q$ 和 $-q$ ，实际求角距离时应取更小的那一个，故角距离定义如下
 
-$$\text{dist}(p,q)=2\text{arccos}(|p\cdot q|)=2\text{min}(<p,q>,<p,-q>)$$
+$$
+\text{dist}(p,q)=2\text{arccos}(|p\cdot q|)=2\text{min}(<p,q>,<p,-q>)
+$$
 
 ---
 
@@ -244,13 +274,17 @@ $$\text{dist}(p,q)=2\text{arccos}(|p\cdot q|)=2\text{min}(<p,q>,<p,-q>)$$
 
 在 $\mathbb{S}^3$ 采样时，先随机采样一个四维向量 $(z_1, z_2, z_3, z_4)$ ，代表一个四元数，每个 $z_i$ 是独立的标准正态分布，记作
 
-$$\mathbf{z} \sim \mathcal{N}(0, I_{4 \times 4})$$
+$$
+\mathbf{z} \sim \mathcal{N}(0, I_{4 \times 4})
+$$
 
 由于正态分布没有方向上的偏差，即是一种各向同性的分布，所以在高维空间中，可以均匀分布地覆盖球体，进而保证采样的均匀性
 
 而后，将其归一化向量到单位球面，使其模长为 1
 
-$$q = \frac{\mathbf{z}}{\|\mathbf{z}\|}$$
+$$
+q = \frac{\mathbf{z}}{\|\mathbf{z}\|}
+$$
 
 这样归一化后的四元数 $q$ 将位于 $\mathbb{S}^3$ 上，形成均匀分布
 

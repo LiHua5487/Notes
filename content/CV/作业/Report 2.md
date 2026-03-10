@@ -3,7 +3,9 @@
 
 可得角点检测中的响应函数为
 
-$$\theta = g(I_x^2)g(I_y^2) - [g(I_xI_y)]^2 - \alpha[g(I_x^2) + g(I_y^2)]^2$$
+$$
+\theta = g(I_x^2)g(I_y^2) - [g(I_xI_y)]^2 - \alpha[g(I_x^2) + g(I_y^2)]^2
+$$
 
 为此，先计算出图像的 $x$ 和 $y$ 方向的梯度 $I_x$ 和 $I_y$ ，并进一步计算 $I_{xx}=I_x\cdot I_x,\ I_{yy}=I_y\cdot I_y,\ I_{xy}=I_x\cdot I_y$ ，而后对三者应用高斯模糊，最后代入公式计算响应函数，根据阈值进行筛选，额外应用 `corner_selection` 函数保证一个小范围内只有一个角点
 
