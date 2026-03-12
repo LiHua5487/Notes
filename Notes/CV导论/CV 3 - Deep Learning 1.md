@@ -152,24 +152,24 @@ where $\alpha$ is a hyper parameter, which means **Learning Rate**
 In the example above, for sigmoid function, we have
 $$
 
-\begin{aligned*}
+\begin{align*}
 g'(z) &= \frac{d}{dz} \frac{1}{1 + e^{-z}} \\
 &= \frac{1}{(1 + e^{-z})^2} \cdot e^{-z} \\
 &= \frac{1}{(1 + e^{-z})} \cdot \left(1 - \frac{1}{(1 + e^{-z})}\right) \\
 &= g(z)(1 - g(z)).
-\end{aligned*}
+\end{align*}
 
 $$
 for NLL, we have
 $$
 
-\begin{aligned*}
+\begin{align*}
 \mathcal{L} &= -\sum_{i=1}^{n} \left[ y^{(i)} \log(h_\theta(x^{(i)})) + (1 - y^{(i)}) \log(1 - h_\theta(x^{(i)})) \right] \\
 \frac{\partial \mathcal{L}}{\partial \theta_j} &= -\sum \left( \frac{y}{g(\theta^T x)} - \frac{(1-y)}{1 - g(\theta^T x)} \right) \frac{\partial}{\partial \theta_j} g(\theta^T x) \\
 &= -\sum \left( \frac{y}{g(\theta^T x)} - \frac{(1-y)}{1 - g(\theta^T x)} \right) g(\theta^T x) (1 - g(\theta^T x)) \frac{\partial}{\partial \theta_j} \theta^T x \\
 &= -\sum \left( y(1 - g(\theta^T x)) - (1 - y)g(\theta^T x) \right) x_j \\
 &= -\sum \left( y - h_\theta(x) \right) x_j.
-\end{aligned*}
+\end{align*}
 
 $$
 
@@ -186,7 +186,7 @@ $$
 For convex function, the local minima and its global minima are the same. 
 the process of optimizing convex function is called **Convex Optimization**
 
-
+>有时也可见“梯度上升”，本质上是看目标是最大化还是最小化，最大化就需要朝着上升的方向走，最小化就是朝着下降的方向走
 
 
 

@@ -275,13 +275,13 @@ $$
 则 log-likelihood 可表示为 
 
 $$
-\begin{aligned*}
+\begin{align*}
 \max_{w, b} \sum_{i \in [n]} \log \big[p(y_i | x_i; w, b)\big] 
 &= \sum_{i \in [n]} \log \big[\sigma(y_i \cdot f(x_i))\big] \\
 & = \sum_{i \in [n]} \log \big[\sigma(y_i(w^T x_i + b))\big] \\
 &= \sum_{i \in [n]} \log \Bigg[\frac{1}{1 + e^{-y_i (w^T x_i + b)}}\Bigg] \\[10pt]
 &= -\sum_{i \in [n]} \log \big[1 + e^{-y_i (w^T x_i + b)}\big] 
-\end{aligned*}
+\end{align*}
 $$
 
 转化为 ERM 的形式，写成损失函数，称为 **交叉熵损失**
@@ -294,14 +294,14 @@ $$
 注意到，交叉熵损失函数连续可微，且为凸函数，其梯度
 
 $$
-\begin{aligned*}
+\begin{align*}
     \frac{\partial J(w, b)}{\partial w} 
     &= -\frac{1}{n} \sum_{i \in [n]} \frac{e^{-y_i (w^T x_i + b)}}{1 + e^{-y_i (w^T x_i + b)}} \cdot y_i x_i \\[10pt]
     &= -\frac{1}{n} \sum_{i \in [n]} \Big[1 - p(y_i | x_i; w, b)\Big] y_i x_i \\[15pt]
     \frac{\partial J(w, b)}{\partial b} 
     &= -\frac{1}{n} \sum_{i \in [n]} \frac{e^{-y_i (w^T x_i + b)}}{1 + e^{-y_i (w^T x_i + b)}} \cdot y_i \\[10pt]
     &= -\frac{1}{n} \sum_{i \in [n]} \Big[1 - p(y_i | x_i; w, b)\Big] y_i
-\end{aligned*}
+\end{align*}
 $$
 
 直观地来看，样本 $i$ 预测为其真实标签的概率越接近1（说明已经充分拟合），它对梯度的贡献越小，即不太需要调整

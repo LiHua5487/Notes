@@ -49,8 +49,9 @@ y \\
 ![[CV/img/img4/image-2.png]]
 
 但一般情况下，T 有 6 个自由度，假设找到一组对应点 $[x_i', y_i'] \leftrightarrow [x_i, y_i]$ ，则可列出以下方程
-$$\begin{bmatrix}
 
+$$
+\begin{bmatrix}
 x_i' \\
 y_i'
 \end{bmatrix} = 
@@ -65,11 +66,13 @@ y_i
 \begin{bmatrix}
 c \\
 f
-\end{bmatrix}$$
+\end{bmatrix}
+$$
+
 可见每组对应点能提供 2 个方程，所以至少需要 3 组对应点，把这些方程都转换成矩阵形式，就可得
 
 $$
-\begin{aligned*}
+\begin{align*}
 &\begin{bmatrix}
 \vdots \\
 x_i' \\
@@ -91,7 +94,7 @@ c \\
 f
 \end{bmatrix} \\
 &\mathbf{b}_{2n \times 1} = &&\mathbf{A}_{2n \times 6} \quad &&\mathbf{t}_{6 \times 1}
-\end{aligned*}
+\end{align*}
 $$
 
 实际求解中，可以利用最小二乘估计，即最小化下式
