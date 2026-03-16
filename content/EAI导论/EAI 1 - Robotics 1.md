@@ -1,7 +1,4 @@
 
-关键词：**Joint Space**； **FK/IK (Forward/Inverse Kinematics)**
-
----
 # Introduction
 
 morphology 形态学
@@ -174,7 +171,7 @@ $$
 ---
 
 end-effector 的 pose 有以下的描述方式
-- **Joint / Configuration Space**：各个关节的 pose 的组合（如果每个关节只能 1DoF 旋转，那就是旋转角度的组合）
+- **Joint / Configuration Space**：各个关节的 pose 的组合，又称 qpos（如果每个关节只能 1DoF 旋转，那就是旋转角度的组合）
 	- 一个向量空间，每个坐标是一个 pose 的 vector
 	- 空间维度对应着机械臂的 DoF
 - **Cartesian / Operation Space 笛卡尔空间**：$(\mathbf{R}_{s \to e},\ \mathbf{t}_{s \to e})$ 
@@ -194,46 +191,6 @@ end-effector 的 pose 有以下的描述方式
 
 末端执行器可达的范围称为 reachable space ，即 $\{p \mid \exists \theta, p=T(\theta)\}$ ，一般是不规则的形状；但实际上，当末端执行器处于一个 pose 时，不一定所有方向都能抓到，把实际上能抓到的空间称为 dexterous space 
 
-# SO(3) and SE(3)
-
-特殊正交群 Special Orthogonal Group ，n 维空间下记作 $SO(n)$ 
-
-$$
-\text{SO}(n) = \{ R \in \mathbb{R}^{n \times n} : \det(R) = 1, R R^T = I \}
-$$
-
-- Group 群：一种闭合的代数结构，表示可以进行某种操作（如矩阵乘法）并保持在同一个集合中
-- Orthogonal 正交的：$R R^T = I$  
-- Special ：$\det(R) = 1$
-
-$\text{SO(n)}$ 可用来代表 n 维的旋转操作
-- $\text{SO}(2)$ ：2D rotations, 1 DoF  
-- $\text{SO}(3)$ ：3D rotations, 3 DoF
-
-虽然旋转变换是线性变换，但 $\text{SO(n)}$ 不是线性空间，因为两个旋转矩阵的加法和数乘，不能保证结果还是标准的旋转矩阵，这个空间实际上是 non-Euclidian manifold 非欧流形
-
-旋转变换有很多种参数化表示方法，不同的方法对于学习与训练的难度是不同的
-
----
-
-特殊欧几里得群 Special Euclidean Group ，记作 $\text{SE}(3)$
-
-$$
-\text{SE}(3) := \left\{ T = \begin{bmatrix}R & t \\ 0 & 1\end{bmatrix},R \in \text{SO}(3), t \in \mathbb{R}^3\right\}
-$$
-
-- Group ： $\text{SE}(3)$ 是代数意义上的一个群，意味着其有以下性质
-
-$$
-\begin{aligned}
-T_1, T_2 \in \text{SE}(3) &\Rightarrow T_1 \cdot T_2 \in \text{SE}(3) \tag{1} \\
-\forall T \in \text{SE}(3)\ &,\ \exists T^{-1} \in \text{SE}(3) \tag{2}
-\end{aligned}
-$$
-
-- Euclidean 欧几里得的：这个群的变换保持了欧几里得空间的几何性质（如距离和角度）
-
-$\text{SE(3)}$ 用来表示刚体的 pose ，包括平移和旋转，共 6 自由度
 
 
 
