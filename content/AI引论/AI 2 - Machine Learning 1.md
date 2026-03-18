@@ -411,3 +411,6 @@ $$
 \frac{\partial J(w, b)}{\partial w} = -\frac{1}{n} \sum_{i \in [n]} [1 - p(y_i | x_i; w, b)] y_i x_i + 2\lambda w \quad \in \mathbb{R}^d
 $$
 
+总结区别
+- L1 正则化：更容易把一部分参数直接压到 0 ，可以稀疏化 / 做特征选择
+- L2 正则化：更倾向把所有参数都压小，但通常不变成 0 ，可以平滑收缩 / 提高泛化稳定性

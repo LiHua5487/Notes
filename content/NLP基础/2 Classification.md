@@ -198,5 +198,5 @@ $$
 
 后面就是梯度上升（也可以取负然后梯度下降）、正则化了
 
-
+>回顾 [[12~18 Deep Learning#Optimizer]]，[[AI 2 - Machine Learning 1#正则化]]
 
