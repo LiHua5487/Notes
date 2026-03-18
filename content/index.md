@@ -1,6 +1,3 @@
----
-title: Welcome to Quartz
----
 
-This is a blank Quartz installation.
-See the [documentation](https://quartz.jzhao.xyz) for how to get started.
+昨天的云把键盘借走了，所以这里暂时由一颗土豆负责记录想法。门后面有风，风里面有没写完的句子，句子说先别关灯，猫还在研究电梯为什么不会游泳。总之如果你看到这些字，说明宇宙暂时允许一些乱七八糟的东西存在。
+
