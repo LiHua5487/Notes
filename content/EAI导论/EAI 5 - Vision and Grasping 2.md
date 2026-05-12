@@ -1,7 +1,4 @@
 
-关键词：**Iterative Closest Point (ICP)**； **Normalized Object Coordinate Space (NOCS)**
-
----
 # Instance-Level 6D Pose Estimation
 
 ![[EAI导论/imgs/img5/image.png]]
@@ -19,8 +16,9 @@
 
 ## Iterative Closest Point (ICP)
 
-ICP 旨在通过逐步的调整一个点云 P ，使得两个点云 Q 与 P 尽可能对齐
-其中 Q 是通过传感器得到的物体现实状态的点云（一般需要多机位）；P 是将 CAD 模型根据预测的 pose 进行调整而得到的点云
+ICP 旨在通过逐步的调整一个点云 P ，使得两个点云 Q 与 P 尽可能对齐，并得到相差的旋转 $R$ 和平移 $T$ 
+- Q 是通过传感器得到的物体现实状态的点云（一般需要多机位）
+- P 是将 CAD 模型根据预测的 pose 进行调整而得到的点云
 
 $$
 \begin{aligned}
@@ -66,6 +64,7 @@ $$
 $$
 
 当 R 和 T 小于阈值，或 loss（可以设为 P 到 Q 的 Chamfer Distance）变化小于阈值，或达到迭代次数时停止
+
 将迭代过程中的 R 和 T 累加到模型预测的结果上，就得到了优化后的 pose
 
 优点

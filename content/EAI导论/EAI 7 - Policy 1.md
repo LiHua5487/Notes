@@ -1,12 +1,11 @@
 
-关键词：**Behavioral Cloning (BC)**； **Distribution Shift**； **DAgger**； Causal Confusion； Gaussian Mixture Models (GMM)； Latent Variable Model； Autoregressive Modeling； Out-of-Distribution (OOD)； **Markov Decision Process (MDP)**； POMDP
-
----
 # Policy Learning
 
 ![[image0.png]]
 
-所谓 policy 就是根据观察的结果，决定要做什么动作，如果直接根据 state 进行判断，就称这个 policy 是 fully observed 的
+所谓 policy 就是根据观察的结果，决定要做什么动作
+- 如果直接根据 state 进行判断（包含所有信息），就称这个 policy 是 fully observed 的，在仿真环境里的 policy 可以是这种
+- 如果只根据 observation 判断，就是 partially observed 的，多数策略是这种的
 
 这里存在一个**马尔可夫假设**，即每一步做什么动作只用根据当前状态，而不用额外考虑历史的过程（但显然有些情况下并不能这么做）
 
@@ -17,15 +16,16 @@ P(s_{t+1}|s_t)=P(s_{t+1}|s_1,s_2,…,s_t)
 $$
 
 这意味着决策不需要依赖历史，只需要当前状态，其前提是当前状态已经涵盖了历史信息，即能够代表或总结历史，所以不需要额外的历史状态信息
+
 >比如象棋中，当前棋盘状态，即所有棋子的位置，已经包含了所有过去的走法信息，不需要知道走法历史也能做出下一步决策
 
 一种学习方式是模仿学习，以在 2D 地图里寻路为例，已经有 A* 等现成的算法了，可以以此为目标进行学习，但这些算法需要知道全局地图信息，而经过学习后就能在未知全局地图信息的情况下进行寻路
 
 还有一种学习方式是强化学习，在没有明确目标时，通过不断尝试，给出相应的奖励或者惩罚进行学习
 
-## Imitation Learning
+# Imitation Learning
 
-### Behavioral Cloning & Distribution Shift
+## Behavioral Cloning & Distribution Shift
 
 模仿学习的一种常见方法是 **Behavioral Cloning** ，数据集包含专家在特定状态下采取的动作，通过监督学习，建立从观测到动作的映射关系，并使用动作层面的监督信号进行梯度回传，从而训练 Policy
 
@@ -43,7 +43,7 @@ $$
 
 即便存在 Distribution Shift ，仍可通过一些方法进行矫正，比如以下训练自动驾驶的情形
 
-![[image1.png]]
+![[EAI导论/imgs/img7/image1.png]]
 
 当发生偏移时，左边或右边的相机就会看到规划中的路线的画面，从而相应的指导转向调整到正确方向，保证中间的相机看到路线画面，立刻应对微小偏移，而不让其累积
 
@@ -51,7 +51,7 @@ $$
 - 合成数据：量大，但存在 Sim2Real Gap ，所以需要进行充分的**域随机化 Domain Randomization** 以覆盖更多场景
 - **遥操作**：获得真实的训练数据，甚至可以在虚拟环境中遥操，这样得到的数据有更强的扩展性（比如换个背景或者对轨迹做变换）
 
----
+## DAgger
 
 既然 Distribution Shift 来自于分布的不同，那么解决 Distribution Shift 的核心在于让专家数据的分布 $p_{data}(o_t)$ 和学习过程中产生的分布 $p_{\pi}(o_t)$ 更加对齐
 - 改变 $p_{data}(o_t)$：扩充训练数据集，使其能够覆盖策略执行过程中可能出现的状态空间
@@ -60,12 +60,16 @@ $$
 对于第一种思路，可以采用 **数据聚合 Dataset Aggregation (DAgger)** 的方法进行扩充，前面说到模型训练时会偏离到陌生环境，那此时就让人工介入指导，产生新的训练数据，具体来讲，循环进行以下过程
 1. 利用已有的训练数据 $\mathcal{D} = \{\mathbf{o}_1, \mathbf{a}_1, \ldots, \mathbf{o}_N, \mathbf{a}_N\}$ 训练 $\pi_\theta(\mathbf{a}_t|\mathbf{o}_t)$ 
 2. 运行 $\pi_\theta(\mathbf{a}_t|\mathbf{o}_t)$ 得到一系列新的数据 $\mathcal{D}_\pi = \{\mathbf{o}_1, \ldots, \mathbf{o}_M\}$  (Rollout)
-3. 人工给 $\mathcal{D}_\pi$ 标注 $\mathbf{a}_t$ 
+3. 人工给 $\mathcal{D}_\pi$ 标注 $\mathbf{a}_t$ （给出正确动作）
 4. 将新数据和原有的进行整合 $\mathcal{D} \leftarrow \mathcal{D} \cup \mathcal{D}_\pi$ ，并再次训练
 
->实际上，第 3 步中的专家标注不一定是人，也可能是一个专家策略，如果是人工标注，这个过程就称 **human-in-the-loop (HITL)**
+>实际上，第 3 步中的专家标注不一定是人，也可能是一个专家策略，如果是人工标注，这个过程就称 **human-in-the-loop (HITL)** ；现在的 DAgger 往往不是等运行完了再标注，而是快要出错时直接人工介入操作
 
 尽管这种方法是等到出错了再标注，可能会对 policy 的准确性有所伤害（因为这种情况下学到的 policy 是不完美的，会有纠错带来的扰动），但也会看到新的状态，带来的学习经验，一般是利大于弊的
+
+DAgger 分为 On-Policy 和 Off-Policy 
+- On-Policy：用于收集数据的策略（行为策略）和需要改进的策略（目标策略）是同一个策略
+- Off-Policy：用于收集数据的策略和需要改进的策略是不同的策略，通常用一个回放缓冲区来存储历史数据
 
 其中人工标注的部分是比较 tricky 的，因为人很难根据操作标注出具体数据，可以采取另一些纠正方式
 - 利用已有的算法计算规划一个路径，依此进行纠正
@@ -81,7 +85,7 @@ $$
 - 过拟合：模型可能学到一些虚假关联，导致泛化能力下降
 - **因果混淆 Causal Confusion**：模型在学习时，可能错误地将相关性当成了因果关系（比如每次踩刹车都伴随着前方出现行人和刹车灯亮起，但模型可能学的是因为刹车灯亮起所以才需要踩刹车，倒果为因）
 
-### Multi-Modal Problem
+## Multi-Modal Problem
 
 和之前的抓取问题类似，策略问题也会有多峰情况，专家在面对同一个状态时，可能会有多种同样合理的行为选择，如果使用标准的行为克隆，模型会试图拟合所有这些不同的专家动作
 - 对于离散动作，可能导致模型在不同动作间犹豫不决
@@ -117,7 +121,7 @@ $$
 
 此外，还可以采用**扩散模型 Diffusion Model**
 
-### Multi-Task Learning
+## Multi-Task Learning
 
 在许多实际场景中，收集到的专家数据可能包含执行不同任务（或同一任务的不同目标）的轨迹，比如导航数据可能包含去往不同目的地的轨迹，与其将数据拆分开，为每个任务单独训练一个策略，不如采用多任务学习，训练一个目标条件化的策略 $\pi(a|s,g)$，不仅依赖当前状态 $s$，还依赖于要完成的目标 $g$
 
@@ -125,7 +129,7 @@ $$
 
 但是目标空间 $g$ 也可能存在分布偏移，比如在测试时可能遇到一个训练时从未见过的目标
 
-### Limitation
+## Limitation
 
 模拟学习存在一定的局限性
 - 依赖专家数据：需要大量高质量的专家演示数据，获取成本很高
@@ -134,61 +138,7 @@ $$
 
 >**Out-of-Distribution (OOD)** ：训练分布 (In-Distribution, ID) 是模型见过并学习的部分，由训练数据集中的所有样本所代表的数据分布；分布外 (Out-of-Distribution, OOD) 是模型训练时见得少或者没见过的部分，这考验了模型的泛化能力
 
-## Reinforcement Learning
 
-监督学习的目标是从数据集中学习一个函数 $f(x)$，能够从输入 $x$ 预测输出 $y$ ，有以下数据特点
-- 独立同分布：每组数据样本 $(x, y)$ 是彼此独立的，分布不随时间变化
-- 明确标注：训练数据中有明确的标注 $y$，即模型知道每组输入的“正确答案”是什么
-
-强化学习：在强化学习中，模型通过与环境交互来学习最佳策略，目的是最大化累计奖励，而不是简单地学习输入到输出的对应关系，其有以下特点
-- 数据并非独立同分布：之前的输出会影响未来的输入，也就是说，模型的动作 $a_t$ 会改变环境状态 $s_{t+1}$，这种交互使得数据具有时间相关性
-- 没有明确的监督信号：对于模型执行的每个动作，系统并不会直接告诉模型这是正确的或错误的，而是通过一个奖惩机制进行反馈
-
-**马尔可夫决策过程 Markov Decision Process (MDP)**
-
-$$
-M = \{S, A, T, r\}
-$$
-
-- $A$ 是动作空间，$T$ 是状态转移算子 $p(s_{t+1}|s_t, a_t)$ ，$r$ 是奖励函数
-
-**部分可观察马尔可夫决策过程 POMDP**
-
-一般情况下，智能体只能观测到部分状态
-
-$$
-M = \{S, A, O, T, \mathcal{E}, r\}
-$$
-
-- $O$ ：观测空间，智能体可以观测到的状态
-- $\mathcal{E}$ ：观测概率，$p(o_t|s_t, a_t)$，在真实状态 $s_t$ 下，观测到 $o_t$ 的概率
-
-智能体无法直接知道当前的真实状态 $s_t$，只能得到一个与 $s_t$ 相关的观测 $o_t$
-
-**强化学习的目标**：学习策略 $\pi_\theta(a|s)$ ，使得在一个轨迹  $\tau = (s_1, a_1, s_2, a_2, ...)$ 上的累积奖励期望最大化
-
-$$
-\begin{aligned}
-\theta^* &= \arg\max_\theta \mathbb{E}_{\tau \sim p_\theta(\tau)} \left[ \sum_t r(s_t, a_t) \right] \\
-&= \arg\max_\theta \mathbb{E}_{(s_t, a_t) \sim p_\theta(s_t, a_t)} \left[ r(s_t, a_t) \right]
-\end{aligned}
-$$
-
-- $p_\theta(\tau) = p(s_1) \prod_{t=1}^T \pi_\theta(a_t|s_t)p(s_{t+1}|s_t, a_t)$ 是轨迹 $\tau$ 出现的概率
-
-这个式子暗含了马尔可夫性，因为状态转移概率 $p(s_{t+1}|s_t, a_t)$ 只依赖于 $s_t$ 和 $a_t$
-
-**有限时间界**：最大化固定步数 $T$ 内的总奖励期望
-
-$$
-\theta^* = \arg\max_\theta \sum_{t=1}^T \mathbb{E}_{(s_t, a_t) \sim p_\theta(s_t, a_t)} \left[ r(s_t, a_t) \right]
-$$
-
-- $p_\theta(s_t, a_t)$ 是在 $t$ 时刻访问状态-动作对 $(s_t, a_t)$ 的概率（边际分布）
-
->边际分布：多维随机变量中，关注某些特定变量并忽略其他变量的概率分布
-
-强化学习优化的是期望奖励：即使奖励函数本身不平滑，期望奖励 $\mathbb{E}_{\pi_\theta}[r(x)]$ 通常是关于策略参数 $\theta$ 平滑的，这使得基于梯度的优化方法成为可能
 
 
 

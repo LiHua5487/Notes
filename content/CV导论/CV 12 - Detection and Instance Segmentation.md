@@ -64,8 +64,7 @@ Localization + Classification
 
 ![[CV导论/imgs/img12/image 1.png]]
 
-每个区域可以再分成一堆 2×2 的部分，分别进行池化，称为 RoI Pool
-得到这个区域的特征，统一维度大小后再进行处理
+每个区域可以再分成一堆 2×2 的部分，称为 RoI (Region of Interest) ，分别进行池化，称为 RoI Pool ，得到这个区域的特征，统一维度大小后再进行处理
 
 由于截取出的特征更小，处理速度比 R-CNN 快很多
 这时 region proposal 就成了主要耗时部分

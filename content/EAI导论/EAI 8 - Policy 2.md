@@ -1,7 +1,60 @@
 
-关键词：**Policy Gradient**； **Online/Offline RL**； **On-Policy/Off-Policy**； Monte Carlo Estimation； Model-Based RL； **Reinforcement Algorithm**； TD Target/Error； 软更新； Bootstrap； **(Batch/Online) Actor-Critic Algorithm**
+# Reinforcement Learning
 
----
+监督学习的目标是从数据集中学习一个函数 $f(x)$，能够从输入 $x$ 预测输出 $y$ ，有以下数据特点
+- 独立同分布：每组数据样本 $(x, y)$ 是彼此独立的，分布不随时间变化
+- 明确标注：训练数据中有明确的标注 $y$，即模型知道每组输入的“正确答案”是什么
+
+强化学习：在强化学习中，模型通过与环境交互来学习最佳策略，目的是最大化累计奖励，而不是简单地学习输入到输出的对应关系，其有以下特点
+- 数据并非独立同分布：之前的输出会影响未来的输入，也就是说，模型的动作 $a_t$ 会改变环境状态 $s_{t+1}$，这种交互使得数据具有时间相关性
+- 没有明确的监督信号：对于模型执行的每个动作，系统并不会直接告诉模型这是正确的或错误的，而是通过一个奖惩机制进行反馈
+
+**马尔可夫决策过程 Markov Decision Process (MDP)**
+
+$$
+M = \{S, A, T, r\}
+$$
+
+- $A$ 是动作空间，$T$ 是状态转移算子 $p(s_{t+1}|s_t, a_t)$ ，$r$ 是奖励函数
+
+**部分可观察马尔可夫决策过程 POMDP**
+
+一般情况下，智能体只能观测到部分状态
+
+$$
+M = \{S, A, O, T, \mathcal{E}, r\}
+$$
+
+- $O$ ：观测空间，智能体可以观测到的状态
+- $\mathcal{E}$ ：观测概率，$p(o_t|s_t, a_t)$，在真实状态 $s_t$ 下，观测到 $o_t$ 的概率
+
+智能体无法直接知道当前的真实状态 $s_t$，只能得到一个与 $s_t$ 相关的观测 $o_t$
+
+**强化学习的目标**：学习策略 $\pi_\theta(a|s)$ ，使得在一个轨迹  $\tau = (s_1, a_1, s_2, a_2, ...)$ 上的累积奖励期望最大化
+
+$$
+\begin{aligned}
+\theta^* &= \arg\max_\theta \mathbb{E}_{\tau \sim p_\theta(\tau)} \left[ \sum_t r(s_t, a_t) \right] \\
+&= \arg\max_\theta \mathbb{E}_{(s_t, a_t) \sim p_\theta(s_t, a_t)} \left[ r(s_t, a_t) \right]
+\end{aligned}
+$$
+
+- $p_\theta(\tau) = p(s_1) \prod_{t=1}^T \pi_\theta(a_t|s_t)p(s_{t+1}|s_t, a_t)$ 是轨迹 $\tau$ 出现的概率
+
+这个式子暗含了马尔可夫性，因为状态转移概率 $p(s_{t+1}|s_t, a_t)$ 只依赖于 $s_t$ 和 $a_t$
+
+**有限时间界**：最大化固定步数 $T$ 内的总奖励期望
+
+$$
+\theta^* = \arg\max_\theta \sum_{t=1}^T \mathbb{E}_{(s_t, a_t) \sim p_\theta(s_t, a_t)} \left[ r(s_t, a_t) \right]
+$$
+
+- $p_\theta(s_t, a_t)$ 是在 $t$ 时刻访问状态-动作对 $(s_t, a_t)$ 的概率（边际分布）
+
+>边际分布：多维随机变量中，关注某些特定变量并忽略其他变量的概率分布
+
+强化学习优化的是期望奖励：即使奖励函数本身不平滑，期望奖励 $\mathbb{E}_{\pi_\theta}[r(x)]$ 通常是关于策略参数 $\theta$ 平滑的，这使得基于梯度的优化方法成为可能
+
 # Policy Gradient
 
 模仿学习的问题在于，学习的直接来源是专家数据，而没有自己和环境去交互，所以受到专家数据的限制
@@ -196,7 +249,7 @@ $$
 
 - 其中 $\left( \sum_{t'=t}^T r(\mathbf{s}_{i,t'}, \mathbf{a}_{i,t'}) \right)$ 一项就是 reward to go ，记作 $\hat{Q}_{i,t}$ 或 $G_t$ 
 
-值得注意的是，这并没有改变梯度，因为过去的奖励只依赖于之前的状态和行动，与当前无关，所以过去的累计奖励对应的梯度为 0 
+值得注意的是，这并没有改变梯度，因为过去的奖励只依赖于之前的状态和行动，与当前无关，所以过去的累计奖励对应的梯度为 0 ，但是能降低方差，因为去掉了无关部分
 
 ---
 
@@ -219,8 +272,8 @@ $$
 
 这从直观上很好理解，如果所有的累计奖励都一样，那模型根本不知道啥好啥坏，自然就不知道学习啥，即没法更新梯度
 
->注：这和 BC 的梯度公式并不相同，本质上是因为期望的含义不同
->这里的期望实际上是
+注：这和 BC 的梯度公式并不相同，本质上是因为期望的含义不同
+这里的期望实际上是
 
 $$
 \mathbb{E}_{\tau \sim \pi_\theta} \left[ \nabla_\theta \log \pi_\theta(a | s) \right]
@@ -323,20 +376,11 @@ $$
 y_{i,t} = \sum_{t'=t}^T \mathbb{E}_{\pi_\theta} \left[ r(s_{t'}, a_{t'}) \mid s_{i,t} \right] \approx \sum_{t'=t}^T r(s_{i,t'}, a_{i,t'}) = r(s_{i,t}, a_{i,t}) + V^\pi(s_{i,t+1})
 $$
 
-对于 $V^\pi(s_{i,t+1})$ ，可以采用之前训练过程中的网络进行拟合
+对于 $V^\pi(s_{i,t+1})$ ，可以采用历史训练过程中的网络进行拟合，相比于直接进行一次随机采样，虽然可能不是无偏估计，但能降低方差
 
 $$
 y_{i,t} \approx r(s_{i,t}, a_{i,t}) + \hat{V}^\pi_\phi(s_{i,t+1})
 $$
-
->训练过程中，每隔一定周期才保存一次模型作为目标，防止目标经常变动导致训练不稳定，尽管在目标网络的更新周期内（即目标网络保存一次，但没到下一次保存），使用旧的目标网络计算目标值可能会产生一种“往回拽”的效果，即当前网络被拉向旧的目标值
->但这种效应是可控的，并且通过精心设计的更新机制，整体训练仍然能够稳定进步，比如采用 **软更新** 的方式，在保存周期的期间，每一步都进行更新，混合进去一小部分当前网络的参数，其中 $\tau$ 为更新率，代表当前网络参数的比例
-
-$$
-\theta^{V'} \leftarrow \tau \theta^V + (1 - \tau) \theta^{V'}
-$$
-
-而且，尽管用的是旧的函数，每次更新策略后，又会产生新的训练数据，这会带来新的状态和动作，从而影响到目标值（因为其中的 $a_{i,t}$ 和 $s_{i,t+1}$ 变了），所以目标整体来说还是在前进的
 
 则训练数据的结构如下，这个目标值被称为 **TD Target**
 
@@ -344,7 +388,7 @@ $$
 \left\{ \left( s_{i,t}, r(s_{i,t}, a_{i,t}) + \hat{V}^\pi_\phi(s_{i,t+1}) \right) \right\}
 $$
 
-这种用一个估计值去更新另一个估计值的方法被称为**自举 bootstrap**
+>这种用一个估计值去更新另一个估计值的方法被称为**自举 bootstrap**
 
 将 loss 设置为
 
@@ -401,22 +445,76 @@ $$
 $$
 
 在进行蒙特卡洛近似时，有两种选择
-- Option1：一条轨迹中不同时间步 t 的权重设为从此时 t 到最后结束时 T 的奖励之和
+- Option 1：一条轨迹中不同时间步 t 的权重设为从此时 t 到最后结束时 T 的奖励之和
 
 $$
 \nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_{i,t} \mid s_{i,t}) \left( \sum_{t'=t}^T \gamma^{t'-t} r(s_{i,t'}, a_{i,t'}) \right) \tag{1}
 $$
 
-- Option2：一条轨迹中不同时间步 t 的权重相同，是整条轨迹的累计奖励
+- Option 2：一条轨迹中不同时间步 t 的权重相同，是整条轨迹的累计奖励
+
+$$
+\begin{align}
+\nabla_\theta J(\theta) &\approx \frac{1}{N} \sum_{i=1}^N \left( \sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_{i,t} \mid s_{i,t}) \right) \left( \sum_{t'=1}^T \gamma^{t'-1} r(s_{i,t'}, a_{i,t'}) \right) \tag{2} \\
+&= \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \gamma^{t-1} \nabla_\theta \log \pi_\theta(a_{i,t} \mid s_{i,t}) \left( \sum_{t'=1}^T \gamma^{t'-t} r(s_{i,t'}, a_{i,t'}) \right)
+\end{align}
+$$
+
+实际情况中一般采用的是 Option 1 ，因为其考虑了因果性
+
+## GAE
+
+为了减小 policy gradient 的方差，前面说到了三种操作
+- 将全程的累计奖励替换为 reward to go
+- 又将 reward to go 替换为 Q 值
+- 给 Q 值减一个 baseline 值函数
+又引入了神经网络估计值函数，最后得到了 Actor-Critic 算法
+
+$$
+\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_\theta \log \pi_\theta (\mathbf{a}_{i,t} | \mathbf{s}_{i,t}) \left( r(\mathbf{s}_{i,t}, \mathbf{a}_{i,t}) + \gamma \hat{V}^\pi_\phi (\mathbf{s}_{i,t+1}) - \hat{V}^\pi_\phi (\mathbf{s}_{i,t}) \right)
+$$
+
+- 由于 critic 的存在，其方差较小
+- 但 critic 估计不一定准确，所以不是无偏的，和真值不一定相同
+
+而 policy gradient 如下
+
+$$
+\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_\theta \log \pi_\theta (\mathbf{a}_{i,t} | \mathbf{s}_{i,t}) \left( \left( \sum_{t'=t}^T \gamma^{t'-t} r(\mathbf{s}_{i,t'}, \mathbf{a}_{i,t'}) \right) - b \right)
+$$
+
+- 由于只采样了一个轨迹，方差较大
+- 由上回的推导可得，减去常数项仍是无偏的
+
+有没有什么办法能折中一下呢，可以考虑在一条轨迹中只往下看 n 步，后面的情况采用值函数去代表，而这个值函数使用神经网络估计
+
+![[EAI导论/imgs/img9/image.png]]
+
+这种情况下，优势函数如下，通过调整 n ，在减小方差和无偏之间进行 trad-off ，一般 n 不取太大（如 2 或 4）
+
+$$
+\hat{A}^\pi_n(\mathbf{s}_t, \mathbf{a}_t) = \sum_{t'=t}^{t+n} \gamma^{t'-t} r(\mathbf{s}_{t'}, \mathbf{a}_{t'}) + \gamma^n \hat{V}^\pi_\phi(\mathbf{s}_{t+n}) - \hat{V}^\pi_\phi(\mathbf{s}_t)
+$$
+
+- $n = 1$ 时变为 Actor-Critic 
+- $n \rightarrow \infty$ 时变为带 bias 的 policy gradient 
+
+但 n 可以不只取一个值，可以让 n 取遍所有整数值，然后进行加权求和
+
+$$
+\hat{A}^\pi_{\text{GAE}}(\mathbf{s}_t, \mathbf{a}_t) = \sum_{n=1}^\infty w_n \hat{A}^\pi_n(\mathbf{s}_t, \mathbf{a}_t)
+$$
+
+为了得到递归形式，取权重 $w_n \propto \lambda^{n-1}$ ，其中 $\lambda \in (0,1)$ ，化简可得
 
 $$
 \begin{aligned}
-\nabla_\theta J(\theta) &\approx \frac{1}{N} \sum_{i=1}^N \left( \sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_{i,t} \mid s_{i,t}) \right) \left( \sum_{t'=1}^T \gamma^{t'-1} r(s_{i,t'}, a_{i,t'}) \right) \tag{2} \\
-&= \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \gamma^{t-1} \nabla_\theta \log \pi_\theta(a_{i,t} \mid s_{i,t}) \left( \sum_{t'=1}^T \gamma^{t'-t} r(s_{i,t'}, a_{i,t'}) \right)
+&\hat{A}^\pi_{\text{GAE}}(\mathbf{s}_t, \mathbf{a}_t) = \sum_{t'=t}^\infty (\gamma \lambda)^{t'-t} \delta_{t'} \\
+&\text{where} \quad \delta_{t'} = r(\mathbf{s}_{t'}, \mathbf{a}_{t'}) + \gamma \hat{V}^\pi_\phi(\mathbf{s}_{t'+1}) - \hat{V}^\pi_\phi(\mathbf{s}_{t'})
 \end{aligned}
 $$
 
-实际情况中一般采用的是 Option1 ，因为其考虑了因果性
+可以发现这正是前面 Option1 的形式，其中 $\gamma \lambda$ 作为新的折扣因子，但和只用 $\gamma$ 效果上是一样的，最后得到的这个式子就叫做 **Generalized Advantage Estimation (GAE)**
 
 ## Network Architecture
 
@@ -431,3 +529,9 @@ $$
 
 >并行化 Parallelization：使用多个并行的 Actor（workers）同时在环境中收集经验，可以显著提高数据采集速度和多样性，进一步稳定训练
 >并行又可分为同步 Synchronous 和异步 Asynchronous，同步并行存在同步点，整体速度受限于最慢的 worker；异步并行则没有同步点，会更快
+
+# Summary
+
+![[EAI导论/imgs/img8/image-3.png]]
+
+

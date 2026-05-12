@@ -146,10 +146,10 @@ $$
 同时，根据 $(1)(2)$ 和上述矩阵幂次的定义，有
 
 $$
-e^{[\vec{\omega}]\theta} = I + [\vec{\omega}]\sin\theta + [\vec{\omega}]^2(1 - \cos\theta)
+R = e^{[\vec{\omega}]\theta} = I + [\vec{\omega}]\sin\theta + [\vec{\omega}]^2(1 - \cos\theta)
 $$
 
-这个式子称为**罗德里格旋转公式**
+这个式子称为**罗德里格旋转公式**，可以用来把轴角表示法转换为旋转矩阵
 
 ### 问题
 

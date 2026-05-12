@@ -1,7 +1,4 @@
 
-关键词：**Force/Form Closure**； **Friction Cone**； **VGN**； Dense Prediction/Model；  **GraspNet(GS-Net)**； **Mode Average 问题**； Diffusion-based Dexterous Hand Pose Generation；消融测试 Ablation Study； Affordance； VAT-Mart
-
----
 # Grasp Data Synthesis
 
 怎么判断一个抓取方式好不好呢，可以采用 **力封闭 Force Closure** 的指标，即通过接触点的摩擦力，能让物体应对各个方向的外力都能稳定住
@@ -15,10 +12,10 @@
 如果满足力封闭，就需要这些 F 能应对任意外力，即这些 F 的线性组合能表示出任意外力，那就需要其满足以下条件
 
 $$
-\begin{aligned}
+\begin{align}
 &\text{rank}(F)=n \tag{1}\\
 &\exists k \in \mathbb{R}^j ,k_i>0(i=1,...,j)\ \text{s.t.}\ Fk=0 \tag{2}
-\end{aligned}
+\end{align}
 $$
 
 - $(1)$ 表示行秩为 n ，则列秩也为 n ，说明至少有 n 个线性无关的力
