@@ -468,6 +468,7 @@ $$
 - 将全程的累计奖励替换为 reward to go
 - 又将 reward to go 替换为 Q 值
 - 给 Q 值减一个 baseline 值函数
+
 又引入了神经网络估计值函数，最后得到了 Actor-Critic 算法
 
 $$
