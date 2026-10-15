@@ -38,6 +38,7 @@ export default ((opts?: Partial<FolderContentOptions>) => {
 
     const allPagesInFolder: QuartzPluginData[] =
       folder.children
+        .filter((node) => !/(^|\/)(\u4f5c\u4e1a|\u5927\u4f5c\u4e1a)(\/|$)/.test(node.slug))
         .map((node) => {
           // regular file, proceed
           if (node.data) {

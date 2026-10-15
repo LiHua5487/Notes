@@ -23,7 +23,10 @@ function computeTagInfo(
   locale: keyof typeof TRANSLATIONS,
 ): [Set<string>, Record<string, ProcessedContent>] {
   const tags: Set<string> = new Set(
-    allFiles.flatMap((data) => data.frontmatter?.tags ?? []).flatMap(getAllSegmentPrefixes),
+    allFiles
+      .filter((data) => !/(^|\/)(\u4f5c\u4e1a|\u5927\u4f5c\u4e1a)(\/|$)/.test(data.slug ?? ""))
+      .flatMap((data) => data.frontmatter?.tags ?? [])
+      .flatMap(getAllSegmentPrefixes),
   )
 
   // add base tag

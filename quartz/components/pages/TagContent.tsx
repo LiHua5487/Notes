@@ -22,7 +22,10 @@ export default ((opts?: Partial<TagContentOptions>) => {
   const options: TagContentOptions = { ...defaultOptions, ...opts }
 
   const TagContent: QuartzComponent = (props: QuartzComponentProps) => {
-    const { tree, fileData, allFiles, cfg } = props
+    const { tree, fileData, cfg } = props
+    const allFiles = props.allFiles.filter(
+      (file) => !/(^|\/)(\u4f5c\u4e1a|\u5927\u4f5c\u4e1a)(\/|$)/.test(file.slug ?? ""),
+    )
     const slug = fileData.slug
 
     if (!(slug?.startsWith("tags/") || slug === "tags")) {
