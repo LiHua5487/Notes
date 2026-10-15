@@ -17,7 +17,7 @@ const config: QuartzConfig = {
     },
     locale: "en-US",
     baseUrl: "https://lihua5487.github.io/Notes/",
-    ignorePatterns: ["private", "templates", ".obsidian", "**/作业/**", "**/大作业/**"],
+    ignorePatterns: ["private", "templates", ".obsidian"],
     defaultDateType: "modified",
     theme: {
       fontOrigin: "googleFonts",

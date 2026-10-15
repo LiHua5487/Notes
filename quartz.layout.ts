@@ -38,7 +38,11 @@ export const defaultContentPageLayout: PageLayout = {
         { Component: Component.ReaderMode() },
       ],
     }),
-    Component.Explorer(),
+    Component.Explorer({
+      filterFn: (node) =>
+        node.slugSegment !== "tags" &&
+        !(node.isFolder && ["作业", "大作业"].includes(node.slugSegment)),
+    }),
   ],
   right: [
     // Component.Graph(),
@@ -62,7 +66,11 @@ export const defaultListPageLayout: PageLayout = {
         { Component: Component.Darkmode() },
       ],
     }),
-    Component.Explorer(),
+    Component.Explorer({
+      filterFn: (node) =>
+        node.slugSegment !== "tags" &&
+        !(node.isFolder && ["作业", "大作业"].includes(node.slugSegment)),
+    }),
   ],
   right: [],
 }
