@@ -117,7 +117,7 @@ $$
 - Hamming Code 的编码是 $C = \ker(H) = \{ c \mid H c^T = 0 \}$  ，其中 $H \in \mathbb{R}^{r\times n}$ ，则 $k = \dim(\ker(H)) = n - \text{rank}(H) = n - r$ 
 - 维度为 $k$，即存在一组基 $g_1,\cdots,g_k$ 任意编码都可以表示为它们的线性组合 $c=\sum k_ig_i,k_i \in \{0,1\}$ ，每个 $k_i$ 有 2 种取值，故共有 $2^k$ 种编码，而每个编码对应一个消息，所以共 $2^k$ 种消息，可得消息位数也为 $k$ 
 
-
+引入校验码的意义：拉大 Hamming Distance，便于判断错误和纠错
 
 
 

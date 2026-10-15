@@ -180,9 +180,7 @@ $$
 **n 维正态分布**：假设 $n$ 维随机向量 $\xi$ 有如下的联合密度，则称 $\xi$ 服从 $n$ 维正态分布，记为 $\xi \sim N(\mu, \Sigma)$   
 
 $$
-
 p(x) = \frac{1}{\sqrt{(2\pi)^n \lvert \Sigma \rvert}} \exp \left\{ -\frac{1}{2} (x - \mu)^\top \Sigma^{-1} (x - \mu) \right\}
-
 $$
 
 且 $E(\xi)=\mu,\ \text{cov}(\xi,\xi)=\Sigma$ 
@@ -431,9 +429,7 @@ $$
 **因子分解定理**：设 $X_1, \dots, X_n \overset{i.i.d.}{\sim} p(x, \theta)$，其中 $p(x, \theta)$ 为分布密度或分布列，若 $T = T(X_1, \dots, X_n)$ 满足
 
 $$
-
 \prod_{i=1}^n p(x_i, \theta) = q(T,\theta)\cdot h(x_1, \dots, x_n)
-
 $$
 
 则 $T$ 是充分统计量
