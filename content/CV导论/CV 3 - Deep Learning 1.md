@@ -6,187 +6,144 @@ tags:
 
 # Equivariance and Invariance
 
-我们希望 corner detector 能对图片的 translation 平移和 rotation 旋转都能正确应对，即在图片变化时， corner 的相对位置不变，但是绝对位置随着变化而改变，这种性质称为 **equivariance** 等变性
+如果一张图片平移或旋转了，我们希望角点检测器仍能找到对应的角点，而且检测位置也跟着移动，这种“输入怎么变，输出也相应地变”的性质称为**等变性 equivariance**
 
 ![[CV导论/imgs/img3/image.png|665x268]]
 
-其中 $f$ 是一些抽象操作（如卷积）
-$T$ 是对图片的一些具体操作（如平移旋转）
+用 $f$ 表示检测或特征处理，用 $T$ 表示平移、旋转等变换，等变性可以写为
 
-$T[f(X)] = f(T(X))$ 即先平移旋转再处理，和先处理再平移旋转结果是一样的
+$$
+T(f(X))=f(T(X))
+$$
 
-在 edge corner 等位置性的检测中，希望等变的；
-在分类任务中，则希望是不变的
+即先处理再移动结果，与先移动图像再处理，得到的结果相同，而分类任务中，我们希望猫的照片移动后仍被判断为猫，输出类别不变，这称为**不变性 invariance**，写为 $f(T(X))=f(X)$
 
-要看 corner detector 是否等变，即看 response function $\theta$ 是否等变
-而求梯度、平方是等变的，也就需要看卷积是否等变
-- 对于平移，这是显而易见的，因为卷积就是滑动看这个局部的
-	前提是对于不同局部用的是同一个卷积核
-- 对于旋转，假设 image 是一个连续的东西（二维标量场），即分辨率无穷大
-	如果卷积核是高斯核，由于高斯核是旋转不变的，这个局部的结果就是不变的，而这个局部的位置会随着旋转改变，那么整个就是等变的
+对于角点检测，需要看整个响应函数是否具有对应的等变性
 
-但实际上
-1. 图片是离散成pixel的，对于一个旋转的pixel，四个角会落到旁边四个pixel，对这四个pixel做双线性插值，这意味着对于旋转并不是严格等变的
-2. 在实现高斯核时，只是针对 90° 180° 270° 旋转不变
-这两点就导致 corner detector只是近似旋转等变
-当分辨率越高时旋转等变性越好
+- 平移：使用相同卷积核处理不同位置时，局部图案平移后响应也相应平移，先忽略图像边界的影响
+- 旋转：在连续图像中，圆对称的高斯窗口不会偏向某个方向，结合梯度矩阵的旋转关系，Harris 响应具有旋转等变性
 
-另外，可以证明，对于图片的缩放是不等变的，corner 可能被认为是 edge
+但实际图像是离散网格，任意角度旋转通常需要插值，离散高斯核也不能完美保留连续情况下的性质，所以只能近似旋转等变，分辨率较高时通常更接近连续情况
+
+图像缩放则不同，同一个局部在固定窗口里可能从角点变成边缘，因此普通 Harris 检测并不具备尺度等变性
 
 # Machine Learning
 
-在之前的 detector中，所有参数都是手动设置的，我们希望能自动学习参数
-即从 non-learning based method 到 learning based method
+前面的检测器里，卷积核、阈值等往往是手动设置的，如果任务变复杂，我们希望这些参数能从数据中自动学出来，这就从手工设计方法转向了**机器学习 machine learning**
+
 ## Feature Extraction
 
-- A feature is any piece of information which is relevant for solving the computational task related to a certain application.
-
-Example
+**特征 feature**：与当前任务有关的信息，比如识别一个物体时，轮廓、纹理可能有用，背景颜色则可能不重要，**特征提取 feature extraction**就是保留有用信息、减少无关信息的影响
 
 ![[CV导论/imgs/img3/image-1.png|486x223]]
 
-while some less important features need to be abandoned.
-
-可以根据这些搞一个 model，再根据输出结果评价，反过来调整 model
+把提取出的特征交给模型 model，模型输出预测，再根据预测与真实结果的差异调整参数
 
 ![[CV导论/imgs/img3/image-2.png|298x206]]
 
-假设我们有充足的数据，就可以调整出合适的参数 $\theta$ 的值 
-对于神经网络，类比直线拟合，我们可以采用函数 $y = h_\theta(x)$ 来拟合
-但是对于直线拟合，我们事先知道直线的函数形式，对于神经网络则不同
+可以把模型写成 $h_\theta(x)$，其中 $x$ 是输入，$\theta$ 是可调整的参数，模型结构决定可以表达哪些函数，训练则是在这些函数中寻找适合当前数据的一种
 
 ## Single-Layer Network
 
-以手写数字识别为例，考虑一个简单的情况，判断一个数字是不是5
+以手写数字识别为例，先只判断一张图片是不是数字 5，这叫**二分类 binary classification**，使用 MNIST 数据集，每张灰度图大小为 $28\times28$
 
 ![[CV导论/imgs/img3/image-3.png]]
 
-use MNIST data base, with 28×28 resolution for each image
-flatten the image to a one-dimensional vector $x \in R^{784}$ as input
-Let’s assume a linear function 
-
-$$
-h(x)=g(\theta^Tx)
-$$
-
-$g(z)$ is a **Sigmoid Function**, which converts $z=\theta^Tx$ from $(-\infty,\infty)$ to $(0,1)$
-
-$$
-g(z) = \frac{1}{1 + e^{-z}}
-$$
-
-then we need to decide the fitting/training objective by using **Loss Function**
-
-## Max Likelihood Estimation (MLE)
-
-假设输入数据为 $x$ ，给定一个参数化概率模型 $p(y|\theta)$，其中：
-- $y$ 是期望得到的观测结果；
-- $\theta$ 是模型参数；
-- $p(y|x;\theta)$ 表示在参数 $\theta$ 下，输入 $x$ 生成 $y$ 的概率（或概率密度）。
-
-最大似然估计 MLE 寻找参数 $\theta$ 的值，使得观测到的数据 $\{y1​,y2​,…,yn​\}$ 的联合概率 $p(y1​,y2​,…,yn​|x;\theta)$ 最大，即什么情况下，最终结果长成这样的概率最大
-
-对于每个数据组，可以得到
+先把图像展平 flatten，即把 784 个像素按固定顺序排成一个向量 $x\in\mathbb R^{784}$，再计算加权和并经过 sigmoid
 
 $$
 \begin{aligned}
-p(y = 1 \mid x; \theta) = h_\theta(x) \\
-p(y = 0 \mid x; \theta) = 1 - h_\theta(x)
-\end{aligned}$$
-将 $y =0$ 和 $y=1$ 的情况写在一起，就变成
-
-$$
-
-p(y \mid x; \theta) = \big(h_\theta(x)\big)^y \big(1 - h_\theta(x)\big)^{1-y}
-
-$$
-
-
-假设不同数据组之间相互独立，那整体概率就变成
-
-$$
-
-\begin{aligned}
-p(Y \mid X; \theta) &= \prod_{i=1}^n p\left(y^{(i)} \mid x^{(i)}; \theta\right) = \prod_{i=1}^n \left(h_\theta(x^{(i)})\right)^{y^{(i)}} \left(1 - h_\theta(x^{(i)})\right)^{1 - y^{(i)}} \\
-\log p(Y \mid X; \theta) &= \sum_{i=1}^n y^{(i)} \log\left(h_\theta(x^{(i)})\right) + \left(1 - y^{(i)}\right) \log\left(1 - h_\theta(x^{(i)})\right)
+z&=\theta^Tx \\
+h_\theta(x)&=g(z)=\frac{1}{1+e^{-z}}
 \end{aligned}
-
 $$
 
-由此得到 **Negative Likelihood Loss (NLL)**
+$\theta^Tx$ 就是对应元素相乘后求和，$\theta$ 中每个权重表示对应输入如何影响结果，若需要偏置 $b$，可以写成 $\theta^Tx+b$，也可以在 $x$ 中添加一个恒为 1 的分量，把偏置并入 $\theta$
+
+sigmoid 将任意实数压到 $(0,1)$，可以把输出解释为“这张图是 5”的概率，但模型一开始并不知道哪些权重合适，还需要定义**损失函数 loss function**，衡量预测有多差
+
+## Maximum Likelihood Estimation (MLE)
+
+设真实标签为 $y$，是 5 时 $y=1$，否则 $y=0$，用刚才的模型定义条件概率
 
 $$
-
 \begin{aligned}
-\mathcal{L}(\theta) 
-&= - \log p(Y \mid X; \theta) \\
-&= - \sum_{i=1}^n \left[ y^{(i)} \log\left(h_\theta(x^{(i)})\right) 
-+ \left(1 - y^{(i)}\right) \log\left(1 - h_\theta(x^{(i)})\right) \right]
+p(y=1\mid x;\theta)&=h_\theta(x) \\
+p(y=0\mid x;\theta)&=1-h_\theta(x) \\
+p(y\mid x;\theta)&=h_\theta(x)^y\big(1-h_\theta(x)\big)^{1-y}
 \end{aligned}
-
 $$
 
-而后最小化这个损失
+最后一行只是把两种情况合在一起，代入 $y=0$ 或 $y=1$ 就能还原，**最大似然估计 MLE**希望调整 $\theta$，让模型给实际观测到的标签尽可能高的概率
 
-## Gradient Decent
+假设各个样本独立，对 $n$ 组输入和标签，联合概率就是各组概率的乘积，取对数后，乘积变成求和，计算和优化都更方便
 
-assume the Loss Function looks like this
+$$
+\begin{aligned}
+p(Y\mid X;\theta)&=\prod_{i=1}^n p(y^{(i)}\mid x^{(i)};\theta) \\
+\log p(Y\mid X;\theta)
+&=\sum_{i=1}^n\left[y^{(i)}\log h_\theta(x^{(i)})+(1-y^{(i)})\log\big(1-h_\theta(x^{(i)})\big)\right]
+\end{aligned}
+$$
+
+取负号，把“越大越好”的目标转成“越小越好”，得到**负对数似然损失 negative log-likelihood loss (NLL)**，这里也就是二元交叉熵
+
+$$
+\mathcal L(\theta)=-\sum_{i=1}^n\left[y^{(i)}\log h_\theta(x^{(i)})+(1-y^{(i)})\log\big(1-h_\theta(x^{(i)})\big)\right]
+$$
+
+比如真实标签是 1，模型却只给它 0.01 的概率，损失就很大；如果给到 0.99，损失就很小，因此最小化这个损失会推动预测接近真实标签
+
+## Gradient Descent
+
+损失是参数的函数，训练就是找到能让损失较小的参数，可以把参数想成当前位置、损失想成地形高度，然后不断往下坡方向走
 
 ![[CV导论/imgs/img3/image-4.png|437x356]]
 
-there are many **Local Minima**, but we wanna find the **Global Minima**
-notice that the gradient of Loss implies the fastest direction to raise Loss
-then we just need to move along the direction opposite to the gradient
-so we can update the params like this
-
+**梯度 gradient**由损失对各个参数的偏导数组成，指向局部增加最快的方向，因此沿其反方向更新，称为**梯度下降 gradient descent (GD)**
 
 $$
-
-\theta := \theta - \alpha \nabla_\theta \mathcal{L}(\theta)
-
-$$
-where $\alpha$ is a hyper parameter, which means **Learning Rate**
-- If $\alpha$ is small enough, then GD will definitely lead to a smaller loss after the update. However, a too small needs too many iterations to get the bottom.
-- If is too big,  overshoot! Loss not necessary to decrease.
-
-In the example above, for sigmoid function, we have
+\theta\leftarrow\theta-\alpha\nabla_\theta\mathcal L(\theta)
 $$
 
-\begin{align*}
-g'(z) &= \frac{d}{dz} \frac{1}{1 + e^{-z}} \\
-&= \frac{1}{(1 + e^{-z})^2} \cdot e^{-z} \\
-&= \frac{1}{(1 + e^{-z})} \cdot \left(1 - \frac{1}{(1 + e^{-z})}\right) \\
-&= g(z)(1 - g(z)).
-\end{align*}
+$\alpha$ 称为**学习率 learning rate**，是人为设置的超参数，控制一次走多远，过小会训练缓慢，过大则可能越过低点、让损失增大，适当的小步长通常能降低当前损失，但一般的非凸目标不保证找到全局最小值
+
+### Gradient of the Binary Classifier
+
+先求 sigmoid 的导数
 
 $$
-for NLL, we have
+\begin{aligned}
+g'(z)&=\frac{e^{-z}}{(1+e^{-z})^2} \\
+&=g(z)\big(1-g(z)\big)
+\end{aligned}
 $$
 
-\begin{align*}
-\mathcal{L} &= -\sum_{i=1}^{n} \left[ y^{(i)} \log(h_\theta(x^{(i)})) + (1 - y^{(i)}) \log(1 - h_\theta(x^{(i)})) \right] \\
-\frac{\partial \mathcal{L}}{\partial \theta_j} &= -\sum \left( \frac{y}{g(\theta^T x)} - \frac{(1-y)}{1 - g(\theta^T x)} \right) \frac{\partial}{\partial \theta_j} g(\theta^T x) \\
-&= -\sum \left( \frac{y}{g(\theta^T x)} - \frac{(1-y)}{1 - g(\theta^T x)} \right) g(\theta^T x) (1 - g(\theta^T x)) \frac{\partial}{\partial \theta_j} \theta^T x \\
-&= -\sum \left( y(1 - g(\theta^T x)) - (1 - y)g(\theta^T x) \right) x_j \\
-&= -\sum \left( y - h_\theta(x) \right) x_j.
-\end{align*}
+对一个样本，记 $h=g(\theta^Tx)$，根据链式法则，从损失对输出的影响，一步步乘回参数
 
 $$
-
-If we take all data and label pairs in the training set to calculate the gradient, which is called **Batch Gradient Descent**, we may easily get trapped at local minima, and it's very slow.
-Instead, we randomly sample N pairs as a batch from the training data and then compute the average gradient from them, which is called **Stochastic Gradient Descent (SGD)** , we have the potential to get out of local minima, and it's faster.
-
-for SGD, the formula looks like this
+\begin{aligned}
+\ell&=-y\log h-(1-y)\log(1-h) \\
+\frac{\partial\ell}{\partial\theta_j}
+&=\left(-\frac yh+\frac{1-y}{1-h}\right)h(1-h)x_j \\
+&=(h-y)x_j \\
+\frac{\partial\mathcal L}{\partial\theta_j}
+&=\sum_{i=1}^n\big(h_\theta(x^{(i)})-y^{(i)}\big)x_j^{(i)}
+\end{aligned}
 $$
 
-\nabla_W L(W) = \frac{1}{N} \sum_{i=1}^{N} \nabla_W L_i(x_i, y_i, W)
+可以看到，梯度与预测误差有关，模型通过这个误差信息知道应该往哪个方向调整权重
+
+### Batch and Mini-Batch
+
+如果每次更新都计算整个训练集的梯度，称为 **batch gradient descent**，数据量大时，一次更新就很慢
+
+因此可以随机选一小批数据 mini-batch，用这批数据的平均梯度近似整个训练集的平均梯度，严格说逐个样本更新才叫 SGD，不过实际也常把 mini-batch SGD 简称为 SGD
 
 $$
+\nabla_W L_{\text{batch}}(W)=\frac1N\sum_{i=1}^N\nabla_W L_i(x_i,y_i;W)
+$$
 
-For convex function, the local minima and its global minima are the same. 
-the process of optimizing convex function is called **Convex Optimization**
+这里 $N$ 是这批数据的大小，$W$ 也是模型参数的记号，小批量梯度带有噪声，每步成本较小，能更频繁更新，但并不保证每一步都降低整个训练集的损失
 
->有时也可见“梯度上升”，本质上是看目标是最大化还是最小化，最大化就需要朝着上升的方向走，最小化就是朝着下降的方向走
-
-
-
+>凸函数的局部最小值也是全局最小值，前面的线性 sigmoid 二分类配合二元交叉熵，对参数是凸优化；复杂神经网络一般是非凸的，可能有多个局部最小值和鞍点，不能把它们混为同一种情况

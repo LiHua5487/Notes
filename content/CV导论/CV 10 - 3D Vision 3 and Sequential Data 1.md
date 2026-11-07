@@ -4,81 +4,71 @@ tags:
   - CV
 ---
 
-把 PointNet++ 用在 MNIST 上也可以，而且表现还不错
+# Point Cloud and Convolution
+
+把 PointNet++ 用在 MNIST 上也可以，图像除了存成像素网格，还可以把像素位置和灰度一起作为点的特征
 MNIST 也可视作一个点云，每个点的特征是其灰度，即 $(x,y,f=intensity)$
-但是 ball query 效果没有 conv 好
-因为 ball query 经过 PointNet 时，过的是同一个 MLP ，而后又经过 maxpool，相对位置信息就没了
-即 ball query 是各向同性的 isotropic ，而卷积核是各向异性 anisotropic
+但把规则图像转成点云后，不一定比直接用 CNN 更合适，二维卷积会明确区分窗口中上、下、左、右等相对位置，为各位置设置不同权重，称为具有**各向异性 anisotropy**
 
-要把 ball query 变成各向异性，需要MLP field 
-即每一个相对位置设置一个 MLP ，互不相同
+ball query 的球形查询范围本身不偏向某个方向，但 PointNet++ 会把相对坐标交给 MLP，因此不能说它完全丢掉了相对位置，差别主要在于局部信息如何组合，以及聚合过程是否充分利用空间结构
 
-hyper network 给定一个相对位置的点，预测这个位置的权重，然后再做 MLP
-KP conv 把一些 kernel 放到 ball 的不同位置，对于不被 kernel 涵盖的点，使用线性插值插到 kernel 里边
-但这些方法都比较复杂
+还可以让局部权重直接随相对坐标变化，比如用 MLP 或 hypernetwork 根据相对位置预测权重；KPConv 则在邻域中放置多个 kernel point，根据输入点到这些位置的距离加权组合特征，这些方法能更明确地区分空间位置，但结构和计算也更复杂
 
-如果处理的是 voxel 就好办了，但这太 expansive 了
+如果处理的是规则 voxel 网格，就可以直接使用三维卷积，但对整个空间做稠密计算通常开销太大
 
 # Voxel Networks
 
 ## Voxelization
 
-采用 sparse voxel ，每个格如果被表面占据，就设成 full ，否则为 empty
+**体素化 voxelization**将点落入的空间网格记为非空，记录其坐标和特征，而不为大片空空间分配稠密数组，这就得到 sparse voxel（稀疏体素）
 
 ![[CV导论/imgs/img10/image.png|364x311]]
 
-处理后的 voxel 数目比点云还要少
+多个点可以落进同一个 voxel，因此非空 voxel 的数量通常不多于原始点数，也可以记录其中点的平均位置等特征
 
 ## Sparse Conv
 
-只在中心点是 full 的地方卷积，剩下的设为 0 
+**稀疏卷积 sparse convolution**只存储和计算活跃位置，减少空区域上的无效计算，下面展示的是保持活跃位置集合的 submanifold sparse convolution：只在原本非空的中心输出特征；普通稀疏卷积也可能激活新的输出位置，需要区分具体形式
 
 ![[CV导论/imgs/img10/image-1.png]]
 
 优点
+
 - 比 dense conv 效率高
 - 是 regular grid ，可以 indexing
-- 与 2d 卷积表达能力相同，而且也对平移等变
+- 可以在三维规则网格上使用可学习局部核，具有与二维卷积类似的结构；忽略边界时，对整数网格平移具有相应等变性
 
 缺点
+
 - 离散化导致信息丢失
 
 平均位置当作特征存在 voxel ，反映了相对位置信息
 尺度相比 voxel 大得多时，信息损失可忽略
 而且对于大尺度，本身传感器误差就比较高，点云存储太精细就没必要
-点云 FPS 很慢，这么做效率高，还比 PointNet++表达力强
+相比反复执行 FPS 和邻域查询，稀疏网格能利用规则坐标组织邻居，在大规模场景中往往有较好的效率，具体表现还取决于分辨率和模型设计
 
-对于小尺度，PointNet++更常用
-对于大尺度，Sparse Conv 更常用
+小规模、重视细节的点云任务可以直接使用点网络，大规模场景则常考虑稀疏体素卷积，在几何细节、计算成本之间取舍
 
-Sparse Conv
-- + Kernels are spatial anisotropic
-- + More efficient for indexing and neighbor query
-- + Suitable for large-scale scenes
-- -  Limited resolutions
-
-Point cloud networks
-- + High resolution
-- + Easier to use and can be the first choice for a quick try
-- -  Slightly lower performance
-- -  Slower if performing FPS and ball query
+| 表示与方法 | 主要特点 | 主要代价 |
+| --- | --- | --- |
+| Sparse voxel + sparse conv | 核能区分相对网格位置，便于索引和邻居查询，适合较大场景 | 体素分辨率有限，会引入离散化误差 |
+| Point cloud network | 保留原始采样坐标，适合直接处理点特征 | FPS 和 ball query 等操作可能较慢 |
 
 补充：
-mesh 是 graph ，可以用 GNN 处理
-
+mesh 可以视为带几何特征的图，因此也可以用**图神经网络 GNN**沿顶点或面之间的连接传递信息
 
 # RNN
 
-**sequential data** 序列化数据，有顺序
+**序列数据 sequential data**中的元素有先后顺序，比如一句话的词或视频中的帧，交换顺序往往会改变含义
 之前的神经网络，输入一个数据，输出一个结果
 而现在要输入一个数据，输出一个序列；或者输入一个序列，输出一个结果
 还可以输入一个序列，输出一个序列
-比如用图片描述一句话，根据视频判断事件类型，或者总结视频
+比如根据一张图片生成一句描述，根据视频帧序列判断事件类型，或者把一段输入文字翻译成另一种语言
 
 ![[CV导论/imgs/img10/image-2.png]]
 
 基本的结构是 **Recurrent Neural Network 循环神经网络**
-除了直接输出，还有 **internal state** ，用于向后传递之前的信息
+除了当前输出，还维护一个**隐藏状态 hidden state**，把前面输入的信息压进一个向量，在后续时间步继续使用，可以把它理解为不断更新的记忆
 
 ![[CV导论/imgs/img10/image-3.png|462x208]]![[CV导论/imgs/img10/image-4.png|100x200]]
 
@@ -89,13 +79,13 @@ $$
 y_t = f_{W_{hy}}(h_t)
 $$
 
-- 不同 t 的参数矩阵是相同的
+- $t$ 表示序列中的时间步，不同时间步复用同一组参数 $W$，但输入和隐藏状态不同
 
-**Vanilla RNN** 
+**Vanilla RNN**
 计算当前时刻的隐藏状态 $h_t$
 
 $$
-h_t=f(W_th_{t-1}+W_xx_t+b_h)
+h_t=f(W_hh_{t-1}+W_xx_t+b_h)
 $$
 
 - $W_h$  $W_x$ $b_h$ 在不同时间步共享
@@ -112,52 +102,10 @@ $$
 - $g$ 为激活函数（如 softmax）
 - $y_t$ 为时刻 t 的输出（如分类概率）
 
-next token prediction 
-训练过程中，预测下一个词时，之前的 x 用 ground-truth 而不是之前的预测
+**下一个 token 预测 next-token prediction**：根据之前的词预测下一个词，训练时常使用 teacher forcing，把真实序列中前一个 token 作为输入；实际生成时则只能使用模型已经生成的 token，两种阶段的输入来源不同
 
 ![[CV导论/imgs/img10/image-5.png]]
 
-反向传播时，由于 W 共享，每一个 $y_i$ 对应的 $L_i$ 都会反传到之前，有 $i$ 个梯度给到 W ，W 总共受到 $1+2+...+T$ 个梯度影响
+训练时将各时间步的损失相加，再沿展开后的计算图反向传播，称为**通过时间的反向传播 backpropagation through time (BPTT)**，由于参数共享，不同时间步传回同一参数的梯度会相加，早期状态还可能通过后续状态影响后面的损失，实际可以递推计算，无需逐条重复枚举所有传播路径
 
 ![[CV导论/imgs/img10/image-6.png]]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

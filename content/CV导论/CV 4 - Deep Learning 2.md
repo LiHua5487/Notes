@@ -4,234 +4,167 @@ tags:
   - CV
 ---
 
-**Outline**
-
-- Set up the task 
-- Prepare the data $\rightarrow$ Need a labeled dataset. 
-- Built a model $\rightarrow$ construct your neural network 
-- Decide the fitting/training objective $\rightarrow$ Loss function 
-- Perform fitting $\rightarrow$ Training by running optimization 
-- Testing $\rightarrow$ Evaluating on test data
+训练一个模型，大致需要先明确任务、准备带标签的数据、选择模型结构、定义损失，再通过优化调整参数，最后用独立的测试数据评价效果
 
 # Multilayer Perceptron (MLP)
 
-There are some problem with Single-Layer Network.
-One is that it can only handle linear separable cases.
-
-$single\ layer\ z=\theta^Tx\ and\ sigmoid\ function\ g(z) \rightarrow g(\theta^Tx)$
-$g(\theta^Tx)$ is a hyperplane in the space of $x$
+前面的模型先计算 $z=\theta^Tx+b$，再经过 sigmoid，如果以 0.5 为分类阈值，分类边界就是 $\theta^Tx+b=0$，在二维平面中是一条直线，在更高维空间中称为超平面 hyperplane
 
 ![[CV导论/imgs/img4/image.png|383x195]]
 
-This model is lack of capacity and expressivity.
-So we need **Multilayer Perceptron (MLP)**
+但有些数据无法用一条直线或一个超平面分开，称为**线性不可分**，这时模型的表达能力不够，可以引入**多层感知机 multilayer perceptron (MLP)**
 
-## Fully-connected Layer
+## Fully-Connected Layer
+
+**全连接层 fully-connected layer (FC)**把输入向量的各个分量与每个输出连接起来，每个输出都有自己的权重和偏置，线性部分写为 $z=Wx+b$，再经过激活函数得到 $h=g(z)$
 
 ![[CV导论/imgs/img4/image-1.png|618x284]]
 
-MLP: Stacking linear layer and nonlinear activations
+为什么不能直接把多个线性层叠起来？因为两个线性/仿射变换的复合仍然是同类变换
 
-Q: why cannot simply stacking linear layer / why we need nonlinear activation
-A: this is still a linear process, so the stacked layers is equivalent to one.
-Similarly, simple stacking nonlinear layers is also not ok.
+$$
+W_2(W_1x+b_1)+b_2=(W_2W_1)x+(W_2b_1+b_2)
+$$
 
-Through many non-linear layers, we can transform a linear non separable problem to linear separable at the last layer.
+所以需要在线性层之间插入**非线性激活函数 activation function**，这样多层组合才能表达更复杂的关系，把原来难分的数据逐步变成最后一层容易区分的特征
 
 ![[CV导论/imgs/img4/image-2.png]]
 
-say we have a 2 layer MLP
+比如一个两层 MLP 可以先得到隐藏特征，再根据这些特征输出类别分数
 
 ![[CV导论/imgs/img4/image-3.png]]
 
-extract features layer by layer, so the dimension is non-incremental.
-
 ![[CV导论/imgs/img4/image-4.png]]
 
-How can we acquire/update the parameters/weights of the MLP ?
+每一层的输出维数由模型设计决定，可以增大也可以减小，并不要求逐层下降，那么这些层里的参数要怎么更新？
+
 ## Backpropagation
+
+前向传播 forward propagation 按层计算预测和损失，**反向传播 backpropagation**则利用链式法则，从损失开始往回计算每个参数的梯度
 
 ![[CV导论/imgs/img4/image-5.png]]
 
-we can calculate $\frac{\partial q}{\partial x}$ and $\frac{\partial q}{\partial y}$ in advance after we calculated q.
-use chain rule to calculate $\frac{\partial f}{\partial x}$ and $\frac{\partial f}{\partial y}$
+比如 $q=xy$、$L=f(q)$，已知后面传来的 $\partial L/\partial q$，就可以计算
+
+$$
+\begin{aligned}
+\frac{\partial L}{\partial x}&=\frac{\partial L}{\partial q}\frac{\partial q}{\partial x}=\frac{\partial L}{\partial q}y \\
+\frac{\partial L}{\partial y}&=\frac{\partial L}{\partial q}\frac{\partial q}{\partial y}=\frac{\partial L}{\partial q}x
+\end{aligned}
+$$
+
+每个计算单元只需要保存前向计算中必要的中间结果，并知道自己的局部导数，就能把梯度继续向前传；如果一个变量经过多条路径影响损失，各条路径传回的梯度需要相加
 
 ![[CV导论/imgs/img4/image-6.png]]
 
-some common backpropagation operations
-
 ![[imgs/img4/image-6-1.png]]
 
-The backpropagation can be efficiently implemented with simple matrix operations.
+实际可以利用矩阵运算高效完成，反向传播负责算梯度，之后再由梯度下降等优化器更新参数
 
-## Activate Functions
+## Activation Functions
 
 ![[imgs/img4/image-7.png]]
 
-Problem: sigmoid and tanh have Saturation zone 饱和区（导数近似0）
-ReLU (Rectified Linear Unit) is a good default choice for most cases.
+sigmoid 和 tanh 在输入绝对值较大时会进入**饱和区 saturation zone**，导数接近 0，梯度经过很多层连乘后可能变得很小，导致前面的层难以学习
 
-Above all, MLP model looks like this
+一个常见选择是 **ReLU (Rectified Linear Unit)**，定义为 $\operatorname{ReLU}(z)=\max(0,z)$，正半轴的导数为 1，可以缓解这一问题，负半轴的导数则为 0
+
+这样，一个 MLP 就由多次线性变换与非线性激活交替组成，严格说 FC 可以单指线性层，描述网络模块时也常把后面的激活一起画出来
 
 ![[imgs/img4/image-8.png]]
 
-FC (fully connect layer) 一般用于高密集的信息处理
-FC 层 = Linear + activation
-
-Problems with flattening operation
-- would be very expensive for high resolution images 
-- breaks the local structure of an image
-
-简而言之，直接将输入图片展平很不符合直觉与人类的感知方式
-
+如果输入是高分辨率图像，直接展平后使用 FC，参数会非常多，而且没有利用像素之间的空间邻近关系，比如相邻像素与远处像素在连接方式上没有区别，这就引出了 CNN
 
 # Convolutional Neural Network (CNN)
 
 ![[imgs/img4/image-9.png]]
-## Convolution Layer
 
-Say we have a 32×32 image input with 3 channels (RGB)
+## Convolutional Layer
+
+假设输入是 $32\times32\times3$ 的 RGB 图像，一个大小为 $k\times k$ 的 filter 会同时覆盖输入的全部 3 个通道
 
 ![[imgs/img4/image-10.png]]
 
-滑动 filter 窗口，直接将 filter 与 image 对应位置的元素(3 channel)做点积，得到1个数据（因为只有1个 filter，若有 $C_2$ 个则得到 $C_2$ 个数据）
-这与数学上的卷积是等价的，不用翻转
-
-we can get a number with $w^Tx + b$
+在一个位置上，把局部区域与 filter 的对应元素相乘并求和，再加一个偏置 $b$，得到一个数，写成展平后的形式就是 $w^Tx+b$，随着 filter 在图像上滑动，就得到一张**特征图 feature map**
 
 ![[imgs/img4/image-11.png]]
 
-实际上，可以有多个 filter ，每个 filter 可以用不同的 $w$
+一个 filter 得到一个输出通道，使用多个 filter 就得到多个输出通道，不同 filter 可以学习检测不同的局部模式
 
 ![[imgs/img4/image-12.png]]
 
-Q: bias 怎么设置？不同 filter？不同位置？
-A：一个 filter 一个 bias，如果每个格子一个 bias，那求和后相当于一个 bias
+如果输入通道数为 $C_{in}$、输出通道数为 $C_{out}$，所有卷积核一共包含 $k^2C_{in}C_{out}$ 个权重，此外通常每个输出通道有一个偏置，即总参数量为 $k^2C_{in}C_{out}+C_{out}$
+
+>这里按深度学习惯例称为卷积，实际计算通常是不翻转核的互相关；它与数学卷积的具体计算约定不同，但可学习卷积核可以相应翻转，表达同一类映射
+
+### Parameter Sharing and Bias
+
+同一个 filter 在所有空间位置使用相同权重和偏置，称为**参数共享 parameter sharing**，相当于不管局部图案出现在左上还是右下，都用同一种方式识别
+
+如果在一个窗口内部给每项乘积都加偏置，最后求和时这些偏置可以合成一个数
 
 $$
-\sum (w_i^Tp_i + b_i) = \sum w_i^Tp_i + \sum b_i = \sum w_i^Tp_i + b
+\sum_i(w_ix_i+b_i)=\sum_iw_ix_i+\sum_ib_i=w^Tx+b
 $$
 
-若image的不同位置设置不同 bias，会破坏平移等变性
-bias 的作用，以 ReLU 为例，bias 可以控制是否通过 ReLU
+但如果给输出图的每个空间位置设置不同偏置，就会破坏这种统一处理位置的方式，偏置还会影响激活函数，例如在 ReLU 前移动加权和，使其更容易或更难大于 0
+
+### Stride and Padding
+
+**步长 stride**表示 filter 每次移动几格，**填充 padding**则是在图像边缘补上额外像素，常用补 0 的方式
+
+对于输入一边长为 $N$、核大小为 $F$、两侧各补 $P$、步长为 $S$ 的普通卷积，输出边长为
 
 $$
-ReLU(\sum w_i^Tp_i + b)
+N_{out}=\left\lfloor\frac{N+2P-F}{S}\right\rfloor+1
 $$
 
-**Convolution Kernel**
-
-dimension: $k×k×C_1×C_2$
-k 为卷积核大小， $C_1$ 为输入通道数， $C_2$ 为输出通道数（也是卷积核个数）
-
-stride 步长：每次卷积核移动几格
-
-$$
-Output size = (N - F) / stride + 1
-$$
-
-- N 为输入图像大小，F 为卷积核大小
-不能整除怎么办？ 引入 padding 操作
+向下取整表示只计算能完整放下卷积核的位置，padding 既可以控制输出大小，也可以让边缘像素参与更多计算，并非只有“不能整除”时才使用
 
 ![[imgs/img4/image-13.png]]
 
-We get a **Same** output, which does not change the dimension of the input.
-say the filter size is F×F, the we can zero-padding with $(F - 1) / 2$ （补几圈）
-
-Example
+当 $S=1$、$F$ 为奇数时，取 $P=(F-1)/2$ 就能保持宽高不变，称为 same 大小的输出；步长大于 1 时，需要结合具体输出大小确定 padding
 
 ![[imgs/img4/image-14.png|366x178]]
 
 ![[imgs/img4/image-15.png|520x83]]
 
-param for parameter 参数
-if we directly flatten the image, we may need 30M+ params
+图中的 param 是 parameter 的缩写，即参数，卷积的局部连接与参数共享可以显著减少参数量
 
 ![[imgs/img4/image-16.png]]
 
 ## Pooling Layer
 
+**池化 pooling**把每个通道的局部区域压缩成一个数，通常用于减小空间分辨率，同时保留较显著或较稳定的局部信息
+
 ![[imgs/img4/image-17.png|454x304]]
 
-filter size=2×2, stride=2：以步长为2，分割为若干个 2×2 区域
-Max Pooling: 每个区域取最大
-Average Pooling: 每个区域取均值，等价于 2×2 等 weight 的卷积
-Sum Pooling: 每个区域求和
+比如大小为 $2\times2$、步长为 2 的池化，将图像划成不重叠的小块
+
+- Max pooling：每块取最大值
+- Average pooling：每块取平均值，相当于用固定权重做局部平均
+- Sum pooling：每块求和
 
 ![[imgs/img4/image-18.png]]
 
-Input Dimensions： W₁ × H₁ × C
-2 × 2 Pooling Operation： W₂ = ⌈W₁ / 2⌉     H₂ = ⌈H₁ / 2⌉  
-Number of Parameters：0
+如果输入宽高都是偶数，不补边时输出的宽高分别减半，通道数不变；若是奇数，需要看是否补边、是否启用向上取整，不能统一写成向上取整，普通池化也没有可学习参数
 
-the Architecture of CNN
+## Architecture and Comparison
+
+一个常见 CNN 会交替使用卷积、激活与下采样，逐步提取特征，最后用全连接层或其他结构完成分类
 
 ![[imgs/img4/image-19.png]]
 
-## Comparison
-
-
 ![[imgs/img4/image-20.png]]
 
-**Sparse Connectivity**
+**局部连接 sparse connectivity**：每个卷积输出只看上一层的一块局部区域，随着层数增加，间接看到的范围逐渐扩大
+
 ![[imgs/img4/image-21.png|458x232]]
 
-**Parameter Sharing**
+**参数共享 parameter sharing**：同一个 filter 在各个位置复用，因此参数量不随图像宽高直接增长
+
 ![[imgs/img4/image-22.png]]
 
-**Expressivity**
-FC is a super set of CNN (without sparse and parameter sharing constraints)
-so the expressivity of FC is higher
+同样规模的全连接映射可以表示更一般的连接关系，而 CNN 把“局部模式重要、同一模式可能出现在不同位置”这些图像规律直接写进了结构，减少需要学习的自由度，往往更适合图像任务
 
-**Problem of FC/MLP**
-- FC needs too many parameters
-- FC will change dramatically even if you just shift one row or one column
-	same happens for a slight rotation
-- A huge problem during network training or optimization
-	Besides overfitting, may have low acc even in training cases
-
-卷积层的参数共享机制解决了平移的等变性
-池化层解决了小范围的旋转的不变性
-
-CNN stacks Conv layer and pooling layer.
-Conv layer + pooling layer is invariant with small translation and rotation.
-Thus CNN is much easier to optimize than a FC for an image
-Loss landscape 有多个差不多好的 local minima
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+步长为 1 的卷积在忽略边界时具有平移等变性，池化可以减弱小范围位置变化的影响，但下采样、边界处理会影响严格等变性，普通 CNN 也不自动保证旋转不变，分类上的稳定性还需要结合结构和训练数据

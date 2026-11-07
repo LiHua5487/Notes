@@ -3,30 +3,30 @@ date: 2025-05-28
 tags:
   - CV
 ---
+
 # Attention
 
-primitive：基本的单元，如 RNN CNN Attention
-Attention 对于序列/非序列，关注/不关注前后信息都行
+**注意力 attention**也是一种基本计算单元 primitive，可以处理有顺序的序列，也可以处理图像块或其他向量集合，核心是根据当前需要，从一组信息中加权提取有用内容
 
 ![[CV导论/imgs/img13/image.png]]
 
-把 h 看作输入的 data vectors ，$s_i$ 与 h 进行计算，可以视为利用 query vectors “查询”二者的关系
-对于更一般的情况，利用矩阵 X 和 Q 进行表示
+沿用上一讲，$h$ 表示输入信息，$s_i$ 表示当前查询状态，可以把 $s_i$ 看作 **query（查询）**：现在需要什么信息？把输入变成 **key（键）**后，用来判断相关程度；再用这些相关程度，对 **value（值）**进行加权求和
 
-衡量两个向量的相似度，可以用二者的夹角余弦，称 cos similarity 
-参考余弦的计算，将 Q 与 X 进行点积
+对于一般情况，用矩阵 $X$ 存放待查询的输入，每行一个向量；用 $Q$ 存放查询，每行一个 query，query 的数量可以与输入数量不同
+
+两个向量的点积可以衡量匹配程度，除以各自模长后才是余弦相似度 cosine similarity，下面使用的是缩放点积注意力，而不是归一化后的余弦相似度
 
 但有时候，Q 和 X 维度并不相同，引入 $W_k$ 把 X 转换为与 Q 相同的维度
-把处理后的 $XW_k$ 称为 key 
+把 $K=XW_k$ 称为 key，让每个 key 与 query 的维数相同，记为 $d_k$
 
-为了防止点积结果过大，除以 $\sqrt D_Q$ 
+为了避免维数较大时点积的尺度随之增大，除以 $\sqrt{d_k}$
 再利用 softmax 归一化，得到注意力权重
 
 $$
-A=\text{Softmax}(\frac{QK^T}{\sqrt D_Q})
+A=\operatorname{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)
 $$
 
->之所以除的是 $\sqrt D_Q$ ，与 Weight Initialization 部分类似，希望保持 $QK^T$ 的方差不变
+>与初始化时控制信号尺度类似，如果各分量近似独立、均值为 0、方差为 1，那么 $d_k$ 项乘积之和的方差约为 $d_k$，除以 $\sqrt{d_k}$ 后尺度更稳定，能避免 softmax 过早变得过于尖锐
 
 对于输出，不一定想要 $D_x$ 维，引入 $W_v$ 处理
 把处理后的 $XW_v$ 称为 value
@@ -40,32 +40,30 @@ $$
 
 ![[CV导论/imgs/img13/image-1.png|367x421]]
 
-注意这里 $E_{i,j}$ 是按列进行 softmax 的
+图中每列固定一个 query、每行对应一个 key，所以沿列内各行做 softmax；上面的 $QK^T$ 写法则每行固定一个 query，应沿每行的 key 维度归一化，两种画法只是矩阵摆放方向不同，核心都是“为同一个 query 分配总和为 1 的权重”
 
-由于 X 与 Q 维度及对应的信息种类可以不同，所以称为 cross-attention
+当 $Q$ 来自一组表示，$K,V$ 来自另一组表示时，称为 **cross-attention（交叉注意力）**，例如用 decoder 的状态查询 encoder 的输出，两组表示的来源不同是关键，并不要求它们维数或模态一定不同
 每个输出都能看见所有 X ，但只能看见一个 Q
 
 如果 Q 也是从 X 得到的，即 $Q=XW_Q$ ，那就变成了 self-attention
 
 ![[CV导论/imgs/img13/image-2.png]]
 
-一个句子有 N 个词，每个词通过 embedding 处理成一个 $D_{in}$ 维向量，整体作为一个输入 X ，维度为 N×D，随着单词的生成，就有不同的 X
+一个句子有 $N$ 个 token，每个经过 embedding 得到 $D_{in}$ 维向量，叠成 $X\in\mathbb R^{N\times D_{in}}$，self-attention 中分别计算 $Q=XW_Q$、$K=XW_K$、$V=XW_V$，让各 token 根据当前内容相互交换信息
 
 输入只有 X ，最后输出 Y ，维度从 $D_{in}$ 变为 $D_{out}$
 1D Conv 也能实现这种处理， 但 self-attention 输出的 cell 的感受野是全局的
 
-cross-attention 对于 X 的顺序不变，对于 Q 的顺序等变
-self-attention 对于输入 X 的顺序等变
+暂不考虑位置编码与固定顺序的 mask，cross-attention 中将 $X$ 的各行同步重排，会同时重排 key 与 value，最终加权和不变；重排 query，则输出按同样顺序重排
 
-但是 self-attention 不知道每个 X 在句子中的顺序
-可以给每个 X 叠上一个序列顺序的信息，这个过程就是 positional encoding
+self-attention 中将输入重排，输出也相应重排，即排列等变，因此它本身不知道 token 原来处于第几个位置，可以给每个 token 叠上位置相关的信息，称为**位置编码 positional encoding**
 
 ## Masked Self-Attention
 
-对于 Encoder ，可以直接用 self-attention
-但对于 Decoder ，如果直接用 self-attention ，生成时就会“看到”后面的词
+处理完整输入的 encoder 通常可以让各位置互相关注
+但在自回归 decoder 的训练中，完整目标序列通常已经给定，如果不遮挡，当前位置就可能直接利用未来 token，相当于提前看到了答案
 在一些场景，比如用语言模型生成一句话，这是有问题的
-需要 causal mask ，把后面的词都遮住，不让其关注后面的词，只依赖前面的词进行输出
+需要 **causal mask（因果掩码）**，把未来位置的注意力分数设为 $-\infty$，softmax 后这些位置的权重就是 0，让当前位置只利用允许看到的前缀，实际生成时未来 token 本来就还不存在
 
 ![[CV导论/imgs/img13/image-3.png|208x349]]
 
@@ -79,20 +77,20 @@ self-attention 对于输入 X 的顺序等变
 
 ![[CV导论/imgs/img13/image-4.png]]
 
-每个 X 可以得到一堆 Y ，再经过处理合为一个输出 O ，比如 $O=YW_o$
+每个头使用各自的 $W_Q,W_K,W_V$，得到一组输出，将各个头的输出沿特征维拼接 concat，再乘 $W_O$ 得到最终输出，即 $O=\operatorname{Concat}(Y^{(1)},\ldots,Y^{(H)})W_O$
 这里，每个 Q K V 都是 $D_H$ 维
 取 $D_H = D / H$， $H$ 是多头注意力中的头数，保证输入输出长度相同
 
-计算的时间复杂度几乎不变，但是表达能力显著增强
+在总特征宽度 $D$ 固定时，每个头的宽度约为 $D/H$，主要计算量仍在同一个量级，多头让模型有机会学习不同的关注方式，但不保证每个头都自动对应某种明确语义
 
 ## Summary
 
-attention 一共经过 4 步矩阵运算
+图中把 key、value 的投影、相关性计算和加权聚合画成 4 个矩阵乘法；完整的多头 self-attention 通常还包含 query 投影和最终输出投影，具体计数要看把哪些步骤算进模块
 
 ![[CV导论/imgs/img13/image-5.png|398x258]]
 
 但是如果 N 特别大，第 2 3 步的内存与计算开销就非常大，为 $O(N^2)$
-可以利用 Flash Attention ，将这两步合并，不用实际储存整个矩阵，降到 $O(N)$
+可以利用 **FlashAttention**按块计算、融合操作，避免把完整的 $N\times N$ 注意力矩阵写入显存；在特征维固定时，额外内存可随 $N$ 线性增长，但精确稠密注意力的算术计算量仍然是二次的，主要通过减少显存读写来加速
 
 三种 sequence 处理方式的对比
 
@@ -102,7 +100,7 @@ attention 一共经过 4 步矩阵运算
 
 ![[CV导论/imgs/img13/image-7.png|487x346]]
 
-分别使用 2 层的 MLP 处理的这部分称为 FFN (Feed-Forward Network)
+Transformer block 将 attention、残差连接、归一化和逐 token 的 MLP 组合起来，其中通常包含两次线性变换及中间激活的 MLP 称为 **前馈网络 FFN (feed-forward network)**，不同 token 共用 FFN 参数
 
 注意，这里 layer norm 算的是每个 token 的特征维度 channel 的平均值
 比如有 $h_1 ... h_n$ ，$h_i$ 对应第 i 个 token ，维度为 D ，即 D 个 channel
@@ -111,51 +109,49 @@ $\mu_i$ 计算的是 $h_i$ 的每个元素之和的平均，即关于 channel �
 
 也就是说，不同 token 互动的部分只在 self-attention ，剩下部分每个 token 信息都是相互独立的
 
-共计 6 个矩阵乘法（self-attention 4 + MLP 2）
+因此理解计算过程时，要把 attention 内的投影、两次注意力矩阵乘法、输出投影与 FFN 分开看，采用常见完整定义时，多头 self-attention 可按 6 次主要矩阵乘法计，FFN 再增加 2 次
 
 ## Vision Transformer (ViT)
 
 如果直接处理整个图，太大了，先划成 patch
 每个 patch 直接展平，用 linear 层提取一个 feature ，作为一个 token
-所有 patch 的 token 传给 Transformer
+所有 patch token 传给 Transformer，patch 相当于把一小块图像当成一个“词”，避免直接把每个像素都当作 token 带来的过长序列
 
 ![[CV导论/imgs/img13/image-8.png]]
 
 对于每个 token ，用 positional encoding 加入这个 patch 在原图中的位置信息
-由于是处理整个图片的内容，这些 token 没有先后关系，所以就不用 mask 了
-对于每个 token ，都会给出一个输出，最后把这些输出经过 average pool ，就得到了整个图的特征
+整图分类时，各 patch 都是已经给定的输入，不需要像自回归生成那样遮住未来位置，因此普通 ViT 可以让它们相互关注
+每个 token 都会得到输出，可以对它们做 average pooling 得到整图特征，也可以像原始 ViT 那样加入可学习的分类 token `[CLS]`，用其最终输出进行分类
 
 一些改进：
 
 ![[CV导论/imgs/img13/image-9.png]]
 
-还可以将 layer norm 换为 RMSNorm 
+还可以将 layer norm 换为 RMSNorm
 
 $$
 y_i = \frac{x_i}{RMS(x)} * \gamma_i
 $$
 
 - $x\ y\ \gamma$ 均为 D 维
-- 通过 RMSNorm 后 x 的 L2 norm 变为一样
+- RMSNorm 用均方根缩放输入，不减去均值；忽略 $\epsilon$ 和后续可学习缩放时，归一化向量的 L2 范数为 $\sqrt D$，加入不同的 $\gamma_i$ 后不再保证最终范数完全相同
 
 其中 RMS root mean square 为
 
 $$
-RMS(x) = \sqrt{\varepsilon + \frac{1}{N} \sum_{i=1}^{N} x_i^2}
+RMS(x) = \sqrt{\varepsilon + \frac{1}{D} \sum_{i=1}^{D} x_i^2}
 $$
 
 - 引入 $\epsilon$ 防止分母为 0
 
-
-在 MLP 部分，可以将正常的 MLP 换为 SwiGLU MLP
+在 FFN 部分，可以换用 **SwiGLU**，用一个经过 SiLU 激活的分支对另一个分支逐元素门控，再投影回原来的宽度
 还可以使用 Mixture of Experts (MoE)
 
 学习 E 个权重不同的 MLP ，每个 MLP 视为一个 expert ，擅长不同方面
-但实际处理时，只有 A 个 expert 参与处理，通过路由机制 rout ，根据输入选择哪些 expert 参与，这部分是需要学习的，且不用监督
+但对于每个 token，只选择 $A$ 个 expert 参与计算，通常 $A<E$，通过**路由 router**根据输入给各 expert 打分，选取其中的 top-$A$，路由器可以随任务损失训练，通常不需要人工标注应该选择哪个 expert
 最后，将这 A 个 expert 的输出进行合并
 
 由于只选 A 个，实际计算时的参数量会比较小
-但是这比 attention 更难学，因为 rout 部分只选出来 A 个，这是不可导的
-
+top-$A$ 的离散选择本身不可导，但选中专家的路由权重和输出仍可以传播梯度，实际还需要处理专家负载不均、部分专家很少被选中等训练问题
 
 由于 token 的获取方式是自由的，所以 transformer 可以处理很多模态的信息

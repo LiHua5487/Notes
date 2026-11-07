@@ -6,356 +6,251 @@ tags:
 
 # Line Fitting
 
-From edge detection we can get a series of points (0/1 mask).
-Now for some cases, we wanna get a straight line.
+边缘检测可以得到一组像素点，但有时我们想进一步知道这些点对应哪条直线，这就需要**直线拟合 line fitting**
 
-## Least Square Method 
+## Least Squares Method
+
+先假设直线为 $y=mx+b$，对于点 $(x_i,y_i)$，直线预测的高度为 $mx_i+b$，与实际高度的差称为**残差 residual**，最小二乘法就是选择 $m,b$，使残差的平方和最小
+
+$$
+E(m,b)=\sum_{i=1}^n(mx_i+b-y_i)^2
+$$
 
 ![](CV导论/imgs/img2/image-4.png)
-We wanna minimize E to get a optimized result.
-$residual\ 残差 \xrightarrow{L2\ norm\ 二范数}\ E (Energy)\ \xrightarrow{(m,b,E)}\ energy\ landscape\ \rightarrow\ global\ min$
+
+把不同参数对应的误差画出来，就是误差曲面 energy landscape，我们想找到它的最低处，这个目标是凸的，局部最小值也是全局最小值；数据不足等情况下，最优参数可能不唯一
+
 ![](CV导论/imgs/img2/image-5.png)
 
-P.S. more detailed calculation methods can be found in matrix cookbook.
-This process is convex optimization. 凸优化（只有一个全局最小值）
+这种方式有两个问题
 
-- Limitations
-	1. fails completely for vertical lines.
-	2. not robust 鲁棒（抗干扰） when outliner 离群 exists
+1. $y=mx+b$ 无法表示竖直的直线
+2. 残差会被平方，少数偏离很远的点就可能主导结果，对**离群点 outlier** 很敏感
 
-**For Problem1**, we can use $ax + by - d = 0$ to replace $y = mx + b$
+### Implicit Line and SVD
+
+对于第一个问题，可以改用隐式方程 $ax+by-d=0$，竖直直线也能表示，比如 $x=2$
 
 ![](CV导论/imgs/img2/image-6.png)
 
-$$
-E = \sum(ax_i+by_i-d)^2 = 
-||
-\begin{bmatrix}
-x_1 & y_1 & -1 \\
-⋮ & ⋮ & ⋮ \\
-x_n & y_n & -1
-\end{bmatrix}
-
-\cdot
-
-\begin{bmatrix}
-a \\
-b \\
-d
-\end{bmatrix}
-||^2
-$$
-
-记前后的矩阵分别为A和h，预期$E = Ah = 0$
-约束：$a^2+b^2+d^2 = 1$，即 $||h|| =1$
-find $(a, b, d)$ to minimize E, which is to minimize ||Ah||
-
-如果A是方阵，设A特征值，特征向量，有 $Ax = \lambda x$ ，则 $h = \sum\alpha_ix_i$
-将A对角化，代入下式有
+此时可以把所有点的约束写成矩阵形式
 
 $$
-||Ah||^2 = (A(\sum \alpha_i x_i))^2 = \sum(\alpha_i \lambda_i)^2
-$$
-$$
-\because||h|| = 1\ \ \therefore\sum \alpha_i ^2 = 1
-$$
-
-取绝对值最小的特征的的系数为1，其余为0
-h即为最小的特征值对应的特征向量
-
-但是一般的，对于 $AX=0$ 这种方程，会使用**SVD 奇异值分解** 的方法求解
-
-$$
-A_{n×3} = U_{n×n}\Sigma_{n×3}V_{3×3}^T
+\begin{aligned}
+A&=\begin{bmatrix}x_1&y_1&-1\\\vdots&\vdots&\vdots\\x_n&y_n&-1\end{bmatrix},\quad
+h=\begin{bmatrix}a\\b\\d\end{bmatrix} \\
+E(h)&=\|Ah\|_2^2
+\end{aligned}
 $$
 
-找到 $\Sigma$ 中最小的奇异值所在的列，取 $V$ 中的这一列即为 $X$ ，而一般奇异值会按从大到小排，所以取 $X$ 为 $V$ 中最后一列
+$Ah$ 的每个元素就是一个点代入直线方程后的值，$\|\cdot\|_2^2$ 表示把这些值平方后求和，但如果直接最小化，会得到 $h=0$，这根本不是一条直线，所以需要给参数加上约束
+
+一种常见的齐次代数拟合是要求 $\|h\|_2=1$，再最小化 $\|Ah\|_2$，这可以用**奇异值分解 SVD** 求解
+
+$$
+A_{n\times3}=U_{n\times n}\Sigma_{n\times3}V_{3\times3}^T
+$$
+
+这里 $U,V$ 可以理解为改变坐标方向，$\Sigma$ 的对角元素是各个方向上的缩放量，即奇异值，在单位长度约束下，沿缩放最小的方向取 $h$，就能让 $\|Ah\|_2$ 最小，所以取 $V$ 中最小奇异值对应的列，奇异值通常从大到小排列，也就是最后一列
 
 ```python
 U, S, Vt = np.linalg.svd(A)
-h = Vt[-1] # Vt的最后一行，即V的最后一列
-h = h / np.linalg.norm(h)
+h = Vt[-1]  # Vt 的最后一行，就是 V 的最后一列
 ```
 
-而对于 $AX=B$ 的情况，$X$ 为
+也可以从特征值理解：$\|Ah\|_2^2=h^TA^TAh$，由于 $A^TA$ 是对称半正定矩阵，最优方向就是其最小特征值对应的特征向量，SVD 可以直接得到这个方向
+
+>这里最小化的是代数误差，如果想最小化点到直线的垂直距离，约束应为 $a^2+b^2=1$，可以先将点减去均值，再对中心化后的 $n\times2$ 坐标矩阵做 SVD，取最小奇异值对应的方向作为法向量 $(a,b)$，最后由 $d=a\bar x+b\bar y$ 得到直线
+
+对于一般的 $AX=B$，则可以用伪逆求最小二乘解
 
 $$
-X = V \Sigma^+ U^T B
+X=A^+B=V\Sigma^+U^TB
 $$
 
-其中 $\Sigma^+$ 是 $\Sigma$ 的伪逆矩阵，即将 $\Sigma$ 中的非零奇异值取倒数，然后转置，不过一般不会直接用这个式子，而是使用现成的库求解
+$\Sigma^+$ 将非零奇异值取倒数，并调整矩阵形状，实际一般直接调用现成的库
 
 ```python
-# 使用 lstsq 直接求解
 X = np.linalg.lstsq(A, B, rcond=None)[0]
-
-# 或者使用 pinv（伪逆）
+# 也可以使用伪逆
 X = np.linalg.pinv(A) @ B
 ```
 
-**For Problem 2**
+### Outliers
+
+最小二乘对小幅噪声通常还能应对，但离群点会把结果拉偏
 
 ![](CV导论/imgs/img2/image.png)
 
-Robust to small noises but sensitive to outliers !
-We need to replace L2 norm with a better method.
-L1  is robust, but big mistake and small mistake are reflected as the same.
+如果将残差平方改成残差绝对值，即 L1 损失，大误差的影响会减弱，不过仍然需要处理离群点，另一种思路是先找出哪些点属于同一条直线，再只用这些点拟合
 
-## RANSAC 随机抽样一致性
+## RANSAC
+
+**随机抽样一致性 RANSAC**：反复从数据中抽取少量点来提出假设，再看有多少数据支持这个假设，符合当前模型的点称为**内点 inlier**，偏离较远的点称为离群点 outlier
 
 ![](CV导论/imgs/img2/image-7.png)
 
-- Process
-	1. 随便选2个点确定一个线，看这个线所确定的inlier占的比例
-		![](CV导论/imgs/img2/image-1.png)
-	2. 先比inlier的比例，相同的话再用最小二乘/SVD比Energy
-	3. 取最小的一组inlier点用最小二乘/SVD计算直线方程
-	4. 用fit后的线再次确定inlier，重复上述流程，直到不变
-		![](CV导论/imgs/img2/image-2.png)
+以直线拟合为例
 
-- hyper parameters 超参数
-	1. number of hypothesis 假设（取样）的数目
-	2. threshold 判断inlier的阈值，可以根据噪声的sigma确定
+1. 随机选 2 个不同的点，确定一条候选直线
+2. 计算其余点到直线的距离，小于阈值的视为内点
+3. 重复取样，保留内点最多的候选；内点数相同时，可以再比较拟合误差
+4. 用最好候选的所有内点重新拟合直线，也可以重新判断内点并进一步优化
 
-- P.S.
-	inlier比例最大的不一定最后是最优的
-	实现时可以不用循环取样，而是并行处理，利用Matrix或Tensor
+![](CV导论/imgs/img2/image-1.png)
 
-- 至少需要多少取样？
-	一次取n个点，取k次
-	假设取一次inlier概率为 $w$
-	一组点全部是inliner的概率 $P[all\ inliner] = w^n$ 
-	如果一组点中有一个点是outliner, 那么我们称这组点fail. 
-	k 组点全部fail的概率 $P[fail] = (1−w^n)^k$
-	所以取n最小（即为2），k尽可能大
+![](CV导论/imgs/img2/image-2.png)
 
-由上可得，最少需要的假设数 K 为
+主要的超参数是取样次数和内点距离阈值，阈值可以结合噪声水平选择；内点最多的候选也不保证就是真实模型，需要结合数据情况判断，多个候选的计算可以并行进行
+
+### Number of Hypotheses
+
+假设内点比例为 $w$，一次抽取 $n$ 个点，在近似独立的条件下，一组点全部是内点的概率为 $w^n$，取样 $K$ 次却没有一次成功的概率为 $(1-w^n)^K$
+
+如果希望至少成功一次的概率达到 $p$，就需要
 
 $$
-K = \left\lceil \frac{\log(1 - p)}{\log\left(1 - w^n\right)} \right\rceil
+\begin{aligned}
+1-(1-w^n)^K&\geq p \\
+K&\geq\frac{\log(1-p)}{\log(1-w^n)}
+\end{aligned}
 $$
 
-- p 为至少有一个取样是成功的概率
-- w 为 inlier 比例
-- n 为每次取点的个数
+因此取右侧向上取整即可，这里假设 $0<w<1$、$0<p<1$，每次取的点数应尽量少，但必须足够确定模型，比如直线至少需要 2 个点；内点越少，通常需要取样越多次
 
-- Pros and Cons
-	- Pros
-		General method suited for a wide range of model fitting problems
-		Easy to implement and easy to calculate its failure rate
-	
-	- Cons
-		Only handles a moderate percentage of outliers without cost blowing up
-		Many real problems have high rate of outliers (but sometimes selective choice of random subsets can help)
-
-A voting strategy, **The Hough transform**, can handle high percentage of outliers
+RANSAC 适用于很多模型拟合问题，实现简单，也能估算取样失败率，但离群点比例太高时，计算成本会迅速增加
 
 ## Hough Transform
 
-对于经过 $(x_1, y_1)$ 的所有直线，可以用 $y_1=mx_1+n$ 表示
-将 m n 所有可能值列举出来，也就是将 m n 视为变量
-那在 Hough 空间中就是一条直线，代表经过 $(x_1, y_1)$ 的直线簇
-Hough 空间中不同直线的交点就代表同时经过 $(x_i, y_i)$ 的直线
+**霍夫变换 Hough transform**采用投票的思路：让每个点为所有可能经过它的直线投票，得票最多的直线就是较好的候选
+
+以 $y=mx+b$ 为例，对于点 $(x_i,y_i)$，有 $b=y_i-mx_i$，如果把 $m,b$ 当作参数空间中的坐标，这就是一条直线，参数空间中两条线的交点，代表一条同时经过原图中两个点的直线
 
 ![[CV导论/imgs/img2/image-21.png]]
 
-
-Hough 空间中，统计每个位置被多少曲线覆盖的次数
-次数越多，就代表这个点 $(m, n)$ 对应的直线拟合效果越好
-对于噪声较大，即 outlier 较多的情况，也能应对
+把参数空间划成网格，统计每个网格得到多少票，即可找到很多点共同支持的参数，即使存在较多离群点，真实直线仍可能形成明显的峰值
 
 ![[CV导论/imgs/img2/image-22.png]]
 
-补充：
-传统系统：modular-based system
-模块接着模块，需要提高鲁棒性，不然一步错后边全完了
-需要post processing 后处理
-所以还需要 end-to-end system 端到端系统
+实际为了表示竖直线，常用 $x\cos\theta+y\sin\theta=\rho$，每个原图中的点在 $(\theta,\rho)$ 空间中对应一条曲线，同样通过找投票峰值确定直线
+
+>传统视觉系统常把边缘检测、拟合、后处理等模块接起来，前一个模块的错误可能影响后续结果，因此每个模块都需要一定鲁棒性；端到端 end-to-end 方法则尝试把多个环节一起学习优化
 
 # Corner Detection
 
-In addition to edges, keypoints are also important to detect.
-
 ## Keypoint and Corner
 
-What Points are Keypoints?
-- Requirements
-	1. Saliency 显著性
-	2. Repeatability: detect the same point independently in both images
-	3. Accurate localization
-	4. Quantity: sufficient number
+匹配两张图片时，需要找出能够稳定对应的位置，称为**关键点 keypoint**，我们希望这些点
 
-- For a keypoint detector to be repeatable, it has to be invariant 不变的 to
-	Illumination 
-	Image scale 
-	Viewpoint
+- 显著：与周围容易区分
+- 可重复检测：光照、视角或尺度适当变化后，仍能找到同一位置
+- 定位准确：能够确定具体的点，而不是一整段模糊区域
+- 数量充足：方便进行匹配和后续估计
 
-- Corners are such kind of keypoints, because they are 
-	Salient
-	Repeatable (one corner would still be a corner from another viewpoint)
-	Sufficient (usually an image comes with a lot of corners
-	Easy to localize.
+角点 corner 就是一类常见关键点，一个平坦区域无论怎么挪动都差不多，一条边缘沿着边的方向移动也变化不大，而角点附近沿不同方向移动，局部图案通常都会明显变化，可以据此构建 **Harris Corner Detector**
 
-The key property of a corner: In the region around a corner, image gradient has two or more dominant directions.
+>角点具有成为关键点的条件，但普通 Harris 检测并不自动具备尺度不变性，对各种视角、光照变化的适应能力也有限
 
-Accordingly, we can build **Harris Corner Detector**.
+## Window and Intensity Change
 
-## Process
+先取一个滑动窗口 window，观察当前位置附近的一块区域，实际可以并行计算各个位置
 
-First, we get a slide window 滑动窗口（实际实现是并行的）
 ![](CV导论/imgs/img2/image-3.png)
-
-Suppose that we have the following image as input.
 
 ![|209x209](CV导论/imgs/img2/image-10.png)
 
-fix a slide window at $(x_0, y_0)$ , and move along a direction to $(x_0+u, y_0+u)$
+将窗口中心固定在 $(x_0,y_0)$，把其中的图案平移 $(u,v)$，比较移动前后的灰度差异
+
 ![](CV导论/imgs/img2/image-8.png)
 
 ![](CV导论/imgs/img2/image-9.png)
 
-Regard slide window as a function,
-and define the square of intensity change as $D(x,y)$
+用 $w(x-x_0,y-y_0)$ 表示窗口内各位置的权重，定义灰度差平方和
+
+$$
+E_{(x_0,y_0)}(u,v)=\sum_{x,y}w(x-x_0,y-y_0)\big(I(x+u,y+v)-I(x,y)\big)^2
+$$
+
+窗口可以是矩形内权重相同、外面为 0，也可以用高斯函数让靠近中心的像素更重要，窗口函数对称时，加权求和也可以写成与窗口核的卷积
+
 ![](CV导论/imgs/img2/image-11.png)
 
-More specifically
+## First-Order Approximation
+
+如果位移很小，可以用一阶泰勒展开近似：某方向上的变化量，约等于这个方向的导数乘以移动距离
 
 $$
 \begin{aligned}
-w'(x,y) = w(x-x_0,y-y_0) = w(x_0-x,y_0-y) \\
-\sum w'(x,y)D(x,y) = \sum w(x_0-x,y_0-y)D(x,y) = w*D\ 卷积
+I(x+u,y+v)-I(x,y)&\approx I_xu+I_yv \\
+E(u,v)&\approx\sum_{x,y}w(I_xu+I_yv)^2 \\
+&=\begin{bmatrix}u&v\end{bmatrix}M\begin{bmatrix}u\\v\end{bmatrix} \\
+M&=\sum_{x,y}w\begin{bmatrix}I_x^2&I_xI_y\\I_xI_y&I_y^2\end{bmatrix}
 \end{aligned}
 $$
 
-use First-order Taylor expansion
-
-$$ 
-I[x+u, y+v] - I[x, y] \approx I_xu + I_yv
-$$
+$M$ 综合了窗口内各个像素的梯度，是一个 $2\times2$ 的对称半正定矩阵，可以换到两个互相垂直的主方向上理解它，沿这两个方向的变化强弱分别由非负特征值 $\lambda_1,\lambda_2$ 表示
 
 $$
-\therefore \, D(x, y) = (I[x+u, y+v] - I[x, y])^2 \approx (I_xu + I_yv)^2 =
-\begin{bmatrix}
-u & v
-\end{bmatrix}
-\begin{bmatrix}
-I_x^2 & I_xI_y \\
-I_xI_y & I_y^2
-\end{bmatrix}
-\begin{bmatrix}
-u \\
-v
-\end{bmatrix}
+\begin{aligned}
+M&=R^T\begin{bmatrix}\lambda_1&0\\0&\lambda_2\end{bmatrix}R \\
+E(u,v)&\approx\lambda_1u_R^2+\lambda_2v_R^2,\quad
+\begin{bmatrix}u_R\\v_R\end{bmatrix}=R\begin{bmatrix}u\\v\end{bmatrix}
+\end{aligned}
 $$
 
-$$
-\therefore \, E_{(x_0, y_0)}(u, v) = w * D = 
-\begin{bmatrix}
-u & v
-\end{bmatrix}
-w \cdot
-\begin{bmatrix}
-I_x^2 & I_xI_y \\
-I_xI_y & I_y^2
-\end{bmatrix}
-\begin{bmatrix}
-u \\
-v
-\end{bmatrix}
-$$
-
-$$
-Let\ M(x, y) = w \cdot
-\begin{bmatrix}
-I_x^2 & I_xI_y \\
-I_xI_y & I_y^2
-\end{bmatrix}
-= 
-\begin{bmatrix}
-w \cdot I_x^2 & w \cdot (I_xI_y) \\
-w \cdot (I_xI_y) & w \cdot I_y^2
-\end{bmatrix}
-$$
-
-Note that $M(x, y)$ is a 2×2 symmetry matrix, suppose its eigenvalue is $\lambda_1$ , $\lambda_2$
-
-$$
-M(x, y) = w \cdot 
-\begin{bmatrix}
-I_x^2 & I_xI_y \\
-I_xI_y & I_y^2
-\end{bmatrix} = R^{-1}
-\begin{bmatrix}
-\lambda_1 & 0 \\
-0 & \lambda_2
-\end{bmatrix}
-R
-\quad (\lambda_1 \geq 0, \; \lambda_2 \geq 0)
-$$
-
-$$
-\therefore \, E_{(x_0, y_0)}(u, v) \approx \lambda_1u_R^2 + \lambda_2v_R^2 \quad \text{where} \quad 
-\begin{bmatrix}
-u_R \\
-v_R
-\end{bmatrix}
-= R
-\begin{bmatrix}
-u \\
-v
-\end{bmatrix}
-$$
-
- $\lambda_1$ , $\lambda_2$ reflect the change along two directions
-The energy landscape is a paraboloid like this
+这里 $R$ 只是把位移换到主方向坐标系，两个特征值越大，沿对应方向移动时图案变化越明显
 
 ![|372x170](CV导论/imgs/img2/image-12.png)
 
-We can classify the region according to the value of  $\lambda_1$ and $\lambda_2$
+- 两个特征值都小：平坦区域
+- 一个大、一个小：边缘，沿一个方向移动变化小
+- 两个都大：角点，沿各个方向移动都有明显变化
 
 ![](CV导论/imgs/img2/image-13.png)
 
-Here is a simplified version to judge whether it's a corner
+## Corner Response Function
 
-## Corner response function
+直接计算每个位置的两个特征值比较麻烦，可以用一个**角点响应函数**来判断
+
+$$
+\begin{aligned}
+R_H&=\det(M)-\alpha\operatorname{tr}(M)^2 \\
+&=\lambda_1\lambda_2-\alpha(\lambda_1+\lambda_2)^2
+\end{aligned}
+$$
+
+$\det(M)$ 是行列式，$\operatorname{tr}(M)$ 是对角线元素之和，$\alpha$ 是一个较小的正系数，两个特征值都大时，响应通常较大；一大一小时通常为负；都小时接近 0
 
 ![|430x292](CV导论/imgs/img2/image-14.png)
 
-setting coefficient $\alpha$ and threshold $t$ appropriately, 
-when $\theta>0$ , the area is classified as a corner. 
-
-Note that we can pick the function of slide window.
+设置阈值 $t$，保留 $R_H>t$ 的位置，也可以定义 $\theta=R_H-t$，再判断 $\theta>0$，窗口函数的选择也会影响结果
 
 ![](CV导论/imgs/img2/image-15.png)
 
 ## Summary
 
-Suppose that we have an input image.
+对于一张输入图像
 
 ![|203x154](CV导论/imgs/img2/image-16.png)
 
-- Process
-	1. Image derivatives 
-		![](CV导论/imgs/img2/image-17.png)
-	
-	2. Square of derivatives 
-		![](CV导论/imgs/img2/image-18.png)
-	
-	3. Rectangle window or Gaussian filter 
-		![](CV导论/imgs/img2/image-19.png)
-	
-	4. Corner response function
-		$\theta = g(I_x^2)g(I_y^2) - [g(I_xI_y)]^2 - \alpha[g(I_x^2) + g(I_y^2)]^2 - t$
-	
-	5. Thresholding to obtain a binary mask
-		$\theta(x0,y0) > 0$
-	
-	6. Non-maximum suppression
+1. 计算水平、竖直方向的梯度 $I_x,I_y$
 
-We can get the output
+![](CV导论/imgs/img2/image-17.png)
+
+2. 逐像素计算 $I_x^2,I_y^2,I_xI_y$
+
+![](CV导论/imgs/img2/image-18.png)
+
+3. 用矩形窗口或高斯核 $g$ 对这些结果做局部加权求和，组成 $M$
+
+![](CV导论/imgs/img2/image-19.png)
+
+4. 计算响应，可以直接写成
+
+$$
+\theta=g(I_x^2)g(I_y^2)-g(I_xI_y)^2-\alpha\big(g(I_x^2)+g(I_y^2)\big)^2-t
+$$
+
+5. 阈值筛选，再进行局部非极大值抑制，让同一个角点附近只保留响应最强的位置
 
 ![|243x190](CV导论/imgs/img2/image-20.png)
-
-
-
-
