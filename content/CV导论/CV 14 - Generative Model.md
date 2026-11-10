@@ -49,11 +49,9 @@ $$
 
 **变分自编码器 VAE**给这个过程建立概率模型：先从简单的先验分布 $p(z)$ 采样潜变量，再由 $p_\theta(x\mid z)$ 生成数据，常设 $p(z)=\mathcal N(0,I)$，即各维独立的标准高斯分布
 
-可以把 $z$ 粗略理解为影响图像内容的隐藏因素，生成时先抽取这些因素，再生成图片；训练时则需要从真实图片推断什么样的 $z$ 可能产生它，这是一种直观解释，并不保证每个维度都对应明确概念
-
 ![[CV导论/imgs/img14/image-2.png|348x198]]
 
-对连续图像，一种选择是让 decoder 输出条件高斯分布的均值和方差，得到 $p_\theta(x\mid z)$；也可以采用其他合适的观测分布，模型整体的分布不必是一个简单高斯
+对于一个图像 $x$ ，模型生成它的概率为
 
 $$
 p_\theta(x)=\int p(z)p_\theta(x\mid z)\,dz
@@ -73,34 +71,31 @@ $$
 
 ### Evidence Lower Bound (ELBO)
 
-我们想最大化 $\log p_\theta(x)$，但它难算，可以先最大化一个能够计算或估计的下界，利用下面的恒等式
+我们想最大化 $\log p_\theta(x)$，但它难以直接计算，先进行一下变形
 
 ![[CV导论/imgs/img14/image-4.png]]
 
 $$
 \begin{aligned}
 \log p_\theta(x)
-&=\mathcal L_{ELBO}(x)+D_{KL}\big(q_\phi(z\mid x)\|p_\theta(z\mid x)\big) \\
+&=\mathcal L_{ELBO}(x)+D_{KL}\big(q_\phi(z\mid x)\|p_\theta(z\mid x)\big)\geq\mathcal L_{ELBO}(x) \\
 \mathcal L_{ELBO}(x)
 &=\mathbb E_{z\sim q_\phi(z\mid x)}\left[\log p_\theta(x\mid z)\right]
 -D_{KL}\big(q_\phi(z\mid x)\|p(z)\big)
 \end{aligned}
 $$
 
-由于 KL 散度非负，有 $\mathcal L_{ELBO}(x)\leq\log p_\theta(x)$，因此称为**证据下界 evidence lower bound (ELBO)**，两项各有作用
-
-- 重构项：让从 $x$ 编码出的 $z$ 能给真实 $x$ 较高的条件概率，即保留有用信息
+$\mathcal L_{ELBO}(x)$ 称为**证据下界 evidence lower bound (ELBO)**，将其作为训练的最大化目标
+- 重构项：编码出来的潜变量 $z$ ，尽可能让 decoder 把原图 $x$ 重建出来
 - KL 项：让 encoder 的输出分布不要过分偏离先验，使生成时从先验采样也有机会落到合适区域
 
-它们可能产生权衡，但这并不意味着模型“不能训练”，训练目标就是在两项之间优化，而不是要求两项同时各自达到极端最优
-
-期望项可以用从 $q_\phi(z\mid x)$ 中采出的少量样本近似，取一个样本时得到
+其中重构项的期望可以用从 $q_\phi(z\mid x)$ 中采出的少量样本近似，取一个样本时得到
 
 $$
 \widehat{\mathcal L}_{ELBO}(x)=\log p_\theta(x\mid z)-D_{KL}\big(q_\phi(z\mid x)\|p(z)\big),\quad z\sim q_\phi(z\mid x)
 $$
 
-这是 ELBO 的随机估计，期望意义下对应原目标，不能把每一次采样值本身都当成严格的下界，对于高斯 encoder 与标准高斯先验，KL 项还可以直接计算
+对于高斯 encoder 与标准高斯先验，KL 项还可以直接计算
 
 $$
 D_{KL}\big(\mathcal N(\mu,\operatorname{diag}(\sigma^2))\|\mathcal N(0,I)\big)
@@ -109,23 +104,17 @@ $$
 
 ### Reparameterization
 
-直接将“从一个依赖参数的分布中采样”当作普通运算，不方便对采样结果反向传播，可以用**重参数化技巧 reparameterization trick**
+从 encoder 到 decoder 中间需要经过一个采样的环节，这没法直接反向传播，可以用**重参数化技巧 reparameterization trick**
 
 $$
 z=\mu_{z\mid x}+\sigma_{z\mid x}\odot\epsilon,\quad\epsilon\sim\mathcal N(0,I)
 $$
 
-随机性放到与网络参数无关的 $\epsilon$ 中，$z$ 对均值和标准差就变成可微运算，训练时 decoder 只需计算真实 $x$ 的条件对数概率，不必再随机生成一张图拿来比较，因此整个目标可以通过反向传播优化
-
-如果把 decoder 的观测方差 $\sigma_{x\mid z}^2$ 固定为 1，高斯负对数似然的重构部分就等价于平方误差乘一个常数，再加一个与参数无关的常数
+这样梯度就能沿着下面的链路进行传播
 
 $$
--\log p_\theta(x\mid z)=\frac12\|x-\mu_\theta(z)\|_2^2+\text{const}
+\mathcal L\rightarrow\hat x\rightarrow z \rightarrow(\mu,\sigma)\rightarrow\phi
 $$
-
-注意固定的是 decoder 的观测方差，不是 encoder 用来采样 $z$ 的方差，实际通常最小化负 ELBO，即重构损失加 KL 项
-
->变分推断可以理解为：在一族方便计算的分布中，寻找一个尽量接近目标后验的分布；泛函是以函数为输入、输出一个数的映射，变分研究这类对象随输入函数改变而如何变化
 
 ## Generative Adversarial Networks (GAN)
 
